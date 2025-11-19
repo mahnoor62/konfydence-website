@@ -1,0 +1,20 @@
+<svg width="800" height="500" viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B7897"/>
+      <stop offset="100%" stop-color="#063C5E"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#grad)"/>
+  <g fill="#ffffff" opacity="0.85">
+    <rect x="180" y="150" width="440" height="220" rx="20" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+    <circle cx="260" cy="240" r="40" fill="rgba(255,255,255,0.2)"/>
+    <rect x="320" y="200" width="240" height="30" rx="6"/>
+    <rect x="320" y="250" width "200" height="20" rx="5" opacity="0.7"/>
+    <rect x="320" y="285" width="170" height="20" rx="5" opacity="0.5"/>
+  </g>
+  <text x="50%" y="425" text-anchor="middle" fill="white" font-size="32" font-family="Arial, sans-serif" opacity="0.85">
+    Konfydence Blog
+  </text>
+</svg>
+
