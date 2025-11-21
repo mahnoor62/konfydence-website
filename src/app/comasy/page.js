@@ -15,7 +15,14 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import api from '@/lib/api';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 CoMaSy Page API URL:', API_URL);
 
 export default function CoMaSyPage() {
   const [formData, setFormData] = useState({
@@ -32,10 +39,17 @@ export default function CoMaSyPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/leads/b2b', formData);
+      const url = `${API_URL}/leads/b2b`;
+      console.log(`📡 POST ${url}`, formData);
+      await axios.post(url, formData);
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
       setFormData({ name: '', company: '', email: '', employeeCount: '', message: '' });
     } catch (error) {
+      console.error('❌ Error submitting B2B lead:', {
+        url: `${API_URL}/leads/b2b`,
+        error: error.response?.data || error.message,
+        status: error.response?.status,
+      });
       setSnackbar({ open: true, message: 'Error submitting form. Please try again.', severity: 'error' });
     } finally {
       setLoading(false);

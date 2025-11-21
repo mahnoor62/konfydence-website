@@ -2,12 +2,21 @@ import { Container, Typography, Box, Chip, Button } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import api from '@/lib/api';
+import axios from 'axios';
 import { notFound } from 'next/navigation';
 import ClientBackButton from './components/ClientBackButton';
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 Blog Post Detail API URL:', API_URL);
+
 async function getBlogPost(slug) {
-  const res = await api.get(`/blog/${slug}`);
+  const url = `${API_URL}/blog/${slug}`;
+  console.log(`📡 GET ${url}`);
+  const res = await axios.get(url);
   return res.data;
 }
 
@@ -21,7 +30,11 @@ export default async function BlogPostPage({ params }) {
     post = await getBlogPost(params.slug);
   } catch (err) {
     error = err;
-    console.error('Error loading blog post:', err);
+    console.error('❌ Error loading blog post:', {
+      url: `${API_URL}/blog/${params.slug}`,
+      error: err.response?.data || err.message,
+      status: err.response?.status,
+    });
   }
 
   if (error) {

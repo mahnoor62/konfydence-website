@@ -8,7 +8,14 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import api from '@/lib/api';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 Products Page API URL:', API_URL);
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -64,7 +71,8 @@ export default function ProductsPageContent() {
         params.category = category;
       }
 
-      const res = await api.get('/products', { params });
+      console.log(`📡 GET ${API_URL}/products`, params);
+      const res = await axios.get(`${API_URL}/products`, { params });
       setProducts(res.data.products || []);
       setMeta({
         total: res.data.total || 0,
@@ -72,7 +80,11 @@ export default function ProductsPageContent() {
         page: res.data.page || 1,
       });
     } catch (err) {
-      console.error('Error fetching products:', err);
+      console.error('❌ Error fetching products:', {
+        url: `${API_URL}/products`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       setError(err);
       setProducts([]);
       setMeta({ total: 0, totalPages: 1, page: 1 });
@@ -83,7 +95,8 @@ export default function ProductsPageContent() {
 
   const fetchAvailableFilters = useCallback(async () => {
     try {
-      const res = await api.get('/products', {
+      console.log(`📡 GET ${API_URL}/products?all=true`);
+      const res = await axios.get(`${API_URL}/products`, {
         params: { all: true },
       });
       const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
@@ -91,7 +104,11 @@ export default function ProductsPageContent() {
       setAvailableTypes(types);
       setAvailableCategories(categories);
     } catch (err) {
-      console.error('Error fetching filters:', err);
+      console.error('❌ Error fetching filters:', {
+        url: `${API_URL}/products?all=true`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       if (!error) {
         setError(err);
       }

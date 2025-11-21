@@ -15,7 +15,14 @@ import {
 import { useSearchParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import api from '@/lib/api';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 Contact Page API URL:', API_URL);
 
 function ContactForm() {
   const searchParams = useSearchParams();
@@ -48,10 +55,17 @@ function ContactForm() {
           ? `Employee count: ${employeeCount}\n\n${formData.message}`
           : formData.message,
       };
-      await api.post('/contact', payload);
+      const url = `${API_URL}/contact`;
+      console.log(`📡 POST ${url}`, payload);
+      await axios.post(url, payload);
       setSnackbar({ open: true, message: 'Thank you! We will get back to you soon.', severity: 'success' });
       setFormData({ name: '', email: '', company: '', topic: 'other', message: '', employeeCount: '' });
     } catch (error) {
+      console.error('❌ Error submitting contact form:', {
+        url: `${API_URL}/contact`,
+        error: error.response?.data || error.message,
+        status: error.response?.status,
+      });
       setSnackbar({ open: true, message: 'Error submitting form. Please try again.', severity: 'error' });
     } finally {
       setLoading(false);

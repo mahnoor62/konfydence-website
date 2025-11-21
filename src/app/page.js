@@ -6,37 +6,62 @@ import BlogCard from '@/components/BlogCard';
 import ProductCard from '@/components/ProductCard';
 import PartnerLogosSwiper from '@/components/PartnerLogosSwiper';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import api from '@/lib/api';
+import axios from 'axios';
 import Link from 'next/link';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 Website API URL:', API_URL);
 
 async function getHomeData() {
   const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
-    api.get('/products', { params: { limit: 3, page: 1 } }).then((res) => res.data),
-    api.get('/products/featured/homepage').then((res) => res.data || []),
-    api.get('/settings').then((res) => res.data),
-    api.get('/blog', { params: { published: 'true', limit: 3 } }).then((res) => {
+    axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => res.data).catch((err) => {
+      console.error('❌ Error fetching products:', err.response?.data || err.message);
+      throw err;
+    }),
+    axios.get(`${API_URL}/products/featured/homepage`).then((res) => res.data || []).catch((err) => {
+      console.error('❌ Error fetching featured products:', err.response?.data || err.message);
+      throw err;
+    }),
+    axios.get(`${API_URL}/settings`).then((res) => res.data).catch((err) => {
+      console.error('❌ Error fetching settings:', err.response?.data || err.message);
+      throw err;
+    }),
+    axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3 } }).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : (data?.posts || []);
+    }).catch((err) => {
+      console.error('❌ Error fetching blog posts:', err.response?.data || err.message);
+      throw err;
     }),
-    api.get('/testimonials').then((res) => {
+    axios.get(`${API_URL}/testimonials`).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : [];
+    }).catch((err) => {
+      console.error('❌ Error fetching testimonials:', err.response?.data || err.message);
+      throw err;
     }),
-    api.get('/partners').then((res) => {
+    axios.get(`${API_URL}/partners`).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : [];
+    }).catch((err) => {
+      console.error('❌ Error fetching partners:', err.response?.data || err.message);
+      throw err;
     }),
   ]);
 
-  const products = paginatedProducts?.products ?? [];
+  const products = paginatedProducts?.products;
 
   return { 
-    products: products || [], 
-    featuredProducts: featuredProducts || [], 
+    products: products, 
+    featuredProducts: featuredProducts, 
     settings: settings || null, 
-    blogPosts: blogPosts || [], 
-    testimonials: testimonials || [], 
-    partnerLogos: partnerLogos || [] 
+    blogPosts: blogPosts, 
+    testimonials: testimonials, 
+    partnerLogos: partnerLogos 
   };
 }
 

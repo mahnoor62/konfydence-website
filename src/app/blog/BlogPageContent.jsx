@@ -8,7 +8,14 @@ import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
 import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
-import api from '@/lib/api';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+console.log('🔗 Blog Page API URL:', API_URL);
 
 const BLOGS_PER_PAGE = 10;
 
@@ -40,7 +47,9 @@ export default function BlogPageContent() {
       setLoading(true);
       setError(null);
       const categoryQuery = category && category !== 'all' ? `&category=${encodeURIComponent(category)}` : '';
-      const res = await api.get(`/blog?all=true&page=${pageNum}&limit=${BLOGS_PER_PAGE}${categoryQuery}`);
+      const url = `${API_URL}/blog?all=true&page=${pageNum}&limit=${BLOGS_PER_PAGE}${categoryQuery}`;
+      console.log(`📡 GET ${url}`);
+      const res = await axios.get(url);
       const postsData = Array.isArray(res.data) ? res.data : res.data.posts || [];
       setPosts(postsData);
       setTotal(res.data.total || postsData.length);
@@ -49,7 +58,11 @@ export default function BlogPageContent() {
         setCategories(res.data.categories);
       }
     } catch (err) {
-      console.error('Error fetching blog posts:', err);
+      console.error('❌ Error fetching blog posts:', {
+        url: `${API_URL}/blog`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       setError(err);
       setPosts([]);
       setTotal(0);
