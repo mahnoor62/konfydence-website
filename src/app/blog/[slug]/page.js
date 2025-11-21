@@ -1,23 +1,42 @@
 import { Container, Typography, Box, Chip, Button } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ErrorDisplay from '@/components/ErrorDisplay';
 import api from '@/lib/api';
 import { notFound } from 'next/navigation';
 import ClientBackButton from './components/ClientBackButton';
 
 async function getBlogPost(slug) {
-  try {
-    const res = await api.get(`/blog/${slug}`);
-    return res.data;
-  } catch (error) {
-    return null;
-  }
+  const res = await api.get(`/blog/${slug}`);
+  return res.data;
 }
 
 export const dynamic = 'force-dynamic';
 
 export default async function BlogPostPage({ params }) {
-  const post = await getBlogPost(params.slug);
+  let post;
+  let error = null;
+
+  try {
+    post = await getBlogPost(params.slug);
+  } catch (err) {
+    error = err;
+    console.error('Error loading blog post:', err);
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '80vh' }}>
+          <Container maxWidth="md" sx={{ py: 8 }}>
+            <ErrorDisplay error={error} title="Failed to Load Blog Post" />
+          </Container>
+        </Box>
+        <Footer />
+      </>
+    );
+  }
 
   if (!post) {
     notFound();

@@ -32,10 +32,12 @@ export default function BlogPageContent() {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
+  const [error, setError] = useState(null);
 
   const fetchPosts = useCallback(async (pageNum, category) => {
     try {
       setLoading(true);
+      setError(null);
       const categoryQuery = category && category !== 'all' ? `&category=${encodeURIComponent(category)}` : '';
       const res = await api.get(`/blog?all=true&page=${pageNum}&limit=${BLOGS_PER_PAGE}${categoryQuery}`);
       const postsData = Array.isArray(res.data) ? res.data : res.data.posts || [];
@@ -45,8 +47,9 @@ export default function BlogPageContent() {
       if (res.data.categories) {
         setCategories(res.data.categories);
       }
-    } catch (error) {
-      console.error('Error fetching blog posts:', error);
+    } catch (err) {
+      console.error('Error fetching blog posts:', err);
+      setError(err);
       setPosts([]);
       setTotal(0);
       setPages(1);
@@ -151,7 +154,9 @@ export default function BlogPageContent() {
             ))}
           </Box>
 
-          {loading ? (
+          {error ? (
+            <ErrorDisplay error={error} title="Failed to Load Blog Posts" />
+          ) : loading ? (
             <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ py: 8 }}>
               Loading articles...
             </Typography>

@@ -5,90 +5,63 @@ import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
 import ProductCard from '@/components/ProductCard';
 import PartnerLogosSwiper from '@/components/PartnerLogosSwiper';
+import ErrorDisplay from '@/components/ErrorDisplay';
 import api from '@/lib/api';
 import Link from 'next/link';
 
 async function getHomeData() {
-  try {
-    const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
-      api
-        .get('/products', { params: { limit: 3, page: 1 } })
-        .then((res) => res.data)
-        .catch((error) => {
-          console.error('Error fetching products:', error);
-          return null;
-        }),
-      api
-        .get('/products/featured/homepage')
-        .then((res) => res.data || [])
-        .catch((error) => {
-          console.error('Error fetching featured products:', error);
-          return [];
-        }),
-      api
-        .get('/settings')
-        .then((res) => res.data)
-        .catch((error) => {
-          console.error('Error fetching site settings:', error);
-          return null;
-        }),
-      api
-        .get('/blog', { params: { published: 'true', limit: 3 } })
-        .then((res) => {
-          const data = res.data;
-          return Array.isArray(data) ? data : (data?.posts || []);
-        })
-        .catch((error) => {
-          console.error('Error fetching blog posts:', error);
-          return [];
-        }),
-      api
-        .get('/testimonials')
-        .then((res) => {
-          const data = res.data;
-          return Array.isArray(data) ? data : [];
-        })
-        .catch((error) => {
-          console.error('Error fetching testimonials:', error);
-          return [];
-        }),
-      api
-        .get('/partners')
-        .then((res) => {
-          const data = res.data;
-          return Array.isArray(data) ? data : [];
-        })
-        .catch((error) => {
-          console.error('Error fetching partner logos:', error);
-          return [];
-        }),
-    ]);
+  const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
+    api.get('/products', { params: { limit: 3, page: 1 } }).then((res) => res.data),
+    api.get('/products/featured/homepage').then((res) => res.data || []),
+    api.get('/settings').then((res) => res.data),
+    api.get('/blog', { params: { published: 'true', limit: 3 } }).then((res) => {
+      const data = res.data;
+      return Array.isArray(data) ? data : (data?.posts || []);
+    }),
+    api.get('/testimonials').then((res) => {
+      const data = res.data;
+      return Array.isArray(data) ? data : [];
+    }),
+    api.get('/partners').then((res) => {
+      const data = res.data;
+      return Array.isArray(data) ? data : [];
+    }),
+  ]);
 
-    const products = paginatedProducts?.products ?? [];
+  const products = paginatedProducts?.products ?? [];
 
-    return { 
-      products: products || [], 
-      featuredProducts: featuredProducts || [], 
-      settings: settings || null, 
-      blogPosts: blogPosts || [], 
-      testimonials: testimonials || [], 
-      partnerLogos: partnerLogos || [] 
-    };
-  } catch (error) {
-    console.error('Error in getHomeData:', error);
-    return { 
-      products: [], 
-      featuredProducts: [], 
-      settings: null, 
-      blogPosts: [], 
-      testimonials: [], 
-      partnerLogos: [] 
-    };
-  }
+  return { 
+    products: products || [], 
+    featuredProducts: featuredProducts || [], 
+    settings: settings || null, 
+    blogPosts: blogPosts || [], 
+    testimonials: testimonials || [], 
+    partnerLogos: partnerLogos || [] 
+  };
 }
 
 export default async function Home() {
-  const { products, featuredProducts, settings, blogPosts, testimonials, partnerLogos } = await getHomeData();
+  let products = [];
+  let featuredProducts = [];
+  let settings = null;
+  let blogPosts = [];
+  let testimonials = [];
+  let partnerLogos = [];
+  let error = null;
+
+  try {
+    const data = await getHomeData();
+    products = data.products;
+    featuredProducts = data.featuredProducts;
+    settings = data.settings;
+    blogPosts = data.blogPosts;
+    testimonials = data.testimonials;
+    partnerLogos = data.partnerLogos;
+  } catch (err) {
+    error = err;
+    console.error('Error loading home page data:', err);
+  }
+
   const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
   const testimonialList = Array.isArray(testimonials) ? testimonials.slice(0, 3) : [];
@@ -96,6 +69,20 @@ export default async function Home() {
   const homeProducts = Array.isArray(products) && products.length > 0 
     ? products.slice(0, 3) 
     : (Array.isArray(featuredProducts) && featuredProducts.length > 0 ? featuredProducts.slice(0, 3) : []);
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <Box component="main" sx={{ backgroundColor: '#F5F8FB', minHeight: '80vh' }}>
+          <Container maxWidth="lg" sx={{ py: 8 }}>
+            <ErrorDisplay error={error} title="Failed to Load Homepage Data" />
+          </Container>
+        </Box>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>

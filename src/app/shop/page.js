@@ -6,6 +6,7 @@ import { Container, Typography, Grid, Box, Chip } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import ErrorDisplay from '@/components/ErrorDisplay';
 import api from '@/lib/api';
 import PaginationControls from '@/components/PaginationControls';
 
@@ -44,10 +45,12 @@ function ShopPageContent() {
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [availableTypes, setAvailableTypes] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
+  const [error, setError] = useState(null);
 
   const fetchProducts = useCallback(async (page, type, category) => {
     try {
       setLoading(true);
+      setError(null);
       const params = {
         page: page.toString(),
         limit: PRODUCTS_PER_PAGE.toString(),
@@ -68,8 +71,9 @@ function ShopPageContent() {
         totalPages: res.data.totalPages || 1,
         page: res.data.page || 1,
       });
-    } catch (error) {
-      console.error('Error fetching products:', error);
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(err);
       setProducts([]);
       setMeta({ total: 0, totalPages: 1, page: 1 });
     } finally {
@@ -247,7 +251,9 @@ function ShopPageContent() {
             </Box>
           )}
 
-          {loading ? (
+          {error ? (
+            <ErrorDisplay error={error} title="Failed to Load Products" />
+          ) : loading ? (
             <Box textAlign="center" py={6}>
               <Typography variant="h6" color="text.secondary">
                 Loading products...

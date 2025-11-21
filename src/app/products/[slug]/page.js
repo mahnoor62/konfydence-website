@@ -1,24 +1,43 @@
 import { Box, Chip, Container, Grid, Typography, Button } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ErrorDisplay from '@/components/ErrorDisplay';
 import api from '@/lib/api';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductBackButton from './components/ProductBackButton';
 
 async function getProduct(slug) {
-  try {
-    const res = await api.get(`/products/slug/${slug}`);
-    return res.data;
-  } catch (error) {
-    return null;
-  }
+  const res = await api.get(`/products/slug/${slug}`);
+  return res.data;
 }
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductDetailPage({ params }) {
-  const product = await getProduct(params.slug);
+  let product;
+  let error = null;
+
+  try {
+    product = await getProduct(params.slug);
+  } catch (err) {
+    error = err;
+    console.error('Error loading product:', err);
+  }
+
+  if (error) {
+    return (
+      <>
+        <Header />
+        <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '80vh', backgroundColor: '#F2F5FB' }}>
+          <Container maxWidth="lg" sx={{ py: 8 }}>
+            <ErrorDisplay error={error} title="Failed to Load Product" />
+          </Container>
+        </Box>
+        <Footer />
+      </>
+    );
+  }
 
   if (!product) {
     notFound();
