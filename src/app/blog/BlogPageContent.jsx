@@ -7,6 +7,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
 import PaginationControls from '@/components/PaginationControls';
+import ErrorDisplay from '@/components/ErrorDisplay';
 import api from '@/lib/api';
 
 const BLOGS_PER_PAGE = 10;
