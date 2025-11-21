@@ -15,6 +15,25 @@ async function getBlogPost(slug: string) {
   }
 }
 
+export const dynamic = 'force-static';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const res = await api.get('/blog', { params: { all: true } });
+    const posts: BlogPost[] = Array.isArray(res.data) ? res.data : res.data.posts || [];
+
+    return posts
+      .filter((post) => Boolean(post?.slug))
+      .map((post) => ({
+        slug: post.slug,
+      }));
+  } catch (error) {
+    console.error('Error generating blog params:', error);
+    return [];
+  }
+}
+
 export default async function BlogPostPage({ params }: { params: { slug: string } }) {
   const post = await getBlogPost(params.slug);
 

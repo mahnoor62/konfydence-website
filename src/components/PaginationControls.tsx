@@ -15,9 +15,20 @@ export default function PaginationControls({
   basePath = '/products',
 }: PaginationControlsProps) {
   const safePage = Math.min(Math.max(page, 1), Math.max(totalPages, 1));
-  const getHref = (pageNumber?: number) => {
+  const getHref = (pageNumber?: number | null) => {
     if (!pageNumber || pageNumber < 1) return basePath;
-    return pageNumber === 1 ? basePath : `${basePath}?page=${pageNumber}`;
+    
+    const [pathOnly, existingQuery] = basePath.split('?');
+    const params = new URLSearchParams(existingQuery || '');
+    
+    if (pageNumber === 1) {
+      params.delete('page');
+    } else {
+      params.set('page', pageNumber.toString());
+    }
+    
+    const queryString = params.toString();
+    return queryString ? `${pathOnly}?${queryString}` : pathOnly;
   };
 
   return (

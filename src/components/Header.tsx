@@ -24,7 +24,7 @@ const navItems = [
   { label: 'Products', href: '/products' },
   { label: 'CoMaSy', href: '/comasy' },
   { label: 'Education', href: '/education' },
-  { label: 'Shop', href: '/shop' },
+  // { label: 'Shop', href: '/shop' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },

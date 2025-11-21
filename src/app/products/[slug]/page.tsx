@@ -16,6 +16,25 @@ async function getProduct(slug: string) {
   }
 }
 
+export const dynamic = 'force-static';
+export const revalidate = 3600;
+
+export async function generateStaticParams() {
+  try {
+    const res = await api.get('/products', { params: { all: true } });
+    const products: Product[] = Array.isArray(res.data) ? res.data : res.data.products || [];
+
+    return products
+      .filter((product) => Boolean(product?.slug))
+      .map((product) => ({
+        slug: product.slug,
+      }));
+  } catch (error) {
+    console.error('Error generating product params:', error);
+    return [];
+  }
+}
+
 export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
   const product = await getProduct(params.slug);
 

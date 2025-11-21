@@ -115,7 +115,7 @@ export default function CoMaSyPage() {
               Request a Demo
             </Typography>
             <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-              Fill out the form below and we'll get in touch
+              Fill out the form below and we&apos;ll get in touch
             </Typography>
             <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, mx: 'auto' }}>
               <Grid container spacing={3}>

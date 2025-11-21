@@ -4,8 +4,9 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
 import ProductCard from '@/components/ProductCard';
+import PartnerLogosSwiper from '@/components/PartnerLogosSwiper';
 import api from '@/lib/api';
-import { Product, SiteSettings, BlogPost, Testimonial, PaginatedProductsResponse } from '@/lib/types';
+import { Product, SiteSettings, BlogPost, Testimonial, PaginatedProductsResponse, PartnerLogo } from '@/lib/types';
 import Link from 'next/link';
 
 const fallbackTestimonials: Testimonial[] = [
@@ -78,7 +79,7 @@ const fallbackBlogPosts: BlogPost[] = [
 ];
 
 async function getHomeData() {
-  const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials] = await Promise.all([
+  const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
     api
       .get<PaginatedProductsResponse>('/products', { params: { limit: 3, page: 1 } })
       .then((res) => res.data)
@@ -114,15 +115,22 @@ async function getHomeData() {
         console.error('Error fetching testimonials:', error);
         return [];
       }),
+    api
+      .get<PartnerLogo[]>('/partners')
+      .then((res) => res.data)
+      .catch((error) => {
+        console.error('Error fetching partner logos:', error);
+        return [];
+      }),
   ]);
 
   const products = paginatedProducts?.products ?? [];
 
-  return { products, featuredProducts, settings, blogPosts, testimonials };
+  return { products, featuredProducts, settings, blogPosts, testimonials, partnerLogos };
 }
 
 export default async function Home() {
-  const { products, featuredProducts, settings, blogPosts, testimonials } = await getHomeData();
+  const { products, featuredProducts, settings, blogPosts, testimonials, partnerLogos } = await getHomeData();
   const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
   const testimonialList = (testimonials.length ? testimonials : fallbackTestimonials).slice(0, 3);
@@ -284,21 +292,29 @@ export default async function Home() {
              <Grid item sm={6} xs={12} md={1}></Grid>
             <Grid item sm={6} xs={12} md={5}>
               <Box
-                // data-aos="zoom-in"
-                // data-aos-duration="800"
-                // data-aos-delay="100"
                 sx={{
                   p: 3,
                   height: '100%',
                   backgroundColor: '#7FC7D9',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  position: 'relative',
+                  animation: 'floatCard 4s ease-in-out infinite',
+                  transformOrigin: 'center',
+                  filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
                   transition: 'all 0.3s ease-in-out',
-                  transform: 'translateY(0)',
                   cursor: 'pointer',
+                  '@keyframes floatCard': {
+                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                    '50%': {
+                      transform: 'translateY(-15px) rotate(-1deg)',
+                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                    },
+                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                  },
                   '&:hover': {
-                    transform: 'translateY(-8px) scale(1.02)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   },
                 }}
               >
@@ -312,21 +328,29 @@ export default async function Home() {
             </Grid>
             <Grid item sm={6} xs={12} md={5}>
               <Box
-                // data-aos="zoom-in"
-                // data-aos-duration="800"
-                // data-aos-delay="200"
                 sx={{
                   p: 3,
                   height: '100%',
                   backgroundColor: '#5FA8BA',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  position: 'relative',
+                  animation: 'floatCard 4s ease-in-out infinite',
+                  transformOrigin: 'center',
+                  filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
                   transition: 'all 0.3s ease-in-out',
-                  transform: 'translateY(0)',
                   cursor: 'pointer',
+                  '@keyframes floatCard': {
+                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                    '50%': {
+                      transform: 'translateY(-15px) rotate(-1deg)',
+                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                    },
+                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                  },
                   '&:hover': {
-                    transform: 'translateY(-8px) scale(1.02)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                    transform: 'scale(1.05)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   },
                 }}
               >
@@ -466,10 +490,21 @@ export default async function Home() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       overflow: 'hidden',
+                      animation: 'floatCard 4s ease-in-out infinite',
+                      transformOrigin: 'center',
+                      filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
                       transition: 'all 0.3s ease-in-out',
-                      transform: 'translateY(0)',
+                      cursor: 'pointer',
+                      '@keyframes floatCard': {
+                        '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                        '50%': {
+                          transform: 'translateY(-15px) rotate(-1deg)',
+                          filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                        },
+                        '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                      },
                       '&:hover': {
-                        transform: 'translateY(-10px) scale(1.05)',
+                        transform: 'scale(1.08)',
                         boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
                       },
                     }}
@@ -747,6 +782,12 @@ export default async function Home() {
             </Box>
           </Container>
         </Box> */}
+      
+      {/* Partner Logos Swiper */}
+      {partnerLogos && partnerLogos.length > 0 && (
+        <PartnerLogosSwiper partnerLogos={partnerLogos} />
+      )}
+
       <Box  data-aos="zoom-in" data-aos-duration="800" data-aos-delay="100" sx={{ py: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB' }}>
         <Container
           maxWidth="md"
