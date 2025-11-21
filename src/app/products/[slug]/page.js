@@ -6,8 +6,6 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import ProductBackButton from './components/ProductBackButton';
 
-const FALLBACK_SLUG = '__no-products';
-
 async function getProduct(slug) {
   try {
     const res = await api.get(`/products/slug/${slug}`);
@@ -17,55 +15,9 @@ async function getProduct(slug) {
   }
 }
 
-export async function generateStaticParams() {
-  try {
-    const res = await api.get('/products', { params: { all: true } });
-    const products = Array.isArray(res.data) ? res.data : res.data.products || [];
-
-    const slugs = products
-      .filter((product) => Boolean(product?.slug))
-      .map((product) => ({
-        slug: product.slug,
-      }));
-
-    if (!slugs.length) {
-      return [{ slug: FALLBACK_SLUG }];
-    }
-
-    return slugs;
-  } catch (error) {
-    console.error('Error generating product params:', error);
-    return [{ slug: FALLBACK_SLUG }];
-  }
-}
-
-export const dynamic = 'force-static';
-export const revalidate = 3600;
-export const dynamicParams = false;
+export const dynamic = 'force-dynamic';
 
 export default async function ProductDetailPage({ params }) {
-  if (params.slug === FALLBACK_SLUG) {
-    return (
-      <>
-        <Header />
-        <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '60vh' }}>
-          <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-            <Typography variant="h3" gutterBottom>
-              Products are coming soon
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              We&apos;re still preparing our product catalog. Please check back later.
-            </Typography>
-            <Box sx={{ mt: 4 }}>
-              <ProductBackButton />
-            </Box>
-          </Container>
-        </Box>
-        <Footer />
-      </>
-    );
-  }
-
   const product = await getProduct(params.slug);
 
   if (!product) {

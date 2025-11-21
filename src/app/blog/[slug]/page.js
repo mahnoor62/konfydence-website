@@ -5,8 +5,6 @@ import api from '@/lib/api';
 import { notFound } from 'next/navigation';
 import ClientBackButton from './components/ClientBackButton';
 
-const FALLBACK_SLUG = '__no-posts';
-
 async function getBlogPost(slug) {
   try {
     const res = await api.get(`/blog/${slug}`);
@@ -16,55 +14,9 @@ async function getBlogPost(slug) {
   }
 }
 
-export async function generateStaticParams() {
-  try {
-    const res = await api.get('/blog', { params: { all: true } });
-    const posts = Array.isArray(res.data) ? res.data : res.data.posts || [];
-
-    const slugs = posts
-      .filter((post) => Boolean(post?.slug))
-      .map((post) => ({
-        slug: post.slug,
-      }));
-
-    if (!slugs.length) {
-      return [{ slug: FALLBACK_SLUG }];
-    }
-
-    return slugs;
-  } catch (error) {
-    console.error('Error generating blog params:', error);
-    return [{ slug: FALLBACK_SLUG }];
-  }
-}
-
-export const dynamic = 'force-static';
-export const revalidate = 3600;
-export const dynamicParams = false;
+export const dynamic = 'force-dynamic';
 
 export default async function BlogPostPage({ params }) {
-  if (params.slug === FALLBACK_SLUG) {
-    return (
-      <>
-        <Header />
-        <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '60vh' }}>
-          <Container maxWidth="md" sx={{ py: 8, textAlign: 'center' }}>
-            <Typography variant="h3" gutterBottom>
-              Blog posts are coming soon
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              We&apos;re preparing new articles. Please visit again later.
-            </Typography>
-            <Box sx={{ mt: 4 }}>
-              <ClientBackButton />
-            </Box>
-          </Container>
-        </Box>
-        <Footer />
-      </>
-    );
-  }
-
   const post = await getBlogPost(params.slug);
 
   if (!post) {
