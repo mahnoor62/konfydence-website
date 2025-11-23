@@ -22,8 +22,13 @@ async function getHomeData() {
   console.log('📡 API: GET', `${API_URL}/partners`);
 
   const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
-    // Fetch 3 latest products sorted by creation date (newest first)
-    axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => res.data).catch((err) => {
+    // Fetch 3 newest products (sorted by createdAt desc - newest first)
+    axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
+      const data = res.data;
+      // Handle both response formats: { products: [...] } or array
+      const products = Array.isArray(data) ? data : (data?.products || []);
+      return { products };
+    }).catch((err) => {
       console.error('❌ Error fetching latest products:', {
         url: `${API_URL}/products`,
         error: err.response?.data || err.message,
@@ -39,16 +44,20 @@ async function getHomeData() {
       });
       throw err.response?.data;
     }),
-    axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3 } }).then((res) => {
+    // Fetch 3 newest published blog posts (sorted by publishedAt desc - newest first)
+    axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3, page: 1 } }).then((res) => {
       const data = res.data;
-      return Array.isArray(data) ? data : (data?.posts || []);
+      // Handle both response formats: { posts: [...] } or array
+      const posts = Array.isArray(data) ? data : (data?.posts || []);
+      // Ensure we only get the 3 newest
+      return posts.slice(0, 3);
     }).catch((err) => {
       console.error('❌ Error fetching blog posts:', {
         url: `${API_URL}/blog`,
         error: err.response?.data || err.message,
         status: err.response?.status,
       });
-      throw err.response?.data;
+      return [];
     }),
     // axios.get(`${API_URL}/testimonials`).then((res) => {
     //   const data = res.data;
@@ -98,12 +107,16 @@ export default async function Home() {
 
   // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
+  // Ensure we have exactly 3 newest items (already sorted by backend)
   const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : []; 
   const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
-  console.log('🔗 Blog Posts:', blogPosts);
-  console.log('latestPosts', latestPosts);
-  console.log('🔗 Products:', products);  
-  console.log('homeProducts', homeProducts);
+  
+  console.log('📦 Homepage Data:', {
+    products: homeProducts.length,
+    blogPosts: latestPosts.length,
+    productNames: homeProducts.map(p => p.name),
+    blogTitles: latestPosts.map(p => p.title),
+  });
   
 
   if (error) {
@@ -371,7 +384,7 @@ export default async function Home() {
                   zIndex: 1,
                 }}
               >
-                Our Products
+                Latest Products
               </Typography>
             </Box>
             {homeProducts.length === 0 ? (
@@ -791,7 +804,7 @@ export default async function Home() {
             variant="h3"
             sx={{ fontWeight: 700, mb: 2, color: '#052A42', fontSize: { xs: '2rem', md: '2.5rem' } }}
           >
-            Latest Articles
+            Latest Blog Posts
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 640, mx: 'auto', mb: 4 }}>
             Read our latest tips, insights, and strategies to stay safe online.
