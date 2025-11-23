@@ -26,7 +26,18 @@ async function getHomeData() {
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
       const data = res.data;
       // Handle both response formats: { products: [...] } or array
-      const products = Array.isArray(data) ? data : (data?.products || []);
+      let products = Array.isArray(data) ? data : (data?.products || []);
+      
+      // Ensure products are sorted by createdAt descending (newest first)
+      products = products.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.created_at || 0);
+        const dateB = new Date(b.createdAt || b.created_at || 0);
+        return dateB - dateA; // Descending order (newest first)
+      });
+      
+      // Take only the first 3 (newest)
+      products = products.slice(0, 3);
+      
       return { products };
     }).catch((err) => {
       console.error('❌ Error fetching latest products:', {
@@ -107,14 +118,26 @@ export default async function Home() {
 
   // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
-  // Ensure we have exactly 3 newest items (already sorted by backend)
-  const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : []; 
-  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
+  // Ensure we have exactly 3 newest items in descending order (newest first)
+  let homeProducts = Array.isArray(products) ? products : [];
   
-  console.log('📦 Homepage Data:', {
+  // Sort products by createdAt descending (newest first) if not already sorted
+  homeProducts = homeProducts.sort((a, b) => {
+    const dateA = new Date(a.createdAt || a.created_at || 0);
+    const dateB = new Date(b.createdAt || b.created_at || 0);
+    return dateB - dateA; // Descending order (newest first)
+  });
+  
+  // Take only the first 3 (newest)
+  homeProducts = homeProducts.slice(0, 3);
+  
+  const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
+  
+  console.log('📦 Homepage Data (Descending Order - Newest First):', {
     products: homeProducts.length,
     blogPosts: latestPosts.length,
     productNames: homeProducts.map(p => p.name),
+    productDates: homeProducts.map(p => p.createdAt || p.created_at),
     blogTitles: latestPosts.map(p => p.title),
   });
   
