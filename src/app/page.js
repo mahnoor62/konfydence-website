@@ -147,14 +147,12 @@ export default async function Home() {
   // Ensure we have exactly 3 newest items in descending order (newest first)
   let homeProducts = Array.isArray(products) ? products : [];
   
-  console.log('📦 Processing products for display:', {
-    initialCount: homeProducts.length,
-    products: homeProducts.map(p => ({ name: p?.name, isActive: p?.isActive, hasImage: !!p?.imageUrl })),
-  });
+
   
   // Filter only active products with valid data
-  homeProducts = homeProducts.filter(p => p && p.isActive !== false && p.name);
-  
+  // homeProducts = homeProducts.filter(p => p && p.isActive !== false && p.name);
+  homeProducts = products.filter(p => p?.isActive).slice(0, 3);
+
   // Sort products by createdAt descending (newest first) if not already sorted
   homeProducts = homeProducts.sort((a, b) => {
     const dateA = new Date(a.createdAt || a.created_at || 0);
