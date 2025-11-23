@@ -73,7 +73,7 @@ function ShopPageContent() {
 
       console.log(`📡 GET ${API_URL}/products`, params);
       const res = await axios.get(`${API_URL}/products`, { params });
-      setProducts(res.data.products || []);
+      setProducts(res.data.products);
       setMeta({
         total: res.data.total || 0,
         totalPages: res.data.totalPages || 1,

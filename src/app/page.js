@@ -17,14 +17,11 @@ const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Website API URL:', API_URL);
 
 async function getHomeData() {
-  const [paginatedProducts, featuredProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
+  const [latestProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
+    // Fetch 3 latest products sorted by creation date (newest first)
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => res.data).catch((err) => {
-      console.error('❌ Error fetching products:', err.response?.data || err.message);
-      throw err;
-    }),
-    axios.get(`${API_URL}/products/featured/homepage`).then((res) => res.data || []).catch((err) => {
-      console.error('❌ Error fetching featured products:', err.response?.data || err.message);
-      throw err;
+      console.error('❌ Error fetching latest products:', err.response?.data || err.message);
+      return { products: [] };
     }),
     axios.get(`${API_URL}/settings`).then((res) => res.data).catch((err) => {
       console.error('❌ Error fetching settings:', err.response?.data || err.message);
@@ -53,11 +50,10 @@ async function getHomeData() {
     }),
   ]);
 
-  const products = paginatedProducts?.products;
+  const products = latestProducts?.products || [];
 
   return { 
     products: products, 
-    featuredProducts: featuredProducts, 
     settings: settings || null, 
     blogPosts: blogPosts, 
     testimonials: testimonials, 
@@ -67,7 +63,6 @@ async function getHomeData() {
 
 export default async function Home() {
   let products = [];
-  let featuredProducts = [];
   let settings = null;
   let blogPosts = [];
   let testimonials = [];
@@ -76,12 +71,11 @@ export default async function Home() {
 
   try {
     const data = await getHomeData();
-    products = data.products;
-    featuredProducts = data.featuredProducts;
+    products = data.products || [];
     settings = data.settings;
-    blogPosts = data.blogPosts;
-    testimonials = data.testimonials;
-    partnerLogos = data.partnerLogos;
+    blogPosts = data.blogPosts || [];
+    testimonials = data.testimonials || [];
+    partnerLogos = data.partnerLogos || [];
   } catch (err) {
     error = err;
     console.error('Error loading home page data:', err);
@@ -89,11 +83,10 @@ export default async function Home() {
 
   const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
-  const testimonialList = Array.isArray(testimonials) ? testimonials.slice(0, 3) : [];
+  // Get 3 latest blog posts from database
   const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
-  const homeProducts = Array.isArray(products) && products.length > 0 
-    ? products.slice(0, 3) 
-    : (Array.isArray(featuredProducts) && featuredProducts.length > 0 ? featuredProducts.slice(0, 3) : []);
+  // Get 3 latest products from database
+  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
 
   if (error) {
     return (
