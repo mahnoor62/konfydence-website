@@ -24,9 +24,18 @@ async function getHomeData() {
   const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
     // Fetch 3 newest products (sorted by createdAt desc - newest first)
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
+      console.log('📦 Raw products API response:', res.data);
       const data = res.data;
+      
       // Handle both response formats: { products: [...] } or array
       let products = Array.isArray(data) ? data : (data?.products || []);
+      
+      console.log('📦 Extracted products:', products.length, 'items');
+      console.log('📦 Product details:', products.map(p => ({ name: p.name, isActive: p.isActive, createdAt: p.createdAt })));
+      
+      // Filter only active products
+      products = products.filter(p => p.isActive !== false);
+      console.log('📦 Active products:', products.length, 'items');
       
       // Ensure products are sorted by createdAt descending (newest first)
       products = products.sort((a, b) => {
@@ -37,6 +46,7 @@ async function getHomeData() {
       
       // Take only the first 3 (newest)
       products = products.slice(0, 3);
+      console.log('📦 Final products for homepage:', products.length, 'items');
       
       return { products };
     }).catch((err) => {
@@ -44,6 +54,7 @@ async function getHomeData() {
         url: `${API_URL}/products`,
         error: err.response?.data || err.message,
         status: err.response?.status,
+        fullError: err,
       });
       return { products: [] };
     }),
@@ -94,7 +105,13 @@ async function getHomeData() {
     }),
   ]);
 
-  const products = latestProducts?.products;
+  const products = latestProducts?.products || [];
+
+  console.log('📦 getHomeData returning:', {
+    productsCount: products.length,
+    blogPostsCount: blogPosts.length,
+    partnerLogosCount: partnerLogos.length,
+  });
 
   return { 
     products: products, 
@@ -111,19 +128,32 @@ export default async function Home() {
 
   try {
     const data = await getHomeData();
-    console.log('🔗 Data:', data);
-    products = data.products;
-    blogPosts = data.blogPosts;
-    partnerLogos = data.partnerLogos;
+    console.log('🔗 Homepage Data Received:', {
+      productsCount: data.products?.length || 0,
+      blogPostsCount: data.blogPosts?.length || 0,
+      partnerLogosCount: data.partnerLogos?.length || 0,
+      products: data.products,
+    });
+    products = data.products || [];
+    blogPosts = data.blogPosts || [];
+    partnerLogos = data.partnerLogos || [];
   } catch (err) {
     error = err;
-    console.error('Error loading home page data:', err);
+    console.error('❌ Error loading home page data:', err);
   }
 
   // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
   // Ensure we have exactly 3 newest items in descending order (newest first)
   let homeProducts = Array.isArray(products) ? products : [];
+  
+  console.log('📦 Processing products for display:', {
+    initialCount: homeProducts.length,
+    products: homeProducts.map(p => ({ name: p?.name, isActive: p?.isActive, hasImage: !!p?.imageUrl })),
+  });
+  
+  // Filter only active products with valid data
+  homeProducts = homeProducts.filter(p => p && p.isActive !== false && p.name);
   
   // Sort products by createdAt descending (newest first) if not already sorted
   homeProducts = homeProducts.sort((a, b) => {
@@ -137,14 +167,15 @@ export default async function Home() {
   
   const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
   
-  console.log('📦 Homepage Data (Descending Order - Newest First):', {
+  console.log('📦 Final Homepage Data (Descending Order - Newest First):', {
     products: homeProducts.length,
     blogPosts: latestPosts.length,
     partnerLogos: partnerLogos.length,
-    productNames: homeProducts.map(p => p.name),
-    productDates: homeProducts.map(p => p.createdAt || p.created_at),
-    blogTitles: latestPosts.map(p => p.title),
-    partnerNames: partnerLogos.map(p => p.name),
+    productNames: homeProducts.map(p => p?.name || 'No name'),
+    productDates: homeProducts.map(p => p?.createdAt || p?.created_at || 'No date'),
+    productActive: homeProducts.map(p => p?.isActive),
+    blogTitles: latestPosts.map(p => p?.title),
+    partnerNames: partnerLogos.map(p => p?.name),
   });
   
 
