@@ -22,39 +22,19 @@ async function getHomeData() {
   console.log('📡 API: GET', `${API_URL}/partners`);
 
   const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
-    // Fetch 3 newest products (sorted by createdAt desc - newest first)
+    // Fetch 3 newest products (same approach as ProductsPageContent)
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
       console.log('📦 Raw products API response:', res.data);
-      const data = res.data;
-      
-      // Handle both response formats: { products: [...] } or array
-      let products = Array.isArray(data) ? data : (data?.products || []);
-      
+      // Same as ProductsPageContent: access res.data.products directly
+      const products = res.data.products || [];
       console.log('📦 Extracted products:', products.length, 'items');
-      console.log('📦 Product details:', products.map(p => ({ name: p.name, isActive: p.isActive, createdAt: p.createdAt })));
-      
-      // Filter only active products
-      products = products.filter(p => p.isActive !== false);
-      console.log('📦 Active products:', products.length, 'items');
-      
-      // Ensure products are sorted by createdAt descending (newest first)
-      products = products.sort((a, b) => {
-        const dateA = new Date(a.createdAt || a.created_at || 0);
-        const dateB = new Date(b.createdAt || b.created_at || 0);
-        return dateB - dateA; // Descending order (newest first)
-      });
-      
-      // Take only the first 3 (newest)
-      products = products.slice(0, 3);
-      console.log('📦 Final products for homepage:', products.length, 'items');
-      
+      console.log('📦 Product details:', products.map(p => ({ name: p?.name, isActive: p?.isActive, createdAt: p?.createdAt })));
       return { products };
     }).catch((err) => {
       console.error('❌ Error fetching latest products:', {
         url: `${API_URL}/products`,
         error: err.response?.data || err.message,
         status: err.response?.status,
-        fullError: err,
       });
       return { products: [] };
     }),
@@ -144,33 +124,16 @@ export default async function Home() {
 
   // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
-  // Ensure we have exactly 3 newest items in descending order (newest first)
-  let homeProducts = Array.isArray(products) ? products : [];
-  
-
-  
-  // Filter only active products with valid data
-  // homeProducts = homeProducts.filter(p => p && p.isActive !== false && p.name);
-  homeProducts = products.filter(p => p?.isActive).slice(0, 3);
-
-  // Sort products by createdAt descending (newest first) if not already sorted
-  homeProducts = homeProducts.sort((a, b) => {
-    const dateA = new Date(a.createdAt || a.created_at || 0);
-    const dateB = new Date(b.createdAt || b.created_at || 0);
-    return dateB - dateA; // Descending order (newest first)
-  });
-  
-  // Take only the first 3 (newest)
-  homeProducts = homeProducts.slice(0, 3);
-  
+  // Process products - backend already returns active products sorted by createdAt desc
+  // Same approach as ProductsPageContent: use res.data.products directly
+  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
   const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
   
-  console.log('📦 Final Homepage Data (Descending Order - Newest First):', {
+  console.log('📦 Final Homepage Data:', {
     products: homeProducts.length,
     blogPosts: latestPosts.length,
     partnerLogos: partnerLogos.length,
     productNames: homeProducts.map(p => p?.name || 'No name'),
-    productDates: homeProducts.map(p => p?.createdAt || p?.created_at || 'No date'),
     productActive: homeProducts.map(p => p?.isActive),
     blogTitles: latestPosts.map(p => p?.title),
     partnerNames: partnerLogos.map(p => p?.name),
