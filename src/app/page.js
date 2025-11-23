@@ -77,16 +77,20 @@ async function getHomeData() {
     //   console.error('❌ Error fetching testimonials:', err.response?.data || err.message);
     //   throw err;
     // }),
+    // Fetch all active partner logos
     axios.get(`${API_URL}/partners`).then((res) => {
       const data = res.data;
-      return Array.isArray(data) ? data : [];
+      const partners = Array.isArray(data) ? data : [];
+      console.log('📦 Partner logos fetched:', partners.length, 'logos');
+      console.log('📦 Partner names:', partners.map(p => p.name));
+      return partners;
     }).catch((err) => {
       console.error('❌ Error fetching partners:', {
         url: `${API_URL}/partners`,
         error: err.response?.data || err.message,
         status: err.response?.status,
       });
-      throw err.response?.data;
+      return []; // Return empty array instead of throwing to prevent page crash
     }),
   ]);
 
@@ -136,9 +140,11 @@ export default async function Home() {
   console.log('📦 Homepage Data (Descending Order - Newest First):', {
     products: homeProducts.length,
     blogPosts: latestPosts.length,
+    partnerLogos: partnerLogos.length,
     productNames: homeProducts.map(p => p.name),
     productDates: homeProducts.map(p => p.createdAt || p.created_at),
     blogTitles: latestPosts.map(p => p.title),
+    partnerNames: partnerLogos.map(p => p.name),
   });
   
 

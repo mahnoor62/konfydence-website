@@ -6,11 +6,24 @@ import { Autoplay } from 'swiper/modules';
 import 'swiper/css';
 export default function PartnerLogosSwiper({ partnerLogos }) {
   if (!partnerLogos || partnerLogos.length === 0) {
+    console.log('⚠️ No partner logos to display');
     return null;
   }
 
+  // Filter to only show active partners with valid logo URLs
+  const validLogos = partnerLogos.filter(
+    (partner) => partner.isActive !== false && partner.logoUrl && partner.logoUrl.trim()
+  );
+
+  if (validLogos.length === 0) {
+    console.log('⚠️ No valid partner logos to display (all inactive or missing logoUrl)');
+    return null;
+  }
+
+  console.log(`✅ Displaying ${validLogos.length} partner logos:`, validLogos.map(p => p.name));
+
   // Duplicate logos multiple times for seamless continuous scrolling
-  const duplicatedLogos = [...partnerLogos, ...partnerLogos, ...partnerLogos];
+  const duplicatedLogos = [...validLogos, ...validLogos, ...validLogos];
 
   return (
     <Box
