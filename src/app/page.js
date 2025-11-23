@@ -1,3 +1,4 @@
+
 import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material';
 import { LockOutlined, SchoolOutlined, BusinessCenterOutlined, SecurityOutlined, PersonOutline } from '@mui/icons-material';
 import Header from '@/components/Header';
@@ -10,11 +11,9 @@ import axios from 'axios';
 import Link from 'next/link';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE_URL) {
-  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
-}
+
 const API_URL = `${API_BASE_URL}/api`;
-console.log('🔗 Website API URL:', API_URL);
+console.log('API URL:', API_URL);
 
 async function getHomeData() {
   const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
@@ -67,6 +66,7 @@ export default async function Home() {
 
   try {
     const data = await getHomeData();
+    console.log('🔗 Data:', data);
     products = data.products;
     blogPosts = data.blogPosts;
     partnerLogos = data.partnerLogos;
@@ -75,17 +75,16 @@ export default async function Home() {
     console.error('Error loading home page data:', err);
   }
 
-  const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
-  // Get 3 latest blog posts from database
-  const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
-
+  const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : []; 
+  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
   console.log('🔗 Blog Posts:', blogPosts);
   console.log('latestPosts', latestPosts);
   console.log('🔗 Products:', products);  
-  // Get 3 latest products from database
-  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
-  console.log('homeProducts', homeProducts); 
+  console.log('homeProducts', homeProducts);
+  
+
   if (error) {
     return (
       <>
