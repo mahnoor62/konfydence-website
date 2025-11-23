@@ -17,7 +17,7 @@ const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Website API URL:', API_URL);
 
 async function getHomeData() {
-  const [latestProducts, settings, blogPosts, testimonials, partnerLogos] = await Promise.all([
+  const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
     // Fetch 3 latest products sorted by creation date (newest first)
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => res.data).catch((err) => {
       console.error('❌ Error fetching latest products:', err.response?.data || err.message);
@@ -25,57 +25,51 @@ async function getHomeData() {
     }),
     axios.get(`${API_URL}/settings`).then((res) => res.data).catch((err) => {
       console.error('❌ Error fetching settings:', err.response?.data || err.message);
-      throw err;
+      throw err.response?.data;
     }),
     axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3 } }).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : (data?.posts || []);
     }).catch((err) => {
       console.error('❌ Error fetching blog posts:', err.response?.data || err.message);
-      throw err;
+      throw err.response?.data;
     }),
-    axios.get(`${API_URL}/testimonials`).then((res) => {
-      const data = res.data;
-      return Array.isArray(data) ? data : [];
-    }).catch((err) => {
-      console.error('❌ Error fetching testimonials:', err.response?.data || err.message);
-      throw err;
-    }),
+    // axios.get(`${API_URL}/testimonials`).then((res) => {
+    //   const data = res.data;
+    //   return Array.isArray(data) ? data : [];
+    // }).catch((err) => {
+    //   console.error('❌ Error fetching testimonials:', err.response?.data || err.message);
+    //   throw err;
+    // }),
     axios.get(`${API_URL}/partners`).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : [];
     }).catch((err) => {
       console.error('❌ Error fetching partners:', err.response?.data || err.message);
-      throw err;
+      throw err.response?.data;
     }),
   ]);
 
-  const products = latestProducts?.products || [];
+  const products = latestProducts?.products;
 
   return { 
     products: products, 
-    settings: settings || null, 
     blogPosts: blogPosts, 
-    testimonials: testimonials, 
     partnerLogos: partnerLogos 
   };
 }
 
 export default async function Home() {
   let products = [];
-  let settings = null;
   let blogPosts = [];
-  let testimonials = [];
   let partnerLogos = [];
   let error = null;
 
   try {
     const data = await getHomeData();
-    products = data.products || [];
-    settings = data.settings;
-    blogPosts = data.blogPosts || [];
-    testimonials = data.testimonials || [];
-    partnerLogos = data.partnerLogos || [];
+    products = data.products;
+    blogPosts = data.blogPosts;
+    partnerLogos = data.partnerLogos;
   } catch (err) {
     error = err;
     console.error('Error loading home page data:', err);
@@ -85,9 +79,13 @@ export default async function Home() {
 
   // Get 3 latest blog posts from database
   const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
+
+  console.log('🔗 Blog Posts:', blogPosts);
+  console.log('latestPosts', latestPosts);
+  console.log('🔗 Products:', products);  
   // Get 3 latest products from database
   const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
-
+  console.log('homeProducts', homeProducts); 
   if (error) {
     return (
       <>
