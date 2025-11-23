@@ -16,21 +16,38 @@ const API_URL = `${API_BASE_URL}/api`;
 console.log('API URL:', API_URL);
 
 async function getHomeData() {
+  console.log('📡 API: GET', `${API_URL}/products`, { limit: 3, page: 1 });
+  console.log('📡 API: GET', `${API_URL}/settings`);
+  console.log('📡 API: GET', `${API_URL}/blog`, { published: 'true', limit: 3 });
+  console.log('📡 API: GET', `${API_URL}/partners`);
+
   const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
     // Fetch 3 latest products sorted by creation date (newest first)
     axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => res.data).catch((err) => {
-      console.error('❌ Error fetching latest products:', err.response?.data || err.message);
+      console.error('❌ Error fetching latest products:', {
+        url: `${API_URL}/products`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       return { products: [] };
     }),
     axios.get(`${API_URL}/settings`).then((res) => res.data).catch((err) => {
-      console.error('❌ Error fetching settings:', err.response?.data || err.message);
+      console.error('❌ Error fetching settings:', {
+        url: `${API_URL}/settings`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       throw err.response?.data;
     }),
     axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3 } }).then((res) => {
       const data = res.data;
       return Array.isArray(data) ? data : (data?.posts || []);
     }).catch((err) => {
-      console.error('❌ Error fetching blog posts:', err.response?.data || err.message);
+      console.error('❌ Error fetching blog posts:', {
+        url: `${API_URL}/blog`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       throw err.response?.data;
     }),
     // axios.get(`${API_URL}/testimonials`).then((res) => {
@@ -44,7 +61,11 @@ async function getHomeData() {
       const data = res.data;
       return Array.isArray(data) ? data : [];
     }).catch((err) => {
-      console.error('❌ Error fetching partners:', err.response?.data || err.message);
+      console.error('❌ Error fetching partners:', {
+        url: `${API_URL}/partners`,
+        error: err.response?.data || err.message,
+        status: err.response?.status,
+      });
       throw err.response?.data;
     }),
   ]);

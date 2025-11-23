@@ -15,7 +15,7 @@ console.log('🔗 Blog Post Detail API URL:', API_URL);
 
 async function getBlogPost(slug) {
   const url = `${API_URL}/blog/${slug}`;
-  console.log(`📡 GET ${url}`);
+  console.log('📡 API: GET', url);
   const res = await axios.get(url);
   return res.data;
 }

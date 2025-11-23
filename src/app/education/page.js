@@ -41,7 +41,7 @@ export default function EducationPage() {
     setLoading(true);
     try {
       const url = `${API_URL}/leads/education`;
-      console.log(`📡 POST ${url}`, formData);
+      console.log('📡 API: POST', url, { email: formData.email, schoolName: formData.schoolName });
       await axios.post(url, formData);
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
       setFormData({ schoolName: '', contactName: '', role: '', email: '', cityCountry: '', message: '' });

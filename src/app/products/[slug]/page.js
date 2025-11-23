@@ -16,7 +16,7 @@ console.log('🔗 Product Detail API URL:', API_URL);
 
 async function getProduct(slug) {
   const url = `${API_URL}/products/slug/${slug}`;
-  console.log(`📡 GET ${url}`);
+  console.log('📡 API: GET', url);
   const res = await axios.get(url);
   return res.data;
 }

@@ -46,10 +46,17 @@ export default function BlogPageContent() {
     try {
       setLoading(true);
       setError(null);
-      const categoryQuery = category && category !== 'all' ? `&category=${encodeURIComponent(category)}` : '';
-      const url = `${API_URL}/blog?all=true&page=${pageNum}&limit=${BLOGS_PER_PAGE}${categoryQuery}`;
-      console.log(`📡 GET ${url}`);
-      const res = await axios.get(url);
+      const params = {
+        all: 'true',
+        page: pageNum.toString(),
+        limit: BLOGS_PER_PAGE.toString(),
+      };
+      if (category && category !== 'all') {
+        params.category = category;
+      }
+      const url = `${API_URL}/blog`;
+      console.log('📡 API: GET', url, params);
+      const res = await axios.get(url, { params });
       const postsData = Array.isArray(res.data) ? res.data : res.data.posts || [];
       setPosts(postsData);
       setTotal(res.data.total || postsData.length);

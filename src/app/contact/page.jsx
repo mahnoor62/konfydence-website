@@ -56,7 +56,7 @@ function ContactForm() {
           : formData.message,
       };
       const url = `${API_URL}/contact`;
-      console.log(`📡 POST ${url}`, payload);
+      console.log('📡 API: POST', url, { topic: payload.topic, name: payload.name, email: payload.email });
       await axios.post(url, payload);
       setSnackbar({ open: true, message: 'Thank you! We will get back to you soon.', severity: 'success' });
       setFormData({ name: '', email: '', company: '', topic: 'other', message: '', employeeCount: '' });

@@ -71,8 +71,9 @@ export default function ProductsPageContent() {
         params.category = category;
       }
 
-      console.log(`📡 GET ${API_URL}/products`, params);
-      const res = await axios.get(`${API_URL}/products`, { params });
+      const url = `${API_URL}/products`;
+      console.log('📡 API: GET', url, params);
+      const res = await axios.get(url, { params });
       setProducts(res.data.products || []);
       setMeta({
         total: res.data.total || 0,
@@ -95,10 +96,10 @@ export default function ProductsPageContent() {
 
   const fetchAvailableFilters = useCallback(async () => {
     try {
-      console.log(`📡 GET ${API_URL}/products?all=true`);
-      const res = await axios.get(`${API_URL}/products`, {
-        params: { all: true },
-      });
+      const url = `${API_URL}/products`;
+      const params = { all: true };
+      console.log('📡 API: GET', url, params);
+      const res = await axios.get(url, { params });
       const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
       const categories = Array.from(new Set(res.data.map((p) => p.category).filter(Boolean))).sort();
       setAvailableTypes(types);

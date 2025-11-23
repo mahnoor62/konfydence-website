@@ -40,7 +40,7 @@ export default function CoMaSyPage() {
     setLoading(true);
     try {
       const url = `${API_URL}/leads/b2b`;
-      console.log(`📡 POST ${url}`, formData);
+      console.log('📡 API: POST', url, { email: formData.email, company: formData.company });
       await axios.post(url, formData);
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
       setFormData({ name: '', company: '', email: '', employeeCount: '', message: '' });

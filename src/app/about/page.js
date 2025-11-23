@@ -25,7 +25,7 @@ console.log('🔗 About Page API URL:', API_URL);
 async function getSettings() {
   try {
     const url = `${API_URL}/settings`;
-    console.log(`📡 GET ${url}`);
+    console.log('📡 API: GET', url);
     const res = await axios.get(url);
     return res.data;
   } catch (error) {
