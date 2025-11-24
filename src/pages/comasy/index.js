@@ -41,7 +41,16 @@ export default function CoMaSyPage() {
     try {
       const url = `${API_URL}/leads/b2b`;
       console.log('📡 API: POST', url, { email: formData.email, company: formData.company });
-      await axios.post(url, formData);
+      await axios.post(url, formData, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+        params: { _t: Date.now() },
+      });
+      
+      // await axios.post(url, formData);
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
       setFormData({ name: '', company: '', email: '', employeeCount: '', message: '' });
     } catch (error) {

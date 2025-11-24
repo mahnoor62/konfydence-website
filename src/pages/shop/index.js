@@ -15,6 +15,12 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 console.log('🔗 Shop Page API URL:', API_URL);
 
 const PRODUCTS_PER_PAGE = 10;
@@ -57,10 +63,17 @@ export default function ShopPage() {
     try {
       setLoading(true);
       setError(null);
-      const params = {
-        page: page.toString(),
-        limit: PRODUCTS_PER_PAGE.toString(),
-      };
+      // const params = {
+      //   page: page.toString(),
+      //   limit: PRODUCTS_PER_PAGE.toString(),
+      // };
+      const ts = Date.now();
+const params = {
+  page: page.toString(),
+  limit: PRODUCTS_PER_PAGE.toString(),
+  _t: ts, // 🔥 cache breaker
+};
+
 
       if (type && type !== 'all') {
         params.type = type;
@@ -72,7 +85,12 @@ export default function ShopPage() {
 
       const url = `${API_URL}/products`;
       console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
+      const res = await axios.get(url, {
+        headers: NO_CACHE_HEADERS,
+        params,
+      });
+      
+      // const res = await axios.get(url, { params });
       setProducts(res.data.products);
       setMeta({
         total: res.data.total || 0,
@@ -93,14 +111,49 @@ export default function ShopPage() {
     }
   }, []);
 
+  // const fetchAvailableFilters = useCallback(async () => {
+  //   try {
+  //     const url = `${API_URL}/products`;
+  //     const params = { all: true };
+  //     console.log('📡 API: GET', url, params);
+  //     const res = await axios.get(url, { params });
+  //     const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
+  //     const categories = Array.from(new Set(res.data.map((p) => p.category).filter(Boolean))).sort();
+  //     setAvailableTypes(types);
+  //     setAvailableCategories(categories);
+  //   } catch (err) {
+  //     console.error('❌ Error fetching filters:', {
+  //       url: `${API_URL}/products?all=true`,
+  //       error: err.response?.data || err.message,
+  //       status: err.response?.status,
+  //     });
+  //   }
+  // }, []);
+
   const fetchAvailableFilters = useCallback(async () => {
     try {
       const url = `${API_URL}/products`;
-      const params = { all: true };
+      const ts = Date.now();
+      const params = { all: true, _t: ts };
       console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
-      const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
-      const categories = Array.from(new Set(res.data.map((p) => p.category).filter(Boolean))).sort();
+  
+      const res = await axios.get(url, {
+        headers: NO_CACHE_HEADERS,
+        params,
+      });
+  
+      const allProducts = Array.isArray(res.data)
+        ? res.data
+        : res.data.products || [];
+  
+      const types = Array.from(
+        new Set(allProducts.map((p) => p.type).filter(Boolean))
+      ).sort();
+  
+      const categories = Array.from(
+        new Set(allProducts.map((p) => p.category).filter(Boolean))
+      ).sort();
+  
       setAvailableTypes(types);
       setAvailableCategories(categories);
     } catch (err) {
@@ -111,6 +164,7 @@ export default function ShopPage() {
       });
     }
   }, []);
+  
 
   useEffect(() => {
     fetchAvailableFilters();

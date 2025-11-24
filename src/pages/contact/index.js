@@ -56,8 +56,19 @@ export default function ContactPage() {
           : formData.message,
       };
       const url = `${API_URL}/contact`;
-      console.log(`📡 POST ${url}`, payload);
-      await axios.post(url, payload);
+console.log(`📡 POST ${url}`, payload);
+await axios.post(url, payload, {
+  headers: {
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+  },
+  params: { _t: Date.now() },
+});
+
+      // const url = `${API_URL}/contact`;
+      // console.log(`📡 POST ${url}`, payload);
+      // await axios.post(url, payload);
       setSnackbar({ open: true, message: 'Thank you! We will get back to you soon.', severity: 'success' });
       setFormData({ name: '', email: '', company: '', topic: 'other', message: '', employeeCount: '' });
     } catch (error) {

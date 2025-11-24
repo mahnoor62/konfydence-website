@@ -9,18 +9,34 @@ import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
 import Link from 'next/link';
 
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// const API_URL = `${API_BASE_URL}/api`;
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL is missing for website!');
+}
 const API_URL = `${API_BASE_URL}/api`;
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 
 export async function getServerSideProps() {
   let products = [];
   let blogPosts = [];
   let partnerLogos = [];
   let error = null;
+  const ts = Date.now();
 
   try {
     const [latestProducts, blogPostsRes, partnerLogosRes] = await Promise.all([
-      axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
+      axios.get(`${API_URL}/products`, {
+        headers: NO_CACHE_HEADERS,
+        params: { limit: 3, page: 1, _t: ts },
+      }).then((res) => {
         const products = res.data.products || [];
         return { products };
       }).catch((err) => {
@@ -31,7 +47,10 @@ export async function getServerSideProps() {
         });
         return { products: [] };
       }),
-      axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3, page: 1 } }).then((res) => {
+      axios.get(`${API_URL}/blog`, {
+        headers: NO_CACHE_HEADERS,
+        params: { published: 'true', limit: 3, page: 1, _t: ts },
+      }).then((res) => {
         const data = res.data;
         const posts = Array.isArray(data) ? data : (data?.posts || []);
         return posts.slice(0, 3);
@@ -43,7 +62,10 @@ export async function getServerSideProps() {
         });
         return [];
       }),
-      axios.get(`${API_URL}/partners`).then((res) => {
+      axios.get(`${API_URL}/partners`,{
+        headers: NO_CACHE_HEADERS,
+        params: { _t: ts },
+      }).then((res) => {
         const data = res.data;
         const partners = Array.isArray(data) ? data : [];
         return partners;

@@ -11,17 +11,29 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 console.log('🔗 Product Detail API URL:', API_URL);
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
   let product = null;
   let error = null;
+  const ts = Date.now(); 
 
   try {
     const url = `${API_URL}/products/slug/${slug}`;
     console.log('📡 API: GET', url);
-    const res = await axios.get(url);
+    const res = await axios.get(url, {
+      headers: NO_CACHE_HEADERS,
+      params: { _t: ts },
+    });
+    
+    // const res = await axios.get(url);
     product = res.data;
   } catch (err) {
     error = err;
