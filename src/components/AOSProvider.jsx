@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect } from 'react';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import AOS from 'aos';
 
 export default function AOSProvider({ children }) {
-  const pathname = usePathname();
+  const router = useRouter();
 
   useEffect(() => {
     AOS.init({
@@ -19,7 +19,7 @@ export default function AOSProvider({ children }) {
 
   useEffect(() => {
     AOS.refresh();
-  }, [pathname]);
+  }, [router.asPath]);
 
   return <>{children}</>;
 }

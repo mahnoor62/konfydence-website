@@ -58,7 +58,11 @@ export default function BlogCard({ post, delay = 0 }) {
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
           <Typography variant="caption" color="text.secondary">
-            {new Date(post.publishedAt || post.createdAt).toLocaleDateString()}
+            {new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </Typography>
           <Button
             component={Link}

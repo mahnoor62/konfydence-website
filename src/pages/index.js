@@ -1,4 +1,3 @@
-
 import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material';
 import { LockOutlined, SchoolOutlined, BusinessCenterOutlined, SecurityOutlined, PersonOutline } from '@mui/icons-material';
 import Header from '@/components/Header';
@@ -11,134 +10,74 @@ import axios from 'axios';
 import Link from 'next/link';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-
 const API_URL = `${API_BASE_URL}/api`;
-console.log('API URL:', API_URL);
 
-async function getHomeData() {
-  console.log('📡 API: GET', `${API_URL}/products`, { limit: 3, page: 1 });
-  console.log('📡 API: GET', `${API_URL}/settings`);
-  console.log('📡 API: GET', `${API_URL}/blog`, { published: 'true', limit: 3 });
-  console.log('📡 API: GET', `${API_URL}/partners`);
-
-  const [latestProducts, settings, blogPosts, partnerLogos] = await Promise.all([
-    // Fetch 3 newest products (same approach as ProductsPageContent)
-    axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
-      console.log('📦 Raw products API response:', res.data);
-      // Same as ProductsPageContent: access res.data.products directly
-      const products = res.data.products || [];
-      console.log('📦 Extracted products:', products.length, 'items');
-      console.log('📦 Product details:', products.map(p => ({ name: p?.name, isActive: p?.isActive, createdAt: p?.createdAt })));
-      return { products };
-    }).catch((err) => {
-      console.error('❌ Error fetching latest products:', {
-        url: `${API_URL}/products`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-      return { products: [] };
-    }),
-    axios.get(`${API_URL}/settings`).then((res) => res.data).catch((err) => {
-      console.error('❌ Error fetching settings:', {
-        url: `${API_URL}/settings`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-      throw err.response?.data;
-    }),
-    // Fetch 3 newest published blog posts (sorted by publishedAt desc - newest first)
-    axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3, page: 1 } }).then((res) => {
-      const data = res.data;
-      // Handle both response formats: { posts: [...] } or array
-      const posts = Array.isArray(data) ? data : (data?.posts || []);
-      // Ensure we only get the 3 newest
-      return posts.slice(0, 3);
-    }).catch((err) => {
-      console.error('❌ Error fetching blog posts:', {
-        url: `${API_URL}/blog`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-      return [];
-    }),
-    // axios.get(`${API_URL}/testimonials`).then((res) => {
-    //   const data = res.data;
-    //   return Array.isArray(data) ? data : [];
-    // }).catch((err) => {
-    //   console.error('❌ Error fetching testimonials:', err.response?.data || err.message);
-    //   throw err;
-    // }),
-    // Fetch all active partner logos
-    axios.get(`${API_URL}/partners`).then((res) => {
-      const data = res.data;
-      const partners = Array.isArray(data) ? data : [];
-      console.log('📦 Partner logos fetched:', partners.length, 'logos');
-      console.log('📦 Partner names:', partners.map(p => p.name));
-      return partners;
-    }).catch((err) => {
-      console.error('❌ Error fetching partners:', {
-        url: `${API_URL}/partners`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-      return []; // Return empty array instead of throwing to prevent page crash
-    }),
-  ]);
-
-  const products = latestProducts?.products || [];
-
-  console.log('📦 getHomeData returning:', {
-    productsCount: products.length,
-    blogPostsCount: blogPosts.length,
-    partnerLogosCount: partnerLogos.length,
-  });
-
-  return { 
-    products: products, 
-    blogPosts: blogPosts, 
-    partnerLogos: partnerLogos 
-  };
-}
-
-export default async function Home() {
+export async function getServerSideProps() {
   let products = [];
   let blogPosts = [];
   let partnerLogos = [];
   let error = null;
 
   try {
-    const data = await getHomeData();
-    console.log('🔗 Homepage Data Received:', {
-      productsCount: data.products?.length || 0,
-      blogPostsCount: data.blogPosts?.length || 0,
-      partnerLogosCount: data.partnerLogos?.length || 0,
-      products: data.products,
-    });
-    products = data.products || [];
-    blogPosts = data.blogPosts || [];
-    partnerLogos = data.partnerLogos || [];
+    const [latestProducts, blogPostsRes, partnerLogosRes] = await Promise.all([
+      axios.get(`${API_URL}/products`, { params: { limit: 3, page: 1 } }).then((res) => {
+        const products = res.data.products || [];
+        return { products };
+      }).catch((err) => {
+        console.error('❌ Error fetching latest products:', {
+          url: `${API_URL}/products`,
+          error: err.response?.data || err.message,
+          status: err.response?.status,
+        });
+        return { products: [] };
+      }),
+      axios.get(`${API_URL}/blog`, { params: { published: 'true', limit: 3, page: 1 } }).then((res) => {
+        const data = res.data;
+        const posts = Array.isArray(data) ? data : (data?.posts || []);
+        return posts.slice(0, 3);
+      }).catch((err) => {
+        console.error('❌ Error fetching blog posts:', {
+          url: `${API_URL}/blog`,
+          error: err.response?.data || err.message,
+          status: err.response?.status,
+        });
+        return [];
+      }),
+      axios.get(`${API_URL}/partners`).then((res) => {
+        const data = res.data;
+        const partners = Array.isArray(data) ? data : [];
+        return partners;
+      }).catch((err) => {
+        console.error('❌ Error fetching partners:', {
+          url: `${API_URL}/partners`,
+          error: err.response?.data || err.message,
+          status: err.response?.status,
+        });
+        return [];
+      }),
+    ]);
+
+    products = latestProducts?.products || [];
+    blogPosts = blogPostsRes || [];
+    partnerLogos = partnerLogosRes || [];
   } catch (err) {
     error = err;
     console.error('❌ Error loading home page data:', err);
   }
 
-  // const currencyFormatter = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
+  return {
+    props: {
+      products: products.slice(0, 3),
+      blogPosts: blogPosts.slice(0, 3),
+      partnerLogos,
+      error: error ? { message: error.message } : null,
+    },
+  };
+}
 
-  // Process products - backend already returns active products sorted by createdAt desc
-  // Same approach as ProductsPageContent: use res.data.products directly
-  const homeProducts = Array.isArray(products) ? products.slice(0, 3) : [];
-  const latestPosts = Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [];
-  
-  console.log('📦 Final Homepage Data:', {
-    products: homeProducts.length,
-    blogPosts: latestPosts.length,
-    partnerLogos: partnerLogos.length,
-    productNames: homeProducts.map(p => p?.name || 'No name'),
-    productActive: homeProducts.map(p => p?.isActive),
-    blogTitles: latestPosts.map(p => p?.title),
-    partnerNames: partnerLogos.map(p => p?.name),
-  });
-  
+export default function Home({ products, blogPosts, partnerLogos, error }) {
+  const homeProducts = Array.isArray(products) ? products : [];
+  const latestPosts = Array.isArray(blogPosts) ? blogPosts : [];
 
   if (error) {
     return (
@@ -169,10 +108,6 @@ export default async function Home() {
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={8}>
-                {/* <Chip
-                  label="The Scam Survival Kit"
-                  sx={{ mb: 3, backgroundColor: 'rgba(255,255,255,0.12)', color: 'white', fontWeight: 600, letterSpacing: 1 }}
-                /> */}
                 <Box data-aos="fade-right" data-aos-duration="800" data-aos-delay="100">
                   <Typography variant="h1" sx={{ mt: 3,mb: 3, fontSize: { xs: '2rem', md: '3rem', lg: '3rem' }, lineHeight: 1.1, fontWeight: 700, color: 'white' }}>
                     The Scam Survival Kit— Outsmart Scammers Before They Outsmart You.
@@ -641,166 +576,7 @@ export default async function Home() {
           </Container>
         </Box>
       </Box>
-{/* 
-        <Box sx={{ py: 8 }}>
-          <Container maxWidth="lg">
-            <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={6}>
-                <Card 
-                  sx={{ 
-                    borderRadius: 4, 
-                    height: '100%',
-                    transition: 'all 0.3s ease-in-out',
-                    transform: 'translateY(0)',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-8px) scale(1.02)',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                    },
-                  }}
-                >
-                  <CardContent>
-                    <Typography variant="overline" sx={{ letterSpacing: 4, color: 'text.secondary' }}>
-                      Compliance Experts
-                    </Typography>
-                    <Typography variant="h4" sx={{ mb: 2 }}>
-                      Developed with educators. Trusted by compliance teams.
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                      Every kit is crafted with input from security strategists, behavioural scientists, and school leaders.
-                    </Typography>
-                    <Stack spacing={2}>
-                      {[
-                        'Behavioral design backed by real scam scripts',
-                        'Guided storylines for private users, schools, businesses',
-                        'Plug-and-play activities for 60-minute sessions',
-                      ].map((item) => (
-                        <Stack direction="row" spacing={1.5} alignItems="center" key={item}>
-                          <SecurityOutlined fontSize="small" color="primary" />
-                          <Typography variant="body2">{item}</Typography>
-                        </Stack>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Card 
-                  sx={{ 
-                    p: 3, 
-                    borderRadius: 4,
-                    transition: 'all 0.3s ease-in-out',
-                    transform: 'translateY(0)',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-8px) scale(1.02)',
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                    },
-                  }}
-                >
-                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-                    <Avatar sx={{ width: 56, height: 56 }}>
-                      {(settings?.founderName || 'TM')[0]}
-                    </Avatar>
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600}>
-                        {settings?.founderName || 'T. Mbanwie'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Founder & Chief Trust Officer
-                      </Typography>
-                    </Box>
-                  </Stack>
-                  <Typography variant="h5" sx={{ fontStyle: 'italic', mb: 2 }}>
-                    “Prevention is the strongest protection.”
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Built in partnership with CoMaSy and educational networks to help people recognise scams faster than they appear.
-                  </Typography>
-                </Card>
-              </Grid>
-            </Grid>
-          </Container>
-        </Box> */}
-
-        {/* <Box sx={{ py: 10, backgroundColor: 'background.default' }}>
-          <Container maxWidth="lg">
-            <Typography variant="h2" textAlign="center" gutterBottom>
-              Trusted by educators, HR directors, and families
-            </Typography>
-            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 6 }}>
-              Proof points from pilots, corporate rollouts, and multi-generational households.
-            </Typography>
-            <Grid container spacing={4}>
-              {testimonialList.map((testimonial) => (
-                <Grid item xs={12} md={4} key={testimonial._id}>
-                  <Card 
-                    sx={{ 
-                      height: '100%',
-                      transition: 'all 0.3s ease-in-out',
-                      transform: 'translateY(0)',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        transform: 'translateY(-8px) scale(1.02)',
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-                      },
-                    }}
-                  >
-                    <CardContent>
-                      <Typography variant="body1" sx={{ fontStyle: 'italic', mb: 3 }}>
-                        “{testimonial.quote}”
-                      </Typography>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Avatar sx={{ bgcolor: 'primary.main' }}>{testimonial.name[0]}</Avatar>
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            {testimonial.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {testimonial.role}, {testimonial.organization}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-            <Stack direction="row" spacing={4} justifyContent="center" sx={{ mt: 6 }} flexWrap="wrap" rowGap={2}>
-              {['Bitkom', 'Verbraucherzentrale', 'EU Cybersecurity Week'].map((logo) => (
-                <Typography key={logo} variant="subtitle1" sx={{ opacity: 0.7 }}>
-                  {logo}
-                </Typography>
-              ))}
-            </Stack>
-          </Container>
-        </Box> */}
-
-        {/* <Box sx={{ py: 8, backgroundColor: '#F6FAFF' }}>
-          <Container maxWidth="lg">
-            <Chip label="Konfydence Journal" color="secondary" sx={{ mb: 2 }} />
-            <Typography variant="h3" textAlign="center" sx={{ mb: 2 }}>
-              Latest insights
-            </Typography>
-            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 5, maxWidth: 720, mx: 'auto' }}>
-              Guides for families, schools, and compliance teams navigating today’s threat landscape.
-            </Typography>
-            <Grid container spacing={4}>
-              {latestPosts.map((post) => (
-                <Grid item xs={12} md={4} key={post._id}>
-                  <BlogCard post={post} />
-                </Grid>
-              ))}
-            </Grid>
-            <Box textAlign="center" sx={{ mt: 4 }}>
-              <Button variant="outlined" component={Link} href="/blog">
-                Explore the journal
-              </Button>
-            </Box>
-          </Container>
-        </Box> */}
       
-      {/* Partner Logos Swiper */}
       {partnerLogos.length > 0 ? (
         <PartnerLogosSwiper partnerLogos={partnerLogos} />
       ) : (

@@ -22,25 +22,29 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 About Page API URL:', API_URL);
 
-async function getSettings() {
+export async function getServerSideProps() {
+  let settings = null;
   try {
     const url = `${API_URL}/settings`;
     console.log('📡 API: GET', url);
     const res = await axios.get(url);
-    return res.data;
+    settings = res.data;
   } catch (error) {
     console.error('❌ Error fetching settings:', {
       url: `${API_URL}/settings`,
       error: error.response?.data || error.message,
       status: error.response?.status,
     });
-    return null;
   }
+
+  return {
+    props: {
+      settings,
+    },
+  };
 }
 
-export default async function AboutPage() {
-  const settings = await getSettings();
-
+export default function AboutPage({ settings }) {
   return (
     <>
       <Header />
@@ -50,7 +54,6 @@ export default async function AboutPage() {
             background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 80%)',
             color: 'white',
             py: { xs: 8, md: 12 },
-            // mt: { xs: 8, md: 10 }
           }}
         >
           <Container data-aos="zoom-in" data-aos-duration="900" maxWidth="lg" sx={{ mt: { xs: 8, md: 10 } }}>
@@ -255,7 +258,7 @@ export default async function AboutPage() {
                 </Avatar>
                 <Box>
                   <Typography variant="h5" sx={{ fontStyle: 'italic', mb: 2 }}>
-                    “{settings.founderQuote}”
+                    &ldquo;{settings.founderQuote}&rdquo;
                   </Typography>
                   <Typography variant="body2" sx={{ letterSpacing: 1 }}>
                     — {settings.founderName || 'Konfydence Founder'}
@@ -293,4 +296,3 @@ export default async function AboutPage() {
     </>
   );
 }
-

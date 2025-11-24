@@ -2,7 +2,7 @@
 
 import { Container, Typography, Grid, Box, Button, Stack, Chip } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
@@ -30,9 +30,8 @@ const CATEGORY_COLORS = {
 
 export default function BlogPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
-  const categoryParam = searchParams.get('category') || 'all';
+  const page = Math.max(parseInt(router.query.page || '1', 10), 1);
+  const categoryParam = router.query.category || 'all';
 
   const [posts, setPosts] = useState([]);
   const [total, setTotal] = useState(0);
@@ -80,8 +79,10 @@ export default function BlogPageContent() {
   }, []);
 
   useEffect(() => {
-    fetchPosts(page, selectedCategory);
-  }, [page, selectedCategory, fetchPosts]);
+    if (router.isReady) {
+      fetchPosts(page, selectedCategory);
+    }
+  }, [page, selectedCategory, fetchPosts, router.isReady]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -138,7 +139,6 @@ export default function BlogPageContent() {
             Latest Articles
           </Typography>
 
-          {/* Category Filter */}
           <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
             <Chip
               label="All"

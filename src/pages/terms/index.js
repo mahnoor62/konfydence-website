@@ -2,45 +2,48 @@ import { Container, Typography, Box } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-export default function PrivacyPage() {
+export default function TermsPage() {
   return (
     <>
       <Header />
       <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '80vh' }}>
         <Container maxWidth="md" sx={{ py: 6 }}>
           <Typography variant="h2" gutterBottom>
-            Privacy Policy
+            Terms of Service
           </Typography>
           <Typography variant="body1" paragraph>
-            <strong>Last Updated:</strong> {new Date().toLocaleDateString()}
+            <strong>Last Updated:</strong> {new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
           </Typography>
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
-            1. Data Collection
+            1. Acceptance of Terms
           </Typography>
           <Typography variant="body1" paragraph>
-            We collect information that you provide directly to us, including when you create an account,
-            make a purchase, request a demo, or contact us.
+            By accessing and using Konfydence services, you accept and agree to be bound by these Terms of Service.
           </Typography>
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
-            2. How We Use Your Data
+            2. Use of Services
           </Typography>
           <Typography variant="body1" paragraph>
-            We use the information we collect to provide, maintain, and improve our services, process transactions,
-            send you communications, and respond to your inquiries.
+            You agree to use our services only for lawful purposes and in accordance with these Terms. You may not
+            use our services in any way that could damage, disable, or impair our services.
           </Typography>
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
-            3. Data Protection
+            3. Intellectual Property
           </Typography>
           <Typography variant="body1" paragraph>
-            We implement appropriate technical and organizational measures to protect your personal data against
-            unauthorized access, alteration, disclosure, or destruction.
+            All content, features, and functionality of our services are owned by Konfydence and are protected by
+            international copyright, trademark, and other intellectual property laws.
           </Typography>
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
-            4. Your Rights
+            4. Limitation of Liability
           </Typography>
           <Typography variant="body1" paragraph>
-            You have the right to access, correct, or delete your personal data at any time. Please contact us
-            at info@konfydence.com to exercise these rights.
+            Konfydence shall not be liable for any indirect, incidental, special, consequential, or punitive damages
+            resulting from your use of our services.
           </Typography>
         </Container>
       </Box>

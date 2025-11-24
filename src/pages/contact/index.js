@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
@@ -12,7 +12,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import axios from 'axios';
@@ -24,13 +24,13 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Contact Page API URL:', API_URL);
 
-function ContactForm() {
-  const searchParams = useSearchParams();
+export default function ContactPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     company: '',
-    topic: searchParams?.get('topic') || 'other',
+    topic: 'other',
     message: '',
     employeeCount: '',
   });
@@ -38,11 +38,11 @@ function ContactForm() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
-    const topic = searchParams?.get('topic');
+    const topic = router.query.topic;
     if (topic) {
       setFormData((prev) => ({ ...prev, topic }));
     }
-  }, [searchParams]);
+  }, [router.query]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,7 +56,7 @@ function ContactForm() {
           : formData.message,
       };
       const url = `${API_URL}/contact`;
-      console.log('📡 API: POST', url, { topic: payload.topic, name: payload.name, email: payload.email });
+      console.log(`📡 POST ${url}`, payload);
       await axios.post(url, payload);
       setSnackbar({ open: true, message: 'Thank you! We will get back to you soon.', severity: 'success' });
       setFormData({ name: '', email: '', company: '', topic: 'other', message: '', employeeCount: '' });
@@ -265,14 +265,6 @@ function ContactForm() {
         <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
     </>
-  );
-}
-
-export default function ContactPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ContactForm />
-    </Suspense>
   );
 }
 

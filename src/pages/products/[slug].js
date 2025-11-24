@@ -3,9 +3,8 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
-import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import ProductBackButton from './components/ProductBackButton';
+import ProductBackButton from '@/components/PageBackButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -14,30 +13,40 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Product Detail API URL:', API_URL);
 
-async function getProduct(slug) {
-  const url = `${API_URL}/products/slug/${slug}`;
-  console.log('📡 API: GET', url);
-  const res = await axios.get(url);
-  return res.data;
-}
-
-export const dynamic = 'force-dynamic';
-
-export default async function ProductDetailPage({ params }) {
-  let product;
+export async function getServerSideProps(context) {
+  const { slug } = context.params;
+  let product = null;
   let error = null;
 
   try {
-    product = await getProduct(params.slug);
+    const url = `${API_URL}/products/slug/${slug}`;
+    console.log('📡 API: GET', url);
+    const res = await axios.get(url);
+    product = res.data;
   } catch (err) {
     error = err;
     console.error('❌ Error loading product:', {
-      url: `${API_URL}/products/slug/${params.slug}`,
+      url: `${API_URL}/products/slug/${slug}`,
       error: err.response?.data || err.message,
       status: err.response?.status,
     });
   }
 
+  if (!product && !error) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      product,
+      error: error ? { message: error.message } : null,
+    },
+  };
+}
+
+export default function ProductDetailPage({ product, error }) {
   if (error) {
     return (
       <>
@@ -53,7 +62,7 @@ export default async function ProductDetailPage({ params }) {
   }
 
   if (!product) {
-    notFound();
+    return null;
   }
 
   const fallbackImage = '/images/placeholders/product-default.svg';

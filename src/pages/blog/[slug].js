@@ -3,8 +3,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
-import { notFound } from 'next/navigation';
-import ClientBackButton from './components/ClientBackButton';
+import ClientBackButton from '@/components/PageBackButton';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -13,30 +12,40 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Blog Post Detail API URL:', API_URL);
 
-async function getBlogPost(slug) {
-  const url = `${API_URL}/blog/${slug}`;
-  console.log('📡 API: GET', url);
-  const res = await axios.get(url);
-  return res.data;
-}
-
-export const dynamic = 'force-dynamic';
-
-export default async function BlogPostPage({ params }) {
-  let post;
+export async function getServerSideProps(context) {
+  const { slug } = context.params;
+  let post = null;
   let error = null;
 
   try {
-    post = await getBlogPost(params.slug);
+    const url = `${API_URL}/blog/${slug}`;
+    console.log('📡 API: GET', url);
+    const res = await axios.get(url);
+    post = res.data;
   } catch (err) {
     error = err;
     console.error('❌ Error loading blog post:', {
-      url: `${API_URL}/blog/${params.slug}`,
+      url: `${API_URL}/blog/${slug}`,
       error: err.response?.data || err.message,
       status: err.response?.status,
     });
   }
 
+  if (!post && !error) {
+    return {
+      notFound: true,
+    };
+  }
+
+  return {
+    props: {
+      post,
+      error: error ? { message: error.message } : null,
+    },
+  };
+}
+
+export default function BlogPostPage({ post, error }) {
   if (error) {
     return (
       <>
@@ -52,7 +61,7 @@ export default async function BlogPostPage({ params }) {
   }
 
   if (!post) {
-    notFound();
+    return null;
   }
 
   return (

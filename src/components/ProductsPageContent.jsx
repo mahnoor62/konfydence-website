@@ -1,21 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
 import { Container, Typography, Grid, Box, Chip } from '@mui/material';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
-import PaginationControls from '@/components/PaginationControls';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
-console.log('🔗 Shop Page API URL:', API_URL);
+console.log('🔗 Products Page API URL:', API_URL);
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -37,22 +37,21 @@ const CATEGORY_COLORS = {
   businesses: '#052A42',
 };
 
-function ShopPageContent() {
+export default function ProductsPageContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const pageParam = searchParams.get('page');
-  const typeParam = searchParams.get('type') || 'all';
-  const categoryParam = searchParams.get('category') || 'all';
+  const pageParam = router.query.page;
+  const typeParam = router.query.type || 'all';
+  const categoryParam = router.query.category || 'all';
 
   const currentPage = Math.max(parseInt(pageParam || '1', 10) || 1, 1);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
   const [selectedType, setSelectedType] = useState(typeParam);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [availableTypes, setAvailableTypes] = useState([]);
   const [availableCategories, setAvailableCategories] = useState([]);
-  const [error, setError] = useState(null);
 
   const fetchProducts = useCallback(async (page, type, category) => {
     try {
@@ -74,7 +73,7 @@ function ShopPageContent() {
       const url = `${API_URL}/products`;
       console.log('📡 API: GET', url, params);
       const res = await axios.get(url, { params });
-      setProducts(res.data.products);
+      setProducts(res.data.products || []);
       setMeta({
         total: res.data.total || 0,
         totalPages: res.data.totalPages || 1,
@@ -110,23 +109,30 @@ function ShopPageContent() {
         error: err.response?.data || err.message,
         status: err.response?.status,
       });
+      if (!error) {
+        setError(err);
+      }
     }
-  }, []);
+  }, [error]);
 
   useEffect(() => {
     fetchAvailableFilters();
   }, [fetchAvailableFilters]);
 
   useEffect(() => {
-    const typeFromUrl = searchParams.get('type') || 'all';
-    const categoryFromUrl = searchParams.get('category') || 'all';
-    setSelectedType(typeFromUrl);
-    setSelectedCategory(categoryFromUrl);
-  }, [searchParams]);
+    if (router.isReady) {
+      const typeFromUrl = router.query.type || 'all';
+      const categoryFromUrl = router.query.category || 'all';
+      setSelectedType(typeFromUrl);
+      setSelectedCategory(categoryFromUrl);
+    }
+  }, [router.isReady, router.query]);
 
   useEffect(() => {
-    fetchProducts(currentPage, selectedType, selectedCategory);
-  }, [currentPage, selectedType, selectedCategory, fetchProducts]);
+    if (router.isReady) {
+      fetchProducts(currentPage, selectedType, selectedCategory);
+    }
+  }, [currentPage, selectedType, selectedCategory, fetchProducts, router.isReady]);
 
   const handleTypeChange = (type) => {
     setSelectedType(type);
@@ -138,7 +144,7 @@ function ShopPageContent() {
       params.set('category', selectedCategory);
     }
     params.set('page', '1');
-    router.push(`/shop?${params.toString()}`);
+    router.push(`/products?${params.toString()}`);
   };
 
   const handleCategoryChange = (category) => {
@@ -151,7 +157,7 @@ function ShopPageContent() {
       params.set('category', category);
     }
     params.set('page', '1');
-    router.push(`/shop?${params.toString()}`);
+    router.push(`/products?${params.toString()}`);
   };
 
   const showingFrom = meta.total === 0 ? 0 : (meta.page - 1) * PRODUCTS_PER_PAGE + 1;
@@ -178,14 +184,13 @@ function ShopPageContent() {
                 color: '#063C5E',
               }}
             >
-              Shop
+              Our Products
             </Typography>
             <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-              Browse our selection of scam prevention products
+              Choose the perfect solution for your needs
             </Typography>
           </Box>
 
-          {/* Type Filter */}
           {availableTypes.length > 0 && (
             <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
@@ -227,7 +232,6 @@ function ShopPageContent() {
             </Box>
           )}
 
-          {/* Category Filter */}
           {availableCategories.length > 0 && (
             <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
@@ -282,7 +286,7 @@ function ShopPageContent() {
               <Typography variant="h6" color="text.secondary">
                 {selectedType !== 'all' || selectedCategory !== 'all'
                   ? 'No products found matching your filters. Try adjusting your selection.'
-                  : 'No products available in the shop right now. Please check back soon.'}
+                  : 'No products available right now. Please check back later.'}
               </Typography>
             </Box>
           ) : (
@@ -311,7 +315,7 @@ function ShopPageContent() {
                 sx={{ alignItems: 'stretch', mb: 4 }}
               >
                 {products.map((product, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={product._id}>
+                  <Grid item xs={12} md={4} key={product._id}>
                     <ProductCard product={product} delay={index * 100} />
                   </Grid>
                 ))}
@@ -324,7 +328,7 @@ function ShopPageContent() {
               <PaginationControls
                 page={meta.page}
                 totalPages={meta.totalPages}
-                basePath={`/shop${selectedType !== 'all' || selectedCategory !== 'all' ? `?${new URLSearchParams({
+                basePath={`/products${selectedType !== 'all' || selectedCategory !== 'all' ? `?${new URLSearchParams({
                   ...(selectedType !== 'all' && { type: selectedType }),
                   ...(selectedCategory !== 'all' && { category: selectedCategory }),
                 }).toString()}` : ''}`}
@@ -335,14 +339,6 @@ function ShopPageContent() {
       </Box>
       <Footer />
     </>
-  );
-}
-
-export default function ShopPage() {
-  return (
-    <Suspense fallback={<Box sx={{ py: 12, textAlign: 'center' }}>Loading shop...</Box>}>
-      <ShopPageContent />
-    </Suspense>
   );
 }
 
