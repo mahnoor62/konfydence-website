@@ -401,7 +401,7 @@ const params = {
                 color: '#063C5E',
               }}
             >
-              Shop
+              Our Products
             </Typography>
             <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
               Browse our selection of scam prevention products
