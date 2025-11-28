@@ -1,9 +1,13 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Box, Container, Grid, Typography, Link, IconButton, Stack } from '@mui/material';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import TwitterIcon from '@mui/icons-material/Twitter';
 import NextLink from 'next/link';
+import axios from 'axios';
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -17,11 +21,6 @@ const navItems = [
 ];
 
 const footerLinks = {
-  products: [
-    { label: 'Starter Kit', href: '/products' },
-    { label: 'Family Bundle', href: '/products' },
-    { label: 'Membership', href: '/products' },
-  ],
   company: [
     { label: 'About', href: '/about' },
     { label: 'Contact', href: '/contact' },
@@ -33,7 +32,6 @@ const footerLinks = {
     { label: 'Shop', href: '/shop' },
   ],
   legal: [
-    { label: 'Imprint', href: '/imprint' },
     { label: 'Privacy', href: '/privacy' },
     { label: 'Terms', href: '/terms' },
   ],
@@ -46,13 +44,90 @@ const socialLinks = [
   { icon: TwitterIcon, href: 'https://twitter.com', label: 'Twitter' },
 ];
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+if (!API_BASE_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
+}
+const API_URL = `${API_BASE_URL}/api`;
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
+const formatTypeName = (slug = '') =>
+  slug
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
 export default function Footer() {
+  const [footerTypes, setFooterTypes] = useState([]);
+
+  useEffect(() => {
+    const fetchFooterTypes = async () => {
+      let types = [];
+
+      try {
+        const res = await axios.get(`${API_URL}/productTypes`, {
+          headers: NO_CACHE_HEADERS,
+          params: { active: 'true', _t: Date.now() },
+        });
+        types = Array.isArray(res.data) ? res.data : res.data?.types || [];
+      } catch (error) {
+        if (error.response?.status !== 404) {
+          console.error('❌ Error fetching footer product types:', {
+            url: `${API_URL}/productTypes`,
+            error: error.response?.data || error.message,
+            status: error.response?.status,
+          });
+        }
+      }
+
+      if (!types.length) {
+        try {
+          const fallbackRes = await axios.get(`${API_URL}/products`, {
+            headers: NO_CACHE_HEADERS,
+            params: { all: true, _t: Date.now() },
+          });
+          const allProducts = Array.isArray(fallbackRes.data)
+            ? fallbackRes.data
+            : fallbackRes.data?.products || [];
+
+          types = Array.from(
+            new Map(
+              allProducts
+                .map((product) => product.type)
+                .filter(Boolean)
+                .map((typeSlug) => [
+                  typeSlug,
+                  {
+                    slug: typeSlug,
+                    name: formatTypeName(typeSlug),
+                  },
+                ])
+            ).values()
+          );
+        } catch (fallbackError) {
+          console.error('❌ Error deriving footer product types:', {
+            url: `${API_URL}/products?all=true`,
+            error: fallbackError.response?.data || fallbackError.message,
+            status: fallbackError.response?.status,
+          });
+        }
+      }
+
+      setFooterTypes((types || []).slice(0, 3));
+    };
+
+    fetchFooterTypes();
+  }, []);
+
   return (
     <Box
       component="footer"
       sx={{
         backgroundColor: 'black',
-        // background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
         color: 'white',
         pt: 8,
         pb: 4,
@@ -147,16 +222,16 @@ export default function Footer() {
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
               Products
             </Typography>
-            {footerLinks.products.map((link) => (
+            {footerTypes.map((type) => (
               <Link
-                key={link.href}
+                key={type.slug}
                 component={NextLink}
-                href={link.href}
+                href={`/products?type=${encodeURIComponent(type.slug)}`}
                 color="inherit"
                 underline="hover"
                 sx={{ display: 'block', mb: 1.5, opacity: 0.85, fontSize: '0.9rem', '&:hover': { opacity: 1 } }}
               >
-                {link.label}
+                {type.name || formatTypeName(type.slug)}
               </Link>
             ))}
           </Grid>
@@ -263,4 +338,5 @@ export default function Footer() {
     </Box>
   );
 }
+
 

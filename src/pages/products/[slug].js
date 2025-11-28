@@ -189,6 +189,11 @@ console.log('🔗 Product Detail API URL:', API_URL);
 
 export async function getServerSideProps(context) {
   const { slug } = context.params;
+  const { res } = context; 
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   let product = null;
   let error = null;
   const ts = Date.now();

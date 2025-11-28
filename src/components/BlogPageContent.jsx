@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
 import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
+import LoadingState from '@/components/LoadingState';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -17,7 +18,7 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Blog Page API URL:', API_URL);
 
-const BLOGS_PER_PAGE = 10;
+const BLOGS_PER_PAGE = 12;
 
 const CATEGORY_COLORS = {
   insight: '#FF725E',
@@ -46,9 +47,9 @@ export default function BlogPageContent() {
       setLoading(true);
       setError(null);
       const params = {
-        all: 'true',
         page: pageNum.toString(),
         limit: BLOGS_PER_PAGE.toString(),
+        published: 'true',
       };
       if (category && category !== 'all') {
         params.category = category;
@@ -58,11 +59,8 @@ export default function BlogPageContent() {
       const res = await axios.get(url, { params });
       const postsData = Array.isArray(res.data) ? res.data : res.data.posts || [];
       setPosts(postsData);
-      setTotal(res.data.total || postsData.length);
-      setPages(res.data.totalPages || 1);
-      if (res.data.categories) {
-        setCategories(res.data.categories);
-      }
+      setTotal(res.data.total ?? postsData.length);
+      setPages(res.data.totalPages || res.data.pages || 1);
     } catch (err) {
       console.error('❌ Error fetching blog posts:', {
         url: `${API_URL}/blog`,
@@ -78,11 +76,65 @@ export default function BlogPageContent() {
     }
   }, []);
 
+  const fetchCategories = useCallback(async () => {
+    try {
+      const url = `${API_URL}/blogCategories`;
+      const params = { active: 'true' };
+      console.log('📡 API: GET', url, params);
+      const res = await axios.get(url, { params });
+      const categoriesData = Array.isArray(res.data) ? res.data : res.data?.categories || [];
+      setCategories(categoriesData);
+    } catch (err) {
+      if (err.response?.status !== 404) {
+        console.error('❌ Error fetching blog categories:', {
+          url: `${API_URL}/blogCategories`,
+          error: err.response?.data || err.message,
+          status: err.response?.status,
+        });
+      }
+
+      try {
+        const postsRes = await axios.get(`${API_URL}/blog`, {
+          params: { all: 'true', _t: Date.now() },
+        });
+        const postsData = Array.isArray(postsRes.data) ? postsRes.data : postsRes.data.posts || [];
+        const derivedCategories = Array.from(
+          new Map(
+            postsData
+              .map((post) => post.category)
+              .filter(Boolean)
+              .map((category) => [
+                category,
+                {
+                  slug: category,
+                  name: category
+                    .split('-')
+                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' '),
+                },
+              ])
+          ).values()
+        );
+        setCategories(derivedCategories);
+      } catch (fallbackErr) {
+        console.error('❌ Error deriving blog categories:', {
+          url: `${API_URL}/blog?all=true`,
+          error: fallbackErr.response?.data || fallbackErr.message,
+          status: fallbackErr.response?.status,
+        });
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (router.isReady) {
       fetchPosts(page, selectedCategory);
     }
   }, [page, selectedCategory, fetchPosts, router.isReady]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -156,17 +208,17 @@ export default function BlogPageContent() {
             />
             {categories.map((category) => (
               <Chip
-                key={category}
-                label={category.charAt(0).toUpperCase() + category.slice(1)}
-                onClick={() => handleCategoryChange(category)}
+                key={category.slug}
+                label={category.name}
+                onClick={() => handleCategoryChange(category.slug)}
                 sx={{
-                  backgroundColor: selectedCategory === category ? CATEGORY_COLORS[category] || '#0B7897' : 'white',
-                  color: selectedCategory === category ? 'white' : '#052A42',
-                  fontWeight: selectedCategory === category ? 600 : 400,
+                  backgroundColor: selectedCategory === category.slug ? CATEGORY_COLORS[category.slug] || '#0B7897' : 'white',
+                  color: selectedCategory === category.slug ? 'white' : '#052A42',
+                  fontWeight: selectedCategory === category.slug ? 600 : 400,
                   cursor: 'pointer',
                   '&:hover': {
-                    backgroundColor: selectedCategory === category
-                      ? CATEGORY_COLORS[category] || '#063C5E'
+                    backgroundColor: selectedCategory === category.slug
+                      ? CATEGORY_COLORS[category.slug] || '#063C5E'
                       : '#E8F4F8',
                   },
                   transition: 'all 0.3s ease',
@@ -178,13 +230,11 @@ export default function BlogPageContent() {
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Blog Posts" />
           ) : loading ? (
-            <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ py: 8 }}>
-              Loading articles...
-            </Typography>
+            <LoadingState message="Loading articles..." />
           ) : posts.length === 0 ? (
             <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ py: 8 }}>
               {selectedCategory !== 'all' 
-                ? `No articles found in "${selectedCategory}" category.` 
+                ? `No articles found in "${categories.find((cat) => cat.slug === selectedCategory)?.name || selectedCategory}" category.` 
                 : 'No blog posts available yet. Check back soon!'}
             </Typography>
           ) : (
@@ -196,7 +246,7 @@ export default function BlogPageContent() {
                 sx={{ mb: 3 }}
               >
                 Showing {showingFrom}&ndash;{showingTo} of {total} articles
-                {selectedCategory !== 'all' && ` in "${selectedCategory}"`}
+                {selectedCategory !== 'all' && ` in "${categories.find((cat) => cat.slug === selectedCategory)?.name || selectedCategory}"`}
               </Typography>
               <Grid container spacing={4}>
                 {posts.map((post, index) => (

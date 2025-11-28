@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
+import LoadingState from '@/components/LoadingState';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -17,7 +18,7 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 console.log('🔗 Products Page API URL:', API_URL);
 
-const PRODUCTS_PER_PAGE = 10;
+const PRODUCTS_PER_PAGE = 12;
 
 const TYPE_COLORS = {
   starter: '#FF725E',
@@ -76,7 +77,7 @@ export default function ProductsPageContent() {
       setProducts(res.data.products || []);
       setMeta({
         total: res.data.total || 0,
-        totalPages: res.data.totalPages || 1,
+        totalPages: res.data.totalPages || res.data.pages || 1,
         page: res.data.page || 1,
       });
     } catch (err) {
@@ -95,13 +96,70 @@ export default function ProductsPageContent() {
 
   const fetchAvailableFilters = useCallback(async () => {
     try {
-      const url = `${API_URL}/products`;
-      const params = { all: true };
-      console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
-      const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
-      const categories = Array.from(new Set(res.data.map((p) => p.category).filter(Boolean))).sort();
-      setAvailableTypes(types);
+      const ts = Date.now();
+      const productsRes = await axios.get(`${API_URL}/products`, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+        params: { all: true, _t: ts },
+      });
+
+      const allProducts = Array.isArray(productsRes.data)
+        ? productsRes.data
+        : productsRes.data.products || [];
+
+      const categories = Array.from(
+        new Set(allProducts.map((p) => p.category).filter(Boolean))
+      ).sort();
+
+      let typesData = [];
+
+      try {
+        const typesRes = await axios.get(`${API_URL}/productTypes`, {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate',
+            Pragma: 'no-cache',
+            Expires: '0',
+          },
+          params: { active: 'true', _t: ts },
+        });
+
+        typesData = Array.isArray(typesRes.data)
+          ? typesRes.data
+          : typesRes.data?.types || [];
+      } catch (typeErr) {
+        if (typeErr.response?.status !== 404) {
+          console.error('❌ Error fetching product types:', {
+            url: `${API_URL}/productTypes`,
+            error: typeErr.response?.data || typeErr.message,
+            status: typeErr.response?.status,
+          });
+        }
+
+        if (!typesData.length) {
+          typesData = Array.from(
+            new Map(
+              allProducts
+                .map((product) => product.type)
+                .filter(Boolean)
+                .map((type) => [
+                  type,
+                  {
+                    slug: type,
+                    name: type
+                      .split('-')
+                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                      .join(' '),
+                  },
+                ])
+            ).values()
+          );
+        }
+      }
+
+      setAvailableTypes(typesData);
       setAvailableCategories(categories);
     } catch (err) {
       console.error('❌ Error fetching filters:', {
@@ -212,17 +270,17 @@ export default function ProductsPageContent() {
               />
               {availableTypes.map((type) => (
                 <Chip
-                  key={type}
-                  label={type.charAt(0).toUpperCase() + type.slice(1)}
-                  onClick={() => handleTypeChange(type)}
+                  key={type.slug}
+                  label={type.name}
+                  onClick={() => handleTypeChange(type.slug)}
                   sx={{
-                    backgroundColor: selectedType === type ? TYPE_COLORS[type] || '#0B7897' : 'white',
-                    color: selectedType === type ? 'white' : '#052A42',
-                    fontWeight: selectedType === type ? 600 : 400,
+                    backgroundColor: selectedType === type.slug ? TYPE_COLORS[type.slug] || '#0B7897' : 'white',
+                    color: selectedType === type.slug ? 'white' : '#052A42',
+                    fontWeight: selectedType === type.slug ? 600 : 400,
                     cursor: 'pointer',
                     '&:hover': {
-                      backgroundColor: selectedType === type
-                        ? TYPE_COLORS[type] || '#063C5E'
+                      backgroundColor: selectedType === type.slug
+                        ? TYPE_COLORS[type.slug] || '#063C5E'
                         : '#E8F4F8',
                     },
                     transition: 'all 0.3s ease',
@@ -276,11 +334,7 @@ export default function ProductsPageContent() {
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Products" />
           ) : loading ? (
-            <Box textAlign="center" py={6}>
-              <Typography variant="h6" color="text.secondary">
-                Loading products...
-              </Typography>
-            </Box>
+            <LoadingState message="Loading products..." />
           ) : products.length === 0 ? (
             <Box textAlign="center" py={6}>
               <Typography variant="h6" color="text.secondary">
