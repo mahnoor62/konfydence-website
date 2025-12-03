@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import {
   Container,
   Typography,
@@ -13,6 +14,7 @@ import {
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -25,7 +27,6 @@ const NO_CACHE_HEADERS = {
   Pragma: 'no-cache',
   Expires: '0',
 };
-
 
 console.log('🔗 About Page API URL:', API_URL);
 
@@ -41,7 +42,6 @@ export async function getServerSideProps() {
       params: { _t: ts },
     });
     
-    // const res = await axios.get(url);
     settings = res.data;
   } catch (error) {
     console.error('❌ Error fetching settings:', {
@@ -59,10 +59,44 @@ export async function getServerSideProps() {
 }
 
 export default function AboutPage({ settings }) {
+  const pillarRefs = useRef([]);
+
+  useEffect(() => {
+    // Intersection Observer for pillar animations
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px',
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    pillarRefs.current.forEach((ref) => {
+      if (ref) {
+        observer.observe(ref);
+      }
+    });
+
+    return () => {
+      const currentRefs = pillarRefs.current;
+      currentRefs.forEach((ref) => {
+        if (ref) {
+          observer.unobserve(ref);
+        }
+      });
+    };
+  }, []);
+
   return (
     <>
       <Header />
-      <Box component="main" sx={{backgroundColor: '#F4F8FD' }}>
+      <Box component="main" sx={{ backgroundColor: '#F4F8FD' }}>
         <Box
           sx={{
             background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 80%)',
@@ -107,6 +141,7 @@ export default function AboutPage({ settings }) {
                     animation: 'floatCard 4s ease-in-out infinite',
                     transformOrigin: 'center',
                     filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                    padding: { xs: 2, md: 0 },
                     '@keyframes floatCard': {
                       '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1)' },
                       '50%': {
@@ -125,16 +160,16 @@ export default function AboutPage({ settings }) {
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       borderRadius: 4,
-                      height: 360,
-                      boxShadow:
-                        '0 35px 95px rgba(4,37,58,0.45), 0 0 40px rgba(255,255,255,0.35)',
+                      height: { xs: 280, md: 360 },
+                      width: '100%',
+                      maxWidth: '100%',
+                      boxShadow: '0 35px 95px rgba(4,37,58,0.45), 0 0 40px rgba(255,255,255,0.35)',
                       overflow: 'hidden',
                       '&::after': {
                         content: '""',
                         position: 'absolute',
                         inset: 0,
-                        background:
-                          'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(11,120,151,0.2))',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(11,120,151,0.2))',
                       },
                       '&::before': {
                         content: '""',
@@ -143,8 +178,7 @@ export default function AboutPage({ settings }) {
                         left: '-50%',
                         width: '200%',
                         height: '200%',
-                        background:
-                          'radial-gradient(circle, rgba(255,255,255,0.45), transparent 60%)',
+                        background: 'radial-gradient(circle, rgba(255,255,255,0.45), transparent 60%)',
                         animation: 'pulseGlow 6s ease-in-out infinite',
                       },
                       '@keyframes pulseGlow': {
@@ -211,8 +245,7 @@ export default function AboutPage({ settings }) {
                   p: 4,
                   position: 'relative',
                   overflow: 'hidden',
-                  background:
-                    'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(233,244,255,0.8))',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(233,244,255,0.8))',
                   boxShadow: '0 35px 90px rgba(6,60,94,0.18)',
                   border: '1px solid rgba(11,120,151,0.12)',
                   '&::after': {
@@ -235,8 +268,22 @@ export default function AboutPage({ settings }) {
                     'Evidence-backed behavioral science',
                     'Inclusive for every generation and job role',
                     'Delivered as a seamless hybrid experience',
-                  ].map((item) => (
-                    <Box key={item} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  ].map((item, index) => (
+                    <Box
+                      key={item}
+                      ref={(el) => {
+                        pillarRefs.current[index] = el;
+                      }}
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        opacity: 0,
+                        transform: 'translateY(20px)',
+                        transition: 'opacity 0.6s ease, transform 0.6s ease',
+                        transitionDelay: `${index * 0.1}s`,
+                      }}
+                    >
                       <Chip label="✓" color="primary" size="small" />
                       <Typography variant="body2" color="text.secondary">
                         {item}
@@ -262,15 +309,16 @@ export default function AboutPage({ settings }) {
               <Stack direction={{ xs: 'column', md: 'row' }} spacing={4} alignItems="center">
                 <Avatar
                   sx={{
-                    width: 120,
-                    height: 120,
+                    width: { xs: 100, md: 120 },
+                    height: { xs: 100, md: 120 },
                     bgcolor: '#0B7897',
-                    fontSize: '2rem',
+                    fontSize: { xs: '1.5rem', md: '2rem' },
+                    margin: { xs: '0 auto', md: 0 },
                   }}
                 >
                   {(settings.founderName || 'K')[0]}
                 </Avatar>
-                <Box>
+                <Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                   <Typography variant="h5" sx={{ fontStyle: 'italic', mb: 2 }}>
                     &ldquo;{settings.founderQuote}&rdquo;
                   </Typography>
@@ -282,7 +330,8 @@ export default function AboutPage({ settings }) {
             </Card>
           )}
 
-          <Box sx={{ textAlign: 'center' }} data-aos="fade-down" data-aos-duration="900">
+          {/* Trusted Partners Section - Only One Instance */}
+          <Box sx={{ textAlign: 'center', mb: 10 }} data-aos="fade-down" data-aos-duration="900">
             <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#052A42' }}>
               Recognized by teams who care about trust
             </Typography>
@@ -292,7 +341,17 @@ export default function AboutPage({ settings }) {
             <Grid container spacing={4}>
               {['Europe Tech Week', 'CyberSec EU', 'Parents for Digital', 'GovSec Labs'].map((label) => (
                 <Grid item xs={6} md={3} key={label}>
-                  <Card sx={{ borderRadius: 3, p: 3, textAlign: 'center', minHeight: 120 }}>
+                  <Card
+                    sx={{
+                      borderRadius: 3,
+                      p: 3,
+                      textAlign: 'center',
+                      minHeight: 120,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                    }}
+                  >
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#0B7897' }}>
                       {label}
                     </Typography>
@@ -303,6 +362,96 @@ export default function AboutPage({ settings }) {
                 </Grid>
               ))}
             </Grid>
+          </Box>
+
+          {/* Dual CTA Block */}
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: { xs: 6, md: 8 },
+              mb: 4,
+              backgroundColor: '#E9F4FF',
+              borderRadius: 4,
+              px: { xs: 3, md: 4 },
+            }}
+            data-aos="fade-up"
+            data-aos-duration="900"
+          >
+            <Typography
+              variant="h3"
+              component="h2"
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+                color: '#052A42',
+                fontSize: { xs: '1.75rem', md: '2.5rem' },
+              }}
+            >
+              Get started with Konfydence
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                mb: 4,
+                maxWidth: 700,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                lineHeight: 1.7,
+              }}
+            >
+              Whether you&apos;re protecting your family, your students, or your organization, Konfydence helps you build
+              real-world scam awareness.
+            </Typography>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              justifyContent="center"
+              sx={{ maxWidth: 600, mx: 'auto' }}
+            >
+              <Button
+                component={Link}
+                href="/shop"
+                variant="contained"
+                size="large"
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  backgroundColor: '#00A4E8',
+                  '&:hover': {
+                    backgroundColor: '#0088C7',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(0, 164, 232, 0.4)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Buy Scam Survival Kit
+              </Button>
+              <Button
+                component={Link}
+                href="/contact?topic=b2b_demo"
+                variant="outlined"
+                size="large"
+                sx={{
+                  borderRadius: 2,
+                  px: 4,
+                  py: 1.5,
+                  borderColor: '#0B7897',
+                  color: '#0B7897',
+                  '&:hover': {
+                    borderColor: '#063C5E',
+                    backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 24px rgba(11, 120, 151, 0.2)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Request Company Demo
+              </Button>
+            </Stack>
           </Box>
         </Container>
       </Box>

@@ -16,26 +16,50 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
+
 console.log('🔗 Products Page API URL:', API_URL);
 
 const PRODUCTS_PER_PAGE = 12;
 
-const TYPE_COLORS = {
-  starter: '#FF725E',
-  bundle: '#0B7897',
-  membership: '#063C5E',
-};
+// Product Category filters
+const PRODUCT_CATEGORIES = [
+  'Membership',
+  'Template',
+  'Course',
+  'Guide',
+  'Toolkit',
+  'Digital Guide',
+];
 
-const CATEGORY_LABELS = {
-  'private-users': 'Private Users',
-  schools: 'Schools',
-  businesses: 'Businesses',
-};
+// Use Case / Type filters
+const USE_CASE_TYPES = [
+  'Leadership',
+  'OnCall',
+  'Community',
+  'Starter',
+  'Bundle',
+];
 
 const CATEGORY_COLORS = {
-  'private-users': '#FF9B8A',
-  schools: '#0B7897',
-  businesses: '#052A42',
+  'Membership': '#063C5E',
+  'Template': '#0B7897',
+  'Course': '#00A4E8',
+  'Guide': '#5FA8BA',
+  'Toolkit': '#7FC7D9',
+  'Digital Guide': '#9FC9D9',
+};
+
+const TYPE_COLORS = {
+  'Leadership': '#063C5E',
+  'OnCall': '#0B7897',
+  'Community': '#00A4E8',
+  'Starter': '#FF725E',
+  'Bundle': '#0B7897',
 };
 
 export default function ProductsPageContent() {
@@ -47,20 +71,20 @@ export default function ProductsPageContent() {
   const currentPage = Math.max(parseInt(pageParam || '1', 10) || 1, 1);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
   const [selectedType, setSelectedType] = useState(typeParam);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
-  const [availableTypes, setAvailableTypes] = useState([]);
-  const [availableCategories, setAvailableCategories] = useState([]);
+  const [error, setError] = useState(null);
 
   const fetchProducts = useCallback(async (page, type, category) => {
     try {
       setLoading(true);
       setError(null);
+      const ts = Date.now();
       const params = {
         page: page.toString(),
         limit: PRODUCTS_PER_PAGE.toString(),
+        _t: ts, // cache breaker
       };
 
       if (type && type !== 'all') {
@@ -73,7 +97,11 @@ export default function ProductsPageContent() {
 
       const url = `${API_URL}/products`;
       console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
+      const res = await axios.get(url, {
+        headers: NO_CACHE_HEADERS,
+        params,
+      });
+      
       setProducts(res.data.products || []);
       setMeta({
         total: res.data.total || 0,
@@ -94,97 +122,12 @@ export default function ProductsPageContent() {
     }
   }, []);
 
-  const fetchAvailableFilters = useCallback(async () => {
-    try {
-      const ts = Date.now();
-      const productsRes = await axios.get(`${API_URL}/products`, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
-        },
-        params: { all: true, _t: ts },
-      });
-
-      const allProducts = Array.isArray(productsRes.data)
-        ? productsRes.data
-        : productsRes.data.products || [];
-
-      const categories = Array.from(
-        new Set(allProducts.map((p) => p.category).filter(Boolean))
-      ).sort();
-
-      let typesData = [];
-
-      try {
-        const typesRes = await axios.get(`${API_URL}/productTypes`, {
-          headers: {
-            'Cache-Control': 'no-store, no-cache, must-revalidate',
-            Pragma: 'no-cache',
-            Expires: '0',
-          },
-          params: { active: 'true', _t: ts },
-        });
-
-        typesData = Array.isArray(typesRes.data)
-          ? typesRes.data
-          : typesRes.data?.types || [];
-      } catch (typeErr) {
-        if (typeErr.response?.status !== 404) {
-          console.error('❌ Error fetching product types:', {
-            url: `${API_URL}/productTypes`,
-            error: typeErr.response?.data || typeErr.message,
-            status: typeErr.response?.status,
-          });
-        }
-
-        if (!typesData.length) {
-          typesData = Array.from(
-            new Map(
-              allProducts
-                .map((product) => product.type)
-                .filter(Boolean)
-                .map((type) => [
-                  type,
-                  {
-                    slug: type,
-                    name: type
-                      .split('-')
-                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                      .join(' '),
-                  },
-                ])
-            ).values()
-          );
-        }
-      }
-
-      setAvailableTypes(typesData);
-      setAvailableCategories(categories);
-    } catch (err) {
-      console.error('❌ Error fetching filters:', {
-        url: `${API_URL}/products?all=true`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-      if (!error) {
-        setError(err);
-      }
-    }
-  }, [error]);
-
   useEffect(() => {
-    fetchAvailableFilters();
-  }, [fetchAvailableFilters]);
-
-  useEffect(() => {
-    if (router.isReady) {
-      const typeFromUrl = router.query.type || 'all';
-      const categoryFromUrl = router.query.category || 'all';
-      setSelectedType(typeFromUrl);
-      setSelectedCategory(categoryFromUrl);
-    }
-  }, [router.isReady, router.query]);
+    const typeFromUrl = router.query.type || 'all';
+    const categoryFromUrl = router.query.category || 'all';
+    setSelectedType(typeFromUrl);
+    setSelectedCategory(categoryFromUrl);
+  }, [router.query]);
 
   useEffect(() => {
     if (router.isReady) {
@@ -231,9 +174,11 @@ export default function ProductsPageContent() {
           data-aos="zoom-in"
           data-aos-duration="800"
         >
-          <Box>
+          {/* Page Title and Intro Text */}
+          <Box sx={{ mb: 6 }}>
             <Typography
-              variant="h2"
+              variant="h1"
+              component="h1"
               textAlign="center"
               sx={{
                 mb: 2,
@@ -242,61 +187,29 @@ export default function ProductsPageContent() {
                 color: '#063C5E',
               }}
             >
-              Our Products
+              All Konfydence Products
             </Typography>
-            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-              Choose the perfect solution for your needs
+            <Typography 
+              variant="body1" 
+              textAlign="center" 
+              color="text.secondary" 
+              sx={{ 
+                mb: 4,
+                fontSize: { xs: '1rem', md: '1.1rem' },
+              }}
+            >
+              Browse all scam-awareness products for families, companies, and schools in one place.
             </Typography>
           </Box>
 
-          {availableTypes.length > 0 && (
-            <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
-                Filter by Type:
-              </Typography>
+          {/* Product Category Filter */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+              Product Category
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Chip
-                label="All Types"
-                onClick={() => handleTypeChange('all')}
-                sx={{
-                  backgroundColor: selectedType === 'all' ? '#0B7897' : 'white',
-                  color: selectedType === 'all' ? 'white' : '#052A42',
-                  fontWeight: selectedType === 'all' ? 600 : 400,
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: selectedType === 'all' ? '#063C5E' : '#E8F4F8',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              />
-              {availableTypes.map((type) => (
-                <Chip
-                  key={type.slug}
-                  label={type.name}
-                  onClick={() => handleTypeChange(type.slug)}
-                  sx={{
-                    backgroundColor: selectedType === type.slug ? TYPE_COLORS[type.slug] || '#0B7897' : 'white',
-                    color: selectedType === type.slug ? 'white' : '#052A42',
-                    fontWeight: selectedType === type.slug ? 600 : 400,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: selectedType === type.slug
-                        ? TYPE_COLORS[type.slug] || '#063C5E'
-                        : '#E8F4F8',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {availableCategories.length > 0 && (
-            <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
-                Filter by Category:
-              </Typography>
-              <Chip
-                label="All Categories"
+                label="All"
                 onClick={() => handleCategoryChange('all')}
                 sx={{
                   backgroundColor: selectedCategory === 'all' ? '#0B7897' : 'white',
@@ -309,19 +222,68 @@ export default function ProductsPageContent() {
                   transition: 'all 0.3s ease',
                 }}
               />
-              {availableCategories.map((category) => (
+              {PRODUCT_CATEGORIES.map((category) => {
+                const categoryValue = category.toLowerCase().replace(/\s+/g, '-');
+                return (
+                  <Chip
+                    key={category}
+                    label={category}
+                    onClick={() => handleCategoryChange(categoryValue)}
+                    sx={{
+                      backgroundColor: selectedCategory === categoryValue 
+                        ? CATEGORY_COLORS[category] || '#0B7897' 
+                        : 'white',
+                      color: selectedCategory === categoryValue ? 'white' : '#052A42',
+                      fontWeight: selectedCategory === categoryValue ? 600 : 400,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: selectedCategory === categoryValue
+                          ? CATEGORY_COLORS[category] || '#063C5E'
+                          : '#E8F4F8',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          </Box>
+
+          {/* Use Case / Type Filter */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+            Product Type
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+              <Chip
+                label="All"
+                onClick={() => handleTypeChange('all')}
+                sx={{
+                  backgroundColor: selectedType === 'all' ? '#0B7897' : 'white',
+                  color: selectedType === 'all' ? 'white' : '#052A42',
+                  fontWeight: selectedType === 'all' ? 600 : 400,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: selectedType === 'all' ? '#063C5E' : '#E8F4F8',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              />
+              {USE_CASE_TYPES.map((type) => (
                 <Chip
-                  key={category}
-                  label={CATEGORY_LABELS[category] || category.charAt(0).toUpperCase() + category.slice(1)}
-                  onClick={() => handleCategoryChange(category)}
+                  key={type}
+                  label={type}
+                  onClick={() => handleTypeChange(type.toLowerCase())}
                   sx={{
-                    backgroundColor: selectedCategory === category ? CATEGORY_COLORS[category] || '#0B7897' : 'white',
-                    color: selectedCategory === category ? 'white' : '#052A42',
-                    fontWeight: selectedCategory === category ? 600 : 400,
+                    backgroundColor: selectedType === type.toLowerCase() 
+                      ? TYPE_COLORS[type] || '#0B7897' 
+                      : 'white',
+                    color: selectedType === type.toLowerCase() ? 'white' : '#052A42',
+                    fontWeight: selectedType === type.toLowerCase() ? 600 : 400,
                     cursor: 'pointer',
                     '&:hover': {
-                      backgroundColor: selectedCategory === category
-                        ? CATEGORY_COLORS[category] || '#063C5E'
+                      backgroundColor: selectedType === type.toLowerCase()
+                        ? TYPE_COLORS[type] || '#063C5E'
                         : '#E8F4F8',
                     },
                     transition: 'all 0.3s ease',
@@ -329,7 +291,7 @@ export default function ProductsPageContent() {
                 />
               ))}
             </Box>
-          )}
+          </Box>
 
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Products" />
@@ -356,7 +318,7 @@ export default function ProductsPageContent() {
                   <>
                     {' '}
                     {selectedType !== 'all' && `(${selectedType})`}
-                    {selectedCategory !== 'all' && ` - ${CATEGORY_LABELS[selectedCategory] || selectedCategory}`}
+                    {selectedCategory !== 'all' && ` - ${selectedCategory}`}
                   </>
                 )}
               </Typography>
@@ -369,7 +331,7 @@ export default function ProductsPageContent() {
                 sx={{ alignItems: 'stretch', mb: 4 }}
               >
                 {products.map((product, index) => (
-                  <Grid item xs={12} md={4} key={product._id}>
+                  <Grid item xs={12} sm={6} md={4} key={product._id}>
                     <ProductCard product={product} delay={index * 100} />
                   </Grid>
                 ))}
@@ -377,6 +339,7 @@ export default function ProductsPageContent() {
             </>
           )}
 
+          {/* Pagination - Always shown after product grid */}
           {meta.totalPages > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
               <PaginationControls
@@ -395,4 +358,3 @@ export default function ProductsPageContent() {
     </>
   );
 }
-

@@ -273,16 +273,31 @@ export default function ProductDetailPage({ product, error }) {
           <Grid container spacing={6}>
             <Grid item xs={12} md={6}>
               <Box
-                component="img"
-                src={resolvedImage}
-                alt={product.name}
                 sx={{
+                  position: 'relative',
                   width: '100%',
+                  paddingTop: '66.67%', // 3:2 aspect ratio (2/3 = 0.6667)
+                  backgroundColor: '#F5F8FB', // Consistent background color
                   borderRadius: 4,
-                  objectFit: 'cover',
+                  overflow: 'hidden',
                   boxShadow: '0 30px 70px rgba(6,60,94,0.2)',
                 }}
-              />
+              >
+                <Box
+                  component="img"
+                  src={resolvedImage}
+                  alt={product.name}
+                  sx={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    borderRadius: 4,
+                  }}
+                />
+              </Box>
             </Grid>
 
             <Grid item xs={12} md={6}>

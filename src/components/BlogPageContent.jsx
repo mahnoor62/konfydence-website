@@ -16,17 +16,30 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, no-cache, must-revalidate',
+  Pragma: 'no-cache',
+  Expires: '0',
+};
 console.log('🔗 Blog Page API URL:', API_URL);
 
 const BLOGS_PER_PAGE = 12;
 
+// Fixed category chips as requested
+const CATEGORY_CHIPS = [
+  { label: 'For families', value: 'for-families' },
+  { label: 'For companies', value: 'for-companies' },
+  { label: 'For schools', value: 'for-schools' },
+  { label: 'News', value: 'news' },
+  { label: 'How-to', value: 'how-to' },
+];
+
 const CATEGORY_COLORS = {
-  insight: '#FF725E',
-  technique: '#FF9B8A',
-  checklist: '#0B7897',
-  guide: '#063C5E',
-  template: '#052A42',
-  reference: '#8B9DC3',
+  'for-families': '#FF725E',
+  'for-companies': '#0B7897',
+  'for-schools': '#00A4E8',
+  'news': '#063C5E',
+  'how-to': '#5FA8BA',
 };
 
 export default function BlogPageContent() {
@@ -38,7 +51,6 @@ export default function BlogPageContent() {
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [error, setError] = useState(null);
 
@@ -46,17 +58,22 @@ export default function BlogPageContent() {
     try {
       setLoading(true);
       setError(null);
+      const ts = Date.now();
       const params = {
         page: pageNum.toString(),
         limit: BLOGS_PER_PAGE.toString(),
         published: 'true',
+        _t: ts, // cache breaker
       };
       if (category && category !== 'all') {
         params.category = category;
       }
       const url = `${API_URL}/blog`;
       console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
+      const res = await axios.get(url, {
+        headers: NO_CACHE_HEADERS,
+        params,
+      });
       const postsData = Array.isArray(res.data) ? res.data : res.data.posts || [];
       setPosts(postsData);
       setTotal(res.data.total ?? postsData.length);
@@ -76,65 +93,11 @@ export default function BlogPageContent() {
     }
   }, []);
 
-  const fetchCategories = useCallback(async () => {
-    try {
-      const url = `${API_URL}/blogCategories`;
-      const params = { active: 'true' };
-      console.log('📡 API: GET', url, params);
-      const res = await axios.get(url, { params });
-      const categoriesData = Array.isArray(res.data) ? res.data : res.data?.categories || [];
-      setCategories(categoriesData);
-    } catch (err) {
-      if (err.response?.status !== 404) {
-        console.error('❌ Error fetching blog categories:', {
-          url: `${API_URL}/blogCategories`,
-          error: err.response?.data || err.message,
-          status: err.response?.status,
-        });
-      }
-
-      try {
-        const postsRes = await axios.get(`${API_URL}/blog`, {
-          params: { all: 'true', _t: Date.now() },
-        });
-        const postsData = Array.isArray(postsRes.data) ? postsRes.data : postsRes.data.posts || [];
-        const derivedCategories = Array.from(
-          new Map(
-            postsData
-              .map((post) => post.category)
-              .filter(Boolean)
-              .map((category) => [
-                category,
-                {
-                  slug: category,
-                  name: category
-                    .split('-')
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' '),
-                },
-              ])
-          ).values()
-        );
-        setCategories(derivedCategories);
-      } catch (fallbackErr) {
-        console.error('❌ Error deriving blog categories:', {
-          url: `${API_URL}/blog?all=true`,
-          error: fallbackErr.response?.data || fallbackErr.message,
-          status: fallbackErr.response?.status,
-        });
-      }
-    }
-  }, []);
-
   useEffect(() => {
     if (router.isReady) {
       fetchPosts(page, selectedCategory);
     }
   }, [page, selectedCategory, fetchPosts, router.isReady]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
 
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
@@ -154,43 +117,41 @@ export default function BlogPageContent() {
       <Header />
       <Box component="main" sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB', minHeight: '100vh' }}>
         <Container
-          maxWidth="md"
-          sx={{ textAlign: 'center', py: { xs: 6, md: 8 } }}
-          data-aos="zoom-in"
-          data-aos-duration="800"
-        >
-          <Typography variant="overline" sx={{ letterSpacing: 2, fontWeight: 600, color: '#0B7897' }}>
-            Blog / Resources
-          </Typography>
-          <Typography
-            variant="h2"
-            sx={{ fontWeight: 700, mt: 1, mb: 2, fontSize: { xs: '2.25rem', md: '3rem' }, color: '#052A42' }}
-          >
-            Read our latest tips, insights, and strategies to stay safe online.
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 640, mx: 'auto' }}>
-            Actionable guidance for families, schools, and businesses navigating today&apos;s scam landscape.
-          </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-            <Button variant="contained" size="large" sx={{ px: 4, borderRadius: 999 }} href="/contact?topic=other">
-              Subscribe for Updates
-            </Button>
-          </Stack>
-        </Container>
-
-        <Container
           maxWidth="lg"
-          sx={{ pb: { xs: 6, md: 10 } }}
+          sx={{ py: { xs: 6, md: 8 } }}
           data-aos="zoom-in"
           data-aos-duration="800"
         >
-          <Typography
-            variant="h4"
-            sx={{ fontWeight: 700, textAlign: 'center', mb: 3, color: '#052A42' }}
-          >
-            Latest Articles
-          </Typography>
+          {/* Page Title and Intro */}
+          <Box sx={{ textAlign: 'center', mb: 6 }}>
+            <Typography
+              variant="h1"
+              component="h1"
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+                fontSize: { xs: '2rem', md: '3rem' },
+                color: '#052A42',
+              }}
+            >
+              Scam Awareness & Digital Safety Insights
+            </Typography>
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{
+                mb: 4,
+                maxWidth: 800,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                lineHeight: 1.7,
+              }}
+            >
+              Read the latest articles on scams, social engineering, and practical ways to build safer digital habits for families, teams, and schools.
+            </Typography>
+          </Box>
 
+          {/* Category/Tag Chips */}
           <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
             <Chip
               label="All"
@@ -206,19 +167,21 @@ export default function BlogPageContent() {
                 transition: 'all 0.3s ease',
               }}
             />
-            {categories.map((category) => (
+            {CATEGORY_CHIPS.map((chip) => (
               <Chip
-                key={category.slug}
-                label={category.name}
-                onClick={() => handleCategoryChange(category.slug)}
+                key={chip.value}
+                label={chip.label}
+                onClick={() => handleCategoryChange(chip.value)}
                 sx={{
-                  backgroundColor: selectedCategory === category.slug ? CATEGORY_COLORS[category.slug] || '#0B7897' : 'white',
-                  color: selectedCategory === category.slug ? 'white' : '#052A42',
-                  fontWeight: selectedCategory === category.slug ? 600 : 400,
+                  backgroundColor: selectedCategory === chip.value
+                    ? CATEGORY_COLORS[chip.value] || '#0B7897'
+                    : 'white',
+                  color: selectedCategory === chip.value ? 'white' : '#052A42',
+                  fontWeight: selectedCategory === chip.value ? 600 : 400,
                   cursor: 'pointer',
                   '&:hover': {
-                    backgroundColor: selectedCategory === category.slug
-                      ? CATEGORY_COLORS[category.slug] || '#063C5E'
+                    backgroundColor: selectedCategory === chip.value
+                      ? CATEGORY_COLORS[chip.value] || '#063C5E'
                       : '#E8F4F8',
                   },
                   transition: 'all 0.3s ease',
@@ -227,15 +190,19 @@ export default function BlogPageContent() {
             ))}
           </Box>
 
+          {/* Content Area */}
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Blog Posts" />
           ) : loading ? (
             <LoadingState message="Loading articles..." />
           ) : posts.length === 0 ? (
-            <Typography variant="body1" color="text.secondary" textAlign="center" sx={{ py: 8 }}>
-              {selectedCategory !== 'all' 
-                ? `No articles found in "${categories.find((cat) => cat.slug === selectedCategory)?.name || selectedCategory}" category.` 
-                : 'No blog posts available yet. Check back soon!'}
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              textAlign="center"
+              sx={{ py: 8 }}
+            >
+              No articles published yet. Check back soon for new scam-awareness content.
             </Typography>
           ) : (
             <>
@@ -246,7 +213,7 @@ export default function BlogPageContent() {
                 sx={{ mb: 3 }}
               >
                 Showing {showingFrom}&ndash;{showingTo} of {total} articles
-                {selectedCategory !== 'all' && ` in "${categories.find((cat) => cat.slug === selectedCategory)?.name || selectedCategory}"`}
+                {selectedCategory !== 'all' && ` in "${CATEGORY_CHIPS.find((cat) => cat.value === selectedCategory)?.label || selectedCategory}"`}
               </Typography>
               <Grid container spacing={4}>
                 {posts.map((post, index) => (
@@ -274,4 +241,3 @@ export default function BlogPageContent() {
     </>
   );
 }
-

@@ -87,3 +87,40 @@ h6 {
   width: auto !important;
 }
 
+/* Hero Mobile Swiper Styles */
+.hero-mobile-swiper .swiper-pagination {
+  bottom: 20px !important;
+  z-index: 10;
+}
+
+.hero-mobile-swiper .swiper-pagination-bullet {
+  width: 12px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 1;
+  transition: all 0.3s ease;
+}
+
+.hero-mobile-swiper .swiper-pagination-bullet-active {
+  background: #FFFFFF;
+  width: 32px;
+  border-radius: 6px;
+}
+
+.hero-mobile-swiper .swiper-button-next,
+.hero-mobile-swiper .swiper-button-prev {
+  color: #FFFFFF;
+  opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.hero-mobile-swiper .swiper-button-next:hover,
+.hero-mobile-swiper .swiper-button-prev:hover {
+  opacity: 1;
+}
+
+.hero-mobile-swiper .swiper-button-next::after,
+.hero-mobile-swiper .swiper-button-prev::after {
+  font-size: 24px;
+}
+

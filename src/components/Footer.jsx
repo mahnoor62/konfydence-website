@@ -305,7 +305,7 @@ export default function Footer() {
           }}
         >
           <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            © {new Date().getFullYear()} Konfydence. All rights reserved.
+          Copyright © 2026 Konfydence UG (haftungsbeschränkt)
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             {socialLinks.map((social) => {

@@ -30,6 +30,8 @@ export default function PaginationControls({
       count={Math.max(totalPages, 1)}
       page={safePage}
       color="primary"
+      showFirstButton
+      showLastButton
       renderItem={(item) => (
         <PaginationItem
           {...item}

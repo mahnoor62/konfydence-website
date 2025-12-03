@@ -26,22 +26,40 @@ console.log('🔗 Shop Page API URL:', API_URL);
 
 const PRODUCTS_PER_PAGE = 12;
 
-const TYPE_COLORS = {
-  starter: '#FF725E',
-  bundle: '#0B7897',
-  membership: '#063C5E',
-};
+// Product Category filters
+const PRODUCT_CATEGORIES = [
+  'Membership',
+  'Template',
+  'Course',
+  'Guide',
+  'Toolkit',
+  'Digital Guide',
+];
 
-const CATEGORY_LABELS = {
-  'private-users': 'Private Users',
-  schools: 'Schools',
-  businesses: 'Businesses',
-};
+// Use Case / Type filters
+const USE_CASE_TYPES = [
+  'Leadership',
+  'OnCall',
+  'Community',
+  'Starter',
+  'Bundle',
+];
 
 const CATEGORY_COLORS = {
-  'private-users': '#FF9B8A',
-  schools: '#0B7897',
-  businesses: '#052A42',
+  'Membership': '#063C5E',
+  'Template': '#0B7897',
+  'Course': '#00A4E8',
+  'Guide': '#5FA8BA',
+  'Toolkit': '#7FC7D9',
+  'Digital Guide': '#9FC9D9',
+};
+
+const TYPE_COLORS = {
+  'Leadership': '#063C5E',
+  'OnCall': '#0B7897',
+  'Community': '#00A4E8',
+  'Starter': '#FF725E',
+  'Bundle': '#0B7897',
 };
 
 export default function ShopPage() {
@@ -56,8 +74,6 @@ export default function ShopPage() {
   const [meta, setMeta] = useState({ total: 0, totalPages: 1, page: 1 });
   const [selectedType, setSelectedType] = useState(typeParam);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
-  const [availableTypes, setAvailableTypes] = useState([]);
-  const [availableCategories, setAvailableCategories] = useState([]);
   const [error, setError] = useState(null);
 
   const fetchProducts = useCallback(async (page, type, category) => {
@@ -112,99 +128,6 @@ const params = {
     }
   }, []);
 
-  // const fetchAvailableFilters = useCallback(async () => {
-  //   try {
-  //     const url = `${API_URL}/products`;
-  //     const params = { all: true };
-  //     console.log('📡 API: GET', url, params);
-  //     const res = await axios.get(url, { params });
-  //     const types = Array.from(new Set(res.data.map((p) => p.type).filter(Boolean))).sort();
-  //     const categories = Array.from(new Set(res.data.map((p) => p.category).filter(Boolean))).sort();
-  //     setAvailableTypes(types);
-  //     setAvailableCategories(categories);
-  //   } catch (err) {
-  //     console.error('❌ Error fetching filters:', {
-  //       url: `${API_URL}/products?all=true`,
-  //       error: err.response?.data || err.message,
-  //       status: err.response?.status,
-  //     });
-  //   }
-  // }, []);
-
-  const fetchAvailableFilters = useCallback(async () => {
-    try {
-      const productsUrl = `${API_URL}/products`;
-      const ts = Date.now();
-
-      const productsRes = await axios.get(productsUrl, {
-        headers: NO_CACHE_HEADERS,
-        params: { all: true, _t: ts },
-      });
-
-      const allProducts = Array.isArray(productsRes.data)
-        ? productsRes.data
-        : productsRes.data.products || [];
-
-      const categories = Array.from(
-        new Set(allProducts.map((p) => p.category).filter(Boolean))
-      ).sort();
-
-      let typesData = [];
-
-      try {
-        const typesRes = await axios.get(`${API_URL}/productTypes`, {
-          headers: NO_CACHE_HEADERS,
-          params: { active: 'true', _t: ts },
-        });
-
-        typesData = Array.isArray(typesRes.data)
-          ? typesRes.data
-          : typesRes.data?.types || [];
-      } catch (typeErr) {
-        if (typeErr.response?.status !== 404) {
-          console.error('❌ Error fetching product types:', {
-            url: `${API_URL}/productTypes`,
-            error: typeErr.response?.data || typeErr.message,
-            status: typeErr.response?.status,
-          });
-        }
-
-        if (!typesData.length) {
-          typesData = Array.from(
-            new Map(
-              allProducts
-                .map((product) => product.type)
-                .filter(Boolean)
-                .map((type) => [
-                  type,
-                  {
-                    slug: type,
-                    name: type
-                      .split('-')
-                      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                      .join(' '),
-                  },
-                ])
-            ).values()
-          );
-        }
-      }
-
-      setAvailableTypes(typesData);
-      setAvailableCategories(categories);
-    } catch (err) {
-      console.error('❌ Error fetching filters:', {
-        url: `${API_URL}/products?all=true`,
-        error: err.response?.data || err.message,
-        status: err.response?.status,
-      });
-    }
-  }, []);
-  
-
-  useEffect(() => {
-    fetchAvailableFilters();
-  }, [fetchAvailableFilters]);
 
   useEffect(() => {
     const typeFromUrl = router.query.type || 'all';
@@ -276,54 +199,14 @@ const params = {
             </Typography>
           </Box>
 
-          {availableTypes.length > 0 && (
-            <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
-                Filter by Type:
-              </Typography>
+          {/* Product Category Filter */}
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+              Product Category
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Chip
-                label="All Types"
-                onClick={() => handleTypeChange('all')}
-                sx={{
-                  backgroundColor: selectedType === 'all' ? '#0B7897' : 'white',
-                  color: selectedType === 'all' ? 'white' : '#052A42',
-                  fontWeight: selectedType === 'all' ? 600 : 400,
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: selectedType === 'all' ? '#063C5E' : '#E8F4F8',
-                  },
-                  transition: 'all 0.3s ease',
-                }}
-              />
-              {availableTypes.map((type) => (
-                <Chip
-                  key={type.slug}
-                  label={type.name}
-                  onClick={() => handleTypeChange(type.slug)}
-                  sx={{
-                    backgroundColor: selectedType === type.slug ? TYPE_COLORS[type.slug] || '#0B7897' : 'white',
-                    color: selectedType === type.slug ? 'white' : '#052A42',
-                    fontWeight: selectedType === type.slug ? 600 : 400,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: selectedType === type.slug
-                        ? TYPE_COLORS[type.slug] || '#063C5E'
-                        : '#E8F4F8',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                />
-              ))}
-            </Box>
-          )}
-
-          {availableCategories.length > 0 && (
-            <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Typography variant="body2" sx={{ width: '100%', textAlign: 'center', mb: 1, fontWeight: 600, color: '#063C5E' }}>
-                Filter by Category:
-              </Typography>
-              <Chip
-                label="All Categories"
+                label="All"
                 onClick={() => handleCategoryChange('all')}
                 sx={{
                   backgroundColor: selectedCategory === 'all' ? '#0B7897' : 'white',
@@ -336,19 +219,68 @@ const params = {
                   transition: 'all 0.3s ease',
                 }}
               />
-              {availableCategories.map((category) => (
+              {PRODUCT_CATEGORIES.map((category) => {
+                const categoryValue = category.toLowerCase().replace(/\s+/g, '-');
+                return (
+                  <Chip
+                    key={category}
+                    label={category}
+                    onClick={() => handleCategoryChange(categoryValue)}
+                    sx={{
+                      backgroundColor: selectedCategory === categoryValue 
+                        ? CATEGORY_COLORS[category] || '#0B7897' 
+                        : 'white',
+                      color: selectedCategory === categoryValue ? 'white' : '#052A42',
+                      fontWeight: selectedCategory === categoryValue ? 600 : 400,
+                      cursor: 'pointer',
+                      '&:hover': {
+                        backgroundColor: selectedCategory === categoryValue
+                          ? CATEGORY_COLORS[category] || '#063C5E'
+                          : '#E8F4F8',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  />
+                );
+              })}
+            </Box>
+          </Box>
+
+          {/* Use Case / Type Filter */}
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+               Product Type
+            </Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+              <Chip
+                label="All"
+                onClick={() => handleTypeChange('all')}
+                sx={{
+                  backgroundColor: selectedType === 'all' ? '#0B7897' : 'white',
+                  color: selectedType === 'all' ? 'white' : '#052A42',
+                  fontWeight: selectedType === 'all' ? 600 : 400,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    backgroundColor: selectedType === 'all' ? '#063C5E' : '#E8F4F8',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              />
+              {USE_CASE_TYPES.map((type) => (
                 <Chip
-                  key={category}
-                  label={CATEGORY_LABELS[category] || category.charAt(0).toUpperCase() + category.slice(1)}
-                  onClick={() => handleCategoryChange(category)}
+                  key={type}
+                  label={type}
+                  onClick={() => handleTypeChange(type.toLowerCase())}
                   sx={{
-                    backgroundColor: selectedCategory === category ? CATEGORY_COLORS[category] || '#0B7897' : 'white',
-                    color: selectedCategory === category ? 'white' : '#052A42',
-                    fontWeight: selectedCategory === category ? 600 : 400,
+                    backgroundColor: selectedType === type.toLowerCase() 
+                      ? TYPE_COLORS[type] || '#0B7897' 
+                      : 'white',
+                    color: selectedType === type.toLowerCase() ? 'white' : '#052A42',
+                    fontWeight: selectedType === type.toLowerCase() ? 600 : 400,
                     cursor: 'pointer',
                     '&:hover': {
-                      backgroundColor: selectedCategory === category
-                        ? CATEGORY_COLORS[category] || '#063C5E'
+                      backgroundColor: selectedType === type.toLowerCase()
+                        ? TYPE_COLORS[type] || '#063C5E'
                         : '#E8F4F8',
                     },
                     transition: 'all 0.3s ease',
@@ -356,7 +288,7 @@ const params = {
                 />
               ))}
             </Box>
-          )}
+          </Box>
 
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Products" />
@@ -383,7 +315,7 @@ const params = {
                   <>
                     {' '}
                     {selectedType !== 'all' && `(${selectedType})`}
-                    {selectedCategory !== 'all' && ` - ${CATEGORY_LABELS[selectedCategory] || selectedCategory}`}
+                    {selectedCategory !== 'all' && ` - ${selectedCategory}`}
                   </>
                 )}
               </Typography>
@@ -404,18 +336,17 @@ const params = {
             </>
           )}
 
-          {meta.totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <PaginationControls
-                page={meta.page}
-                totalPages={meta.totalPages}
-                basePath={`/shop${selectedType !== 'all' || selectedCategory !== 'all' ? `?${new URLSearchParams({
-                  ...(selectedType !== 'all' && { type: selectedType }),
-                  ...(selectedCategory !== 'all' && { category: selectedCategory }),
-                }).toString()}` : ''}`}
-              />
-            </Box>
-          )}
+          {/* Pagination - Always shown after product grid */}
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+            <PaginationControls
+              page={meta.page}
+              totalPages={meta.totalPages}
+              basePath={`/shop${selectedType !== 'all' || selectedCategory !== 'all' ? `?${new URLSearchParams({
+                ...(selectedType !== 'all' && { type: selectedType }),
+                ...(selectedCategory !== 'all' && { category: selectedCategory }),
+              }).toString()}` : ''}`}
+            />
+          </Box>
         </Container>
       </Box>
       <Footer />
