@@ -112,8 +112,8 @@ export default function BlogPostPage({ post, error }) {
               alignItems: 'center',
             }}
           >
-            <Chip label={post.category} sx={{ textTransform: 'capitalize' }} />
-            {post.tags.map((tag) => (
+            {post.category && <Chip label={post.category} sx={{ textTransform: 'capitalize' }} />}
+            {Array.isArray(post.tags) && post.tags.map((tag) => (
               <Chip key={tag} label={tag} variant="outlined" size="small" />
             ))}
           </Box>
@@ -129,6 +129,7 @@ export default function BlogPostPage({ post, error }) {
           </Typography>
           <Box
             sx={{
+              mb:5,
               '& p': { mb: 2 },
               '& h2': { mt: 4, mb: 2 },
               '& h3': { mt: 3, mb: 2 },
