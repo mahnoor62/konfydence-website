@@ -1,7 +1,9 @@
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function BlogCard({ post, delay = 0 }) {
+  const router = useRouter();
   const fallbackImage = '/images/placeholders/blog-default.svg';
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   const normalizedApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
@@ -12,8 +14,17 @@ export default function BlogCard({ post, delay = 0 }) {
       : `${normalizedApiBase}${cleanImageUrl.startsWith('/') ? cleanImageUrl : `/${cleanImageUrl}`}`
     : fallbackImage;
 
+  const handleCardClick = (e) => {
+    // Don't navigate if clicking on a button or link
+    if (e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    router.push(`/blog/${post.slug}`);
+  };
+
   return (
     <Card
+      onClick={handleCardClick}
       data-aos="fade-up"
       data-aos-duration="800"
       data-aos-delay={delay}
@@ -53,8 +64,21 @@ export default function BlogCard({ post, delay = 0 }) {
         <Typography variant="h5" component="h3" gutterBottom sx={{ color: 'text.primary' }}>
           {post.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, flexGrow: 1 }}>
-          {post.excerpt}
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 3, 
+            flexGrow: 1,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: 1.6,
+          }}
+        >
+          {post.excerpt || post.description || 'No description available'}
         </Typography>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
           <Typography variant="caption" color="text.secondary">
@@ -67,6 +91,9 @@ export default function BlogCard({ post, delay = 0 }) {
           <Button
             component={Link}
             href={`/blog/${post.slug}`}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
             size="small"
             variant="contained"
             sx={{ background: 'linear-gradient(135deg, #FF725E, #FF9B8A)' }}

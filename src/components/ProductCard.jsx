@@ -1,7 +1,9 @@
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mui/material';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 export default function ProductCard({ product, delay = 0 }) {
+  const router = useRouter();
   const fallbackImage = '/images/placeholders/product-default.svg';
   const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
   const normalizedApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
@@ -33,8 +35,17 @@ export default function ProductCard({ product, delay = 0 }) {
     productNameLower.includes('guide') ||
     productNameLower.includes('membership');
 
+  const handleCardClick = (e) => {
+    // Don't navigate if clicking on a button or link
+    if (e.target.closest('button') || e.target.closest('a')) {
+      return;
+    }
+    router.push(`/products/${product.slug}`);
+  };
+
   return (
     <Card
+      onClick={handleCardClick}
       data-aos="fade-up"
       data-aos-duration="800"
       data-aos-delay={delay}
@@ -124,7 +135,20 @@ export default function ProductCard({ product, delay = 0 }) {
         <Typography variant="h5" component="h3" gutterBottom sx={{ color: 'text.primary' }}>
           {product.name}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3, flexGrow: 1 }}>
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ 
+            mb: 3, 
+            flexGrow: 1,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            lineHeight: 1.6,
+          }}
+        >
           {product.description}
         </Typography>
         <Box
@@ -149,6 +173,9 @@ export default function ProductCard({ product, delay = 0 }) {
               variant="contained"
               component={Link}
               href={`/products/${product.slug}`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               sx={{
                 backgroundColor: product.type === 'membership'
                   ? '#063C5E'
@@ -180,6 +207,9 @@ export default function ProductCard({ product, delay = 0 }) {
               variant="outlined"
               component={Link}
               href={`/products/${product.slug}`}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
               sx={{
                 borderColor: '#063C5E',
                 color: '#063C5E',
