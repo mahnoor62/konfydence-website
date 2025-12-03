@@ -45,8 +45,8 @@ export default function BlogCard({ post, delay = 0 }) {
       />
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          <Chip label={post.category} size="small" color="secondary" />
-          {post.tags.slice(0, 2).map((tag) => (
+          {post.category && <Chip label={post.category} size="small" color="secondary" />}
+          {Array.isArray(post.tags) && post.tags.slice(0, 2).map((tag) => (
             <Chip key={tag} label={tag} size="small" variant="outlined" />
           ))}
         </Box>

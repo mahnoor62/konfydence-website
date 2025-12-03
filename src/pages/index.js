@@ -58,7 +58,7 @@ export async function getServerSideProps() {
       }).then((res) => {
         const data = res.data;
         const posts = Array.isArray(data) ? data : (data?.posts || []);
-        return posts.slice(0, 3);
+        return Array.isArray(posts) ? posts.slice(0, 3) : [];
       }).catch((err) => {
         console.error('❌ Error fetching blog posts:', {
           url: `${API_URL}/blog`,
@@ -92,10 +92,15 @@ export async function getServerSideProps() {
     console.error('❌ Error loading home page data:', err);
   }
 
+  // Ensure all variables are arrays to prevent slice errors
+  products = Array.isArray(products) ? products : [];
+  blogPosts = Array.isArray(blogPosts) ? blogPosts : [];
+  partnerLogos = Array.isArray(partnerLogos) ? partnerLogos : [];
+
   // Get products from each category, up to 3 per category
   // Priority: targetAudience is the primary filter, category is fallback
   // B2C products: For families - prioritize targetAudience, then check category
-  const b2cProducts = products.filter(p => {
+  const b2cProducts = (Array.isArray(products) ? products : []).filter(p => {
     // Primary: Check targetAudience first
     if (p.targetAudience === 'private-users') return true;
     if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
@@ -114,7 +119,7 @@ export async function getServerSideProps() {
   }).slice(0, 3);
   
   // B2B/B2E products: For organizations & schools - prioritize targetAudience, then check category
-  const b2bProducts = products.filter(p => {
+  const b2bProducts = (Array.isArray(products) ? products : []).filter(p => {
     // Primary: Check targetAudience first
     if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
     if (p.targetAudience === 'private-users') return false;
@@ -127,10 +132,12 @@ export async function getServerSideProps() {
   }).slice(0, 3);
   
   // Remove any duplicates (in case a product matches both criteria)
-  const uniqueB2C = b2cProducts.filter(p => !b2bProducts.some(bp => bp._id === p._id));
-  const uniqueB2B = b2bProducts.filter(p => !b2cProducts.some(cp => cp._id === p._id));
+  const uniqueB2C = Array.isArray(b2cProducts) ? b2cProducts.filter(p => !b2bProducts.some(bp => bp._id === p._id)) : [];
+  const uniqueB2B = Array.isArray(b2bProducts) ? b2bProducts.filter(p => !b2cProducts.some(cp => cp._id === p._id)) : [];
   
-  const allFeaturedProducts = [...uniqueB2C, ...uniqueB2B].slice(0, 6);
+  const allFeaturedProducts = Array.isArray(uniqueB2C) && Array.isArray(uniqueB2B) 
+    ? [...uniqueB2C, ...uniqueB2B].slice(0, 6) 
+    : [];
   
   console.log('📊 Homepage products breakdown:', {
     total: products.length,
@@ -142,7 +149,7 @@ export async function getServerSideProps() {
   return {
     props: {
       products: allFeaturedProducts,
-      blogPosts: blogPosts.slice(0, 3),
+      blogPosts: Array.isArray(blogPosts) ? blogPosts.slice(0, 3) : [],
       partnerLogos,
       error: error ? { message: error.message } : null,
     },
@@ -2542,14 +2549,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
           data-aos="zoom-in"
           data-aos-duration="800"
         >
-          {latestPosts.length === 0 ? (
+          {!latestPosts || latestPosts.length === 0 ? (
             <Typography textAlign="center" color="text.secondary">
               No articles yet. Check back soon!
             </Typography>
           ) : (
             <>
               <Grid container spacing={4}>
-                {latestPosts.slice(0, 3).map((post, index) => (
+                {(Array.isArray(latestPosts) ? latestPosts : []).slice(0, 3).map((post, index) => (
                   <Grid item xs={12} md={4} key={post._id}>
                     <BlogCard post={post} delay={index * 100} />
                   </Grid>
