@@ -78,18 +78,32 @@ export default function PackagesPage() {
         _t: Date.now(), // Timestamp to prevent caching - ensures fresh data on every call
       };
 
-      // If type is specified in URL, use it (for backward compatibility)
-      // if (type === 'B2B' || type === 'B2E') {
-      //   params.targetAudience = 'B2B_B2E';
-      // } else if (type === 'B2C') {
-      //   params.targetAudience = 'B2C';
-      // }
-      if (type === 'B2B') params.targetAudience = 'B2B';
-else if (type === 'B2E') params.targetAudience = 'B2E';
-else if (type === 'B2B_B2E') params.targetAudience = 'B2B,B2E'; // only if backend supports CSV
-else if (type === 'B2C') params.targetAudience = 'B2C';
+      // Determine which category to use for filtering
+      let categoryToUse = categoryOverride || selectedCategory;
+      if (type === 'B2C') {
+        categoryToUse = 'families';
+      } else if (type === 'B2B' || type === 'B2E') {
+        categoryToUse = 'organizations_schools';
+      }
 
-      // If no type specified, fetch all packages
+      // If type is specified in URL, use it (for backward compatibility)
+      if (type === 'B2B') {
+        params.targetAudience = 'B2B';
+      } else if (type === 'B2E') {
+        params.targetAudience = 'B2E';
+      } else if (type === 'B2B_B2E') {
+        params.targetAudience = 'B2B_B2E'; // Backend supports this special value
+      } else if (type === 'B2C') {
+        params.targetAudience = 'B2C';
+      } else {
+        // If no type specified, use category to determine targetAudience
+        if (categoryToUse === 'organizations_schools') {
+          params.targetAudience = 'B2B_B2E'; // Fetch B2B and B2E packages
+        } else if (categoryToUse === 'families') {
+          params.targetAudience = 'B2C'; // Fetch B2C packages
+        }
+        // If categoryToUse is neither, fetch all packages (no targetAudience param)
+      }
 
       const url = `${API_URL}/packages/public`;
       console.log('📡 API: GET', url, params, 'Headers:', NO_CACHE_HEADERS);
@@ -100,14 +114,7 @@ else if (type === 'B2C') params.targetAudience = 'B2C';
       const fetchedPackages = res.data || [];
       setAllPackages(fetchedPackages);
       
-      // Determine which category to use for filtering
-      let categoryToUse = categoryOverride || selectedCategory;
-      if (type === 'B2C') {
-        categoryToUse = 'families';
-      } else if (type === 'B2B' || type === 'B2E') {
-        categoryToUse = 'organizations_schools';
-      }
-      
+      // Apply client-side filtering as well to ensure correct filtering
       filterPackagesByCategory(fetchedPackages, categoryToUse);
     } catch (err) {
       console.error('❌ Error fetching packages:', {
