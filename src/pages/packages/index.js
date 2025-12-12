@@ -79,11 +79,16 @@ export default function PackagesPage() {
       };
 
       // If type is specified in URL, use it (for backward compatibility)
-      if (type === 'B2B' || type === 'B2E') {
-        params.targetAudience = 'B2B_B2E';
-      } else if (type === 'B2C') {
-        params.targetAudience = 'B2C';
-      }
+      // if (type === 'B2B' || type === 'B2E') {
+      //   params.targetAudience = 'B2B_B2E';
+      // } else if (type === 'B2C') {
+      //   params.targetAudience = 'B2C';
+      // }
+      if (type === 'B2B') params.targetAudience = 'B2B';
+else if (type === 'B2E') params.targetAudience = 'B2E';
+else if (type === 'B2B_B2E') params.targetAudience = 'B2B,B2E'; // only if backend supports CSV
+else if (type === 'B2C') params.targetAudience = 'B2C';
+
       // If no type specified, fetch all packages
 
       const url = `${API_URL}/packages/public`;
