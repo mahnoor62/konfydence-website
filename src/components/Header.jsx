@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   AppBar,
   Toolbar,
@@ -14,8 +14,6 @@ import {
   ListItemButton,
   ListItemText,
   useScrollTrigger,
-  Menu,
-  MenuItem,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
@@ -37,7 +35,8 @@ const navItems = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [dashboardMenuAnchor, setDashboardMenuAnchor] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
   const pathname = usePathname();
   const { user, logout, loading: authLoading } = useAuth();
 
@@ -50,16 +49,28 @@ export default function Header() {
     setScrolled(trigger);
   }, [trigger]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
-  const handleDashboardMenuOpen = (event) => {
-    setDashboardMenuAnchor(event.currentTarget);
-  };
-
-  const handleDashboardMenuClose = () => {
-    setDashboardMenuAnchor(null);
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
   };
 
   return (
@@ -172,11 +183,17 @@ export default function Header() {
               >
                 {!authLoading && user ? (
                   <>
-                    <Box>
+                    <Box
+                      ref={dropdownRef}
+                      sx={{
+                        position: 'relative',
+                        display: 'inline-block',
+                      }}
+                    >
                       <Button
                         variant="outlined"
-                        onClick={handleDashboardMenuOpen}
-                        endIcon={<ArrowDropDownIcon />}
+                        onClick={toggleDropdown}
+                        endIcon={<ArrowDropDownIcon sx={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />}
                         sx={{
                           borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
                           color: scrolled ? 'primary.main' : 'white',
@@ -192,65 +209,92 @@ export default function Header() {
                       >
                         Dashboard
                       </Button>
-                      <Menu
-                        anchorEl={dashboardMenuAnchor}
-                        open={Boolean(dashboardMenuAnchor)}
-                        onClose={handleDashboardMenuClose}
-                        anchorOrigin={{
-                          vertical: 'bottom',
-                          horizontal: 'left',
-                        }}
-                        transformOrigin={{
-                          vertical: 'top',
-                          horizontal: 'left',
-                        }}
-                        PaperProps={{
-                          sx: {
-                            mt: 1,
-                            minWidth: 180,
+                      {dropdownOpen && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: '100%',
+                            left: 0,
+                            marginTop: '4px',
+                            minWidth: '180px',
+                            backgroundColor: 'white',
+                            borderRadius: '8px',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                          },
-                        }}
-                      >
-                        <MenuItem
-                          component={Link}
-                          href="/dashboard"
-                          onClick={handleDashboardMenuClose}
-                          sx={{
-                            '&:hover': {
-                              backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                            zIndex: 1000,
+                            overflow: 'hidden',
+                            animation: 'fadeIn 0.2s ease',
+                            '@keyframes fadeIn': {
+                              from: { opacity: 0, transform: 'translateY(-10px)' },
+                              to: { opacity: 1, transform: 'translateY(0)' },
                             },
                           }}
                         >
-                          Dashboard
-                        </MenuItem>
-                        <MenuItem
-                          component={Link}
-                          href="/game"
-                          onClick={handleDashboardMenuClose}
-                          sx={{
-                            '&:hover': {
-                              backgroundColor: 'rgba(6, 60, 94, 0.08)',
-                            },
-                          }}
-                        >
-                          Game
-                        </MenuItem>
-                        <MenuItem
-                          onClick={() => {
-                            handleDashboardMenuClose();
-                            logout();
-                          }}
-                          sx={{
-                            color: '#d32f2f',
-                            '&:hover': {
-                              backgroundColor: 'rgba(211, 47, 47, 0.08)',
-                            },
-                          }}
-                        >
-                          Logout
-                        </MenuItem>
-                      </Menu>
+                          <Box
+                            component={Link}
+                            href="/dashboard"
+                            onClick={() => setDropdownOpen(false)}
+                            sx={{
+                              display: 'block',
+                              padding: '12px 16px',
+                              color: '#063C5E',
+                              textDecoration: 'none',
+                              fontSize: '0.95rem',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s',
+                              '&:hover': {
+                                backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                              },
+                            }}
+                          >
+                            Dashboard
+                          </Box>
+                          <Box
+                            component={Link}
+                            href="/game"
+                            onClick={() => setDropdownOpen(false)}
+                            sx={{
+                              display: 'block',
+                              padding: '12px 16px',
+                              color: '#063C5E',
+                              textDecoration: 'none',
+                              fontSize: '0.95rem',
+                              fontWeight: 500,
+                              transition: 'background-color 0.2s',
+                              '&:hover': {
+                                backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                              },
+                            }}
+                          >
+                            Game
+                          </Box>
+                          <Box
+                            component="button"
+                            onClick={() => {
+                              setDropdownOpen(false);
+                              logout();
+                            }}
+                            sx={{
+                              display: 'block',
+                              width: '100%',
+                              padding: '12px 16px',
+                              color: '#d32f2f',
+                              textDecoration: 'none',
+                              fontSize: '0.95rem',
+                              fontWeight: 500,
+                              border: 'none',
+                              background: 'none',
+                              textAlign: 'left',
+                              cursor: 'pointer',
+                              transition: 'background-color 0.2s',
+                              '&:hover': {
+                                backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                              },
+                            }}
+                          >
+                            Logout
+                          </Box>
+                        </Box>
+                      )}
                     </Box>
                   </>
                 ) : (
