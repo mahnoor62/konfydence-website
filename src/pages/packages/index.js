@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import { 
   Container, 
@@ -70,24 +70,12 @@ export default function PackagesPage() {
   // If no type specified, default to showing all packages (backward compatibility)
   const showRequestCustomButton = type === 'B2B' || type === 'B2E' || type === 'B2B_B2E';
 
-  useEffect(() => {
-    if (router.isReady) {
-      // If type is in URL, set category accordingly
-      if (type === 'B2C') {
-        setSelectedCategory('families');
-      } else if (type === 'B2B' || type === 'B2E') {
-        setSelectedCategory('organizations_schools');
-      }
-      fetchPackages();
-    }
-  }, [router.isReady, type]);
-
-  const fetchPackages = async () => {
+  const fetchPackages = useCallback(async (categoryOverride = null) => {
     try {
       setLoading(true);
       setError(null);
       const params = {
-        _t: Date.now(),
+        _t: Date.now(), // Timestamp to prevent caching - ensures fresh data on every call
       };
 
       // If type is specified in URL, use it (for backward compatibility)
@@ -99,7 +87,7 @@ export default function PackagesPage() {
       // If no type specified, fetch all packages
 
       const url = `${API_URL}/packages/public`;
-      console.log('📡 API: GET', url, params);
+      console.log('📡 API: GET', url, params, 'Headers:', NO_CACHE_HEADERS);
       const res = await axios.get(url, {
         headers: NO_CACHE_HEADERS,
         params,
@@ -108,7 +96,7 @@ export default function PackagesPage() {
       setAllPackages(fetchedPackages);
       
       // Determine which category to use for filtering
-      let categoryToUse = selectedCategory;
+      let categoryToUse = categoryOverride || selectedCategory;
       if (type === 'B2C') {
         categoryToUse = 'families';
       } else if (type === 'B2B' || type === 'B2E') {
@@ -127,7 +115,19 @@ export default function PackagesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [type, selectedCategory]);
+
+  useEffect(() => {
+    if (router.isReady) {
+      // If type is in URL, set category accordingly
+      if (type === 'B2C') {
+        setSelectedCategory('families');
+      } else if (type === 'B2B' || type === 'B2E') {
+        setSelectedCategory('organizations_schools');
+      }
+      fetchPackages();
+    }
+  }, [router.isReady, type, fetchPackages]);
 
   // Filter packages by category
   const filterPackagesByCategory = (packagesList, category) => {
@@ -168,7 +168,8 @@ export default function PackagesPage() {
   // Handle category change
   const handleCategoryChange = (event, newValue) => {
     setSelectedCategory(newValue);
-    filterPackagesByCategory(allPackages, newValue);
+    // Re-fetch packages with new category to get fresh data
+    fetchPackages(newValue);
   };
 
   // Handle free trial request
