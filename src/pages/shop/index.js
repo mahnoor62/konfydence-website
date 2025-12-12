@@ -304,35 +304,155 @@ const params = {
             </Box>
           ) : (
             <>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                textAlign="center"
-                sx={{ mb: 3 }}
-              >
-                Showing {showingFrom}&ndash;{showingTo} of {meta.total} products
-                {(selectedType !== 'all' || selectedCategory !== 'all') && (
+              {/* Split products into B2C and B2B/B2E */}
+              {(() => {
+                // B2C products: For families - prioritize targetAudience
+                const b2cProducts = products.filter(p => {
+                  // Primary: Check targetAudience first
+                  if (p.targetAudience === 'private-users') return true;
+                  if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
+                  
+                  // Fallback: If no targetAudience, check category
+                  if (!p.targetAudience) {
+                    return p.category === 'private-users' ||
+                           p.category === 'membership' ||
+                           p.category === 'template' ||
+                           p.category === 'guide' ||
+                           p.category === 'toolkit' ||
+                           p.category === 'digital-guide' ||
+                           (p.name?.toLowerCase().includes('scam survival kit'));
+                  }
+                  return false;
+                });
+                
+                // B2B/B2E products: For organizations & schools - prioritize targetAudience
+                const b2bProducts = products.filter(p => {
+                  // Primary: Check targetAudience first
+                  if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
+                  if (p.targetAudience === 'private-users') return false;
+                  
+                  // Fallback: If no targetAudience, check category
+                  if (!p.targetAudience) {
+                    return p.category === 'schools' || p.category === 'businesses';
+                  }
+                  return false;
+                });
+                
+                // Remove duplicates - ensure each product appears only once
+                const uniqueB2C = b2cProducts.filter(p => 
+                  !b2bProducts.some(bp => bp._id === p._id)
+                );
+                const uniqueB2B = b2bProducts.filter(p => 
+                  !b2cProducts.some(cp => cp._id === p._id)
+                );
+                
+                return (
                   <>
-                    {' '}
-                    {selectedType !== 'all' && `(${selectedType})`}
-                    {selectedCategory !== 'all' && ` - ${selectedCategory}`}
+                    {/* B2C Products Section */}
+                    {uniqueB2C.length > 0 && (
+                      <Box sx={{ mb: uniqueB2B.length > 0 ? 8 : 4 }}>
+                        <Typography 
+                          variant="h3" 
+                          sx={{ 
+                            mb: 2,
+                            fontSize: { xs: '1.75rem', md: '2.5rem' },
+                            fontWeight: 700,
+                            color: '#063C5E',
+                            textAlign: 'center',
+                          }}
+                        >
+                         For Families
+                        </Typography>
+                        {/* <Typography 
+                          variant="body1" 
+                          sx={{ 
+                            mb: 4,
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                          }}
+                        >
+                          For Families
+                        </Typography> */}
+                        <Grid
+                          data-aos="zoom-in"
+                          data-aos-duration="800"
+                          data-aos-delay="100"
+                          container
+                          spacing={4}
+                          sx={{ alignItems: 'stretch', mb: 4 }}
+                        >
+                          {uniqueB2C.map((product, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={product._id}>
+                              <ProductCard product={product} delay={index * 100} />
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {/* B2B/B2E Products Section */}
+                    {uniqueB2B.length > 0 && (
+                      <Box sx={{ mb: 4 }}>
+                        <Typography 
+                          variant="h3" 
+                          sx={{ 
+                            mb: 2,
+                            fontSize: { xs: '1.75rem', md: '2.5rem' },
+                            fontWeight: 700,
+                            color: '#063C5E',
+                            textAlign: 'center',
+                          }}
+                        >
+                         For Organizations and Schools
+                        </Typography>
+                        {/* <Typography 
+                          variant="body1" 
+                          sx={{ 
+                            mb: 4,
+                            textAlign: 'center',
+                            color: 'text.secondary',
+                          }}
+                        >
+                          For Organizations and Schools
+                        </Typography> */}
+                        <Grid
+                          data-aos="zoom-in"
+                          data-aos-duration="800"
+                          data-aos-delay="100"
+                          container
+                          spacing={4}
+                          sx={{ alignItems: 'stretch', mb: 4 }}
+                        >
+                          {uniqueB2B.map((product, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={product._id}>
+                              <ProductCard product={product} delay={index * 100} />
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {/* Show count if both sections exist */}
+                    {(uniqueB2C.length > 0 || uniqueB2B.length > 0) && (
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        textAlign="center"
+                        sx={{ mb: 3 }}
+                      >
+                        Showing {showingFrom}&ndash;{showingTo} of {meta.total} products
+                        {(selectedType !== 'all' || selectedCategory !== 'all') && (
+                          <>
+                            {' '}
+                            {selectedType !== 'all' && `(${selectedType})`}
+                            {selectedCategory !== 'all' && ` - ${selectedCategory}`}
+                          </>
+                        )}
+                      </Typography>
+                    )}
                   </>
-                )}
-              </Typography>
-              <Grid
-                data-aos="zoom-in"
-                data-aos-duration="800"
-                data-aos-delay="100"
-                container
-                spacing={4}
-                sx={{ alignItems: 'stretch', mb: 4 }}
-              >
-                {products.map((product, index) => (
-                  <Grid item xs={12} sm={6} md={4} key={product._id}>
-                    <ProductCard product={product} delay={index * 100} />
-                  </Grid>
-                ))}
-              </Grid>
+                );
+              })()}
             </>
           )}
 

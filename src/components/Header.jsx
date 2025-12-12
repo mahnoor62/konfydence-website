@@ -14,10 +14,14 @@ import {
   ListItemButton,
   ListItemText,
   useScrollTrigger,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
   { label: 'Home', href: '/' },
@@ -33,7 +37,9 @@ const navItems = [
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [dashboardMenuAnchor, setDashboardMenuAnchor] = useState(null);
   const pathname = usePathname();
+  const { user, logout, loading: authLoading } = useAuth();
 
   const trigger = useScrollTrigger({
     disableHysteresis: true,
@@ -46,6 +52,14 @@ export default function Header() {
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleDashboardMenuOpen = (event) => {
+    setDashboardMenuAnchor(event.currentTarget);
+  };
+
+  const handleDashboardMenuClose = () => {
+    setDashboardMenuAnchor(null);
   };
 
   return (
@@ -156,41 +170,128 @@ export default function Header() {
                   gap: 1,
                 }}
               >
-                <Button
-                  variant="outlined"
-                  component={Link}
-                  href="/contact?topic=b2b_demo"
-                  sx={{
-                    borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
-                    color: scrolled ? 'primary.main' : 'white',
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    px: 2.5,
-                    '&:hover': {
-                      borderColor: scrolled ? 'primary.dark' : 'white',
-                      backgroundColor: scrolled ? 'primary.light' : 'rgba(255,255,255,0.1)',
-                      color: 'white',
-                    },
-                  }}
-                >
-                  Request Demo
-                </Button>
-                <Button
-                  variant="contained"
-                  component={Link}
-                  href="/shop"
-                  sx={{
-                    textTransform: 'none',
-                    fontWeight: 600,
-                    background: 'linear-gradient(135deg, #FFC54D, #FF8A00)',
-                    color: '#073041',
-                    '&:hover': {
-                      opacity: 0.95,
-                    },
-                  }}
-                >
-                  Shop Now
-                </Button>
+                {!authLoading && user ? (
+                  <>
+                    <Box>
+                      <Button
+                        variant="outlined"
+                        onClick={handleDashboardMenuOpen}
+                        endIcon={<ArrowDropDownIcon />}
+                        sx={{
+                          borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
+                          color: scrolled ? 'primary.main' : 'white',
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          px: 2.5,
+                          '&:hover': {
+                            borderColor: scrolled ? 'primary.dark' : 'white',
+                            backgroundColor: scrolled ? 'primary.light' : 'rgba(255,255,255,0.1)',
+                            color: 'white',
+                          },
+                        }}
+                      >
+                        Dashboard
+                      </Button>
+                      <Menu
+                        anchorEl={dashboardMenuAnchor}
+                        open={Boolean(dashboardMenuAnchor)}
+                        onClose={handleDashboardMenuClose}
+                        anchorOrigin={{
+                          vertical: 'bottom',
+                          horizontal: 'left',
+                        }}
+                        transformOrigin={{
+                          vertical: 'top',
+                          horizontal: 'left',
+                        }}
+                        PaperProps={{
+                          sx: {
+                            mt: 1,
+                            minWidth: 180,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                          },
+                        }}
+                      >
+                        <MenuItem
+                          component={Link}
+                          href="/dashboard"
+                          onClick={handleDashboardMenuClose}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                            },
+                          }}
+                        >
+                          Dashboard
+                        </MenuItem>
+                        <MenuItem
+                          component={Link}
+                          href="/game"
+                          onClick={handleDashboardMenuClose}
+                          sx={{
+                            '&:hover': {
+                              backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                            },
+                          }}
+                        >
+                          Game
+                        </MenuItem>
+                        <MenuItem
+                          onClick={() => {
+                            handleDashboardMenuClose();
+                            logout();
+                          }}
+                          sx={{
+                            color: '#d32f2f',
+                            '&:hover': {
+                              backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                            },
+                          }}
+                        >
+                          Logout
+                        </MenuItem>
+                      </Menu>
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outlined"
+                      component={Link}
+                      href="/login"
+                      sx={{
+                        borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
+                        color: scrolled ? 'primary.main' : 'white',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        px: 2.5,
+                        '&:hover': {
+                          borderColor: scrolled ? 'primary.dark' : 'white',
+                          backgroundColor: scrolled ? 'primary.light' : 'rgba(255,255,255,0.1)',
+                          color: 'white',
+                        },
+                      }}
+                    >
+                      Login
+                    </Button>
+                    <Button
+                      variant="contained"
+                      component={Link}
+                      href="/shop"
+                      sx={{
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        background: 'linear-gradient(135deg, #FFC54D, #FF8A00)',
+                        color: '#073041',
+                        '&:hover': {
+                          opacity: 0.95,
+                        },
+                      }}
+                    >
+                      Shop Now
+                    </Button>
+                  </>
+                )}
               </Box>
 
               <IconButton
@@ -254,16 +355,49 @@ export default function Header() {
                 </ListItem>
               );
             })}
-            <ListItem disablePadding>
-              <ListItemButton component={Link} href="/contact?topic=b2b_demo">
-                <ListItemText primary="Request Demo" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={Link} href="/shop">
-                <ListItemText primary="Shop Now" />
-              </ListItemButton>
-            </ListItem>
+            {!authLoading && user ? (
+              <>
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} href="/dashboard">
+                    <ListItemText primary="Dashboard" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} href="/game">
+                    <ListItemText primary="Game" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton 
+                    onClick={() => {
+                      handleDrawerToggle();
+                      logout();
+                    }}
+                    sx={{
+                      color: '#d32f2f',
+                      '&:hover': {
+                        backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                      },
+                    }}
+                  >
+                    <ListItemText primary="Logout" />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            ) : (
+              <>
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} href="/login">
+                    <ListItemText primary="Login" />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding>
+                  <ListItemButton component={Link} href="/shop">
+                    <ListItemText primary="Shop Now" />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
           </List>
         </Box>
       </Drawer>

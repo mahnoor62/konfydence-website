@@ -270,17 +270,26 @@ export default function ProductDetailPage({ product, error }) {
 
       <Box component="main" sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB', minHeight: '100vh' }}>
         <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
-          <Grid container spacing={6}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {/* Row 1: Product Image */}
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                mb: 2,
+              }}
+            >
               <Box
                 sx={{
                   position: 'relative',
                   width: '100%',
-                  paddingTop: '66.67%', // 3:2 aspect ratio (2/3 = 0.6667)
-                  backgroundColor: '#F5F8FB', // Consistent background color
+                  maxWidth: { xs: '100%', sm: '500px', md: '500px' },
+                  paddingTop: '40%', // Smaller aspect ratio
+                  backgroundColor: '#F5F8FB',
                   borderRadius: 4,
                   overflow: 'hidden',
-                  boxShadow: '0 30px 70px rgba(6,60,94,0.2)',
+                  boxShadow: '0 20px 50px rgba(6,60,94,0.15)',
                 }}
               >
                 <Box
@@ -298,11 +307,11 @@ export default function ProductDetailPage({ product, error }) {
                   }}
                 />
               </Box>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={6}>
-
-              {/* 🔥 SAFE TYPE FIX */}
+            {/* Row 2: All Product Details */}
+            <Box>
+              {/* Tags/Badges */}
               <Box sx={{ mb: 3, display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                 <Chip label={safeType} color="primary" />
                 {product.badges?.map((badge) => (
@@ -310,15 +319,79 @@ export default function ProductDetailPage({ product, error }) {
                 ))}
               </Box>
 
+              {/* Product Title */}
               <Typography variant="h3" sx={{ fontWeight: 700, mb: 2, color: '#052A42' }}>
                 {product.name}
               </Typography>
 
+              {/* Product Description */}
               <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.7 }}>
                 {product.description}
               </Typography>
 
-              {/* 🔥 SAFE PRICE FIX */}
+              {/* Attached Cards Section */}
+              {product.cardIds && product.cardIds.length > 0 && (
+                <Box sx={{ mb: 4, p: 2, backgroundColor: '#F5F8FB', borderRadius: 2, border: '1px solid #E0E7F0' }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#063C5E' }}>
+                    Included Cards
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    This product includes {product.cardIds.length} card{product.cardIds.length !== 1 ? 's' : ''} with the following levels:
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {product.cardIds.map((card, index) => {
+                      const levelCount = card.levels?.length || 0;
+                      const totalQuestions = card.levels?.reduce((sum, level) => sum + (level.questions?.length || 0), 0) || 0;
+                      return (
+                        <Box
+                          key={card._id || index}
+                          sx={{
+                            p: 1.5,
+                            backgroundColor: 'white',
+                            borderRadius: 1,
+                            border: '1px solid #E0E7F0',
+                          }}
+                        >
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                            {card.title || 'Untitled Card'}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
+                            <Chip
+                              label={`${levelCount} Level${levelCount !== 1 ? 's' : ''}`}
+                              size="small"
+                              sx={{
+                                backgroundColor: 'rgba(11, 120, 151, 0.1)',
+                                color: '#0B7897',
+                                fontWeight: 500,
+                              }}
+                            />
+                            {totalQuestions > 0 && (
+                              <Chip
+                                label={`${totalQuestions} Question${totalQuestions !== 1 ? 's' : ''}`}
+                                size="small"
+                                sx={{
+                                  backgroundColor: 'rgba(6, 60, 94, 0.1)',
+                                  color: '#063C5E',
+                                  fontWeight: 500,
+                                }}
+                              />
+                            )}
+                            {card.category && (
+                              <Chip
+                                label={card.category}
+                                size="small"
+                                variant="outlined"
+                              />
+                            )}
+                          </Box>
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Price */}
               {hasPrice && (
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#0B7897' }}>
                   €{formattedPrice}
@@ -326,26 +399,29 @@ export default function ProductDetailPage({ product, error }) {
               )}
 
               {/* Pricing Info */}
-              <Grid container spacing={2} sx={{ mb: 4 }}>
-                {product.pricingInfo?.primary && (
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Primary
-                    </Typography>
-                    <Typography variant="body1">{product.pricingInfo.primary}</Typography>
-                  </Grid>
-                )}
+              {product.pricingInfo && (
+                <Box sx={{ mb: 4 }}>
+                  {product.pricingInfo?.primary && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Primary
+                      </Typography>
+                      <Typography variant="body1">{product.pricingInfo.primary}</Typography>
+                    </Box>
+                  )}
 
-                {product.pricingInfo?.secondary && (
-                  <Grid item xs={12}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Secondary
-                    </Typography>
-                    <Typography variant="body1">{product.pricingInfo.secondary}</Typography>
-                  </Grid>
-                )}
-              </Grid>
+                  {product.pricingInfo?.secondary && (
+                    <Box>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Secondary
+                      </Typography>
+                      <Typography variant="body1">{product.pricingInfo.secondary}</Typography>
+                    </Box>
+                  )}
+                </Box>
+              )}
 
+              {/* Action Buttons */}
               <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                 {product.ctaHref && (
                   <Button component={Link} href={product.ctaHref} variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }}>
@@ -354,9 +430,8 @@ export default function ProductDetailPage({ product, error }) {
                 )}
                 <ProductBackButton />
               </Box>
-
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Container>
       </Box>
 

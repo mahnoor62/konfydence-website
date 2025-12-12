@@ -1274,13 +1274,24 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             variant="h3" 
                             sx={{ 
                               mb: 4,
-                              fontSize: { xs: '1.5rem', md: '2rem' },
-                              fontWeight: 600,
+                              fontSize: { xs: '1.75rem', md: '2.5rem' },
+                              fontWeight: 700,
                               color: '#063C5E',
+                              textAlign: 'left',
                             }}
                           >
-                            For families
+                           For Families
                           </Typography>
+                          {/* <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              mb: 4,
+                              textAlign: 'center',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            For Families
+                          </Typography> */}
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
                             {uniqueB2C.map((product, index) => (
                               <Grid item xs={12} md={4} key={product._id || index}>
@@ -1298,13 +1309,24 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             variant="h3" 
                             sx={{ 
                               mb: 4,
-                              fontSize: { xs: '1.5rem', md: '2rem' },
-                              fontWeight: 600,
+                              fontSize: { xs: '1.75rem', md: '2.5rem' },
+                              fontWeight: 700,
                               color: '#063C5E',
+                              textAlign: 'left',
                             }}
                           >
-                            For organizations & schools
+                            For Organizations and Schools
                           </Typography>
+                          {/* <Typography 
+                            variant="body1" 
+                            sx={{ 
+                              mb: 4,
+                              textAlign: 'center',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            For Organizations and Schools
+                          </Typography> */}
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
                             {uniqueB2B.map((product, index) => (
                               <Grid item xs={12} md={4} key={product._id || index}>

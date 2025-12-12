@@ -15,25 +15,44 @@ export default function ProductCard({ product, delay = 0 }) {
       ? cleanImageUrl
       : `${normalizedApiBase}${cleanImageUrl.startsWith('/') ? cleanImageUrl : `/${cleanImageUrl}`}`;
 
-  // Check if product is B2C based on:
-  // - Membership, Scam Survival Kit, Templates, Guides (including Digital Guides and Toolkits)
-  // - targetAudience is 'private-users'
-  // - category is 'membership', 'template', 'guide', 'toolkit', or 'digital-guide'
-  const productNameLower = product.name?.toLowerCase() || '';
-  const isB2C = 
-    product.targetAudience === 'private-users' ||
-    product.category === 'private-users' ||
-    // Product Categories that are B2C
-    product.category === 'membership' ||
-    product.category === 'template' ||
-    product.category === 'guide' ||
-    product.category === 'toolkit' || // Scam Survival Kit could be toolkit
-    product.category === 'digital-guide' || // Digital Guides are also B2C
-    // Name-based detection (fallback for products without category set)
-    productNameLower.includes('scam survival kit') ||
-    productNameLower.includes('template') ||
-    productNameLower.includes('guide') ||
-    productNameLower.includes('membership');
+  // Determine product type for packages navigation
+  // Priority: B2B > B2E > B2C
+  // B2B: businesses category or targetAudience
+  // B2E: schools category or targetAudience
+  // B2C: private-users or other B2C categories
+  const getProductType = () => {
+    // Check B2B first (highest priority)
+    if (product.targetAudience === 'businesses' || product.category === 'businesses') {
+      return 'B2B';
+    }
+    
+    // Check B2E second
+    if (product.targetAudience === 'schools' || product.category === 'schools') {
+      return 'B2E';
+    }
+    
+    // Check B2C last
+    const productNameLower = product.name?.toLowerCase() || '';
+    const isB2C = 
+      product.targetAudience === 'private-users' ||
+      product.category === 'private-users' ||
+      // Product Categories that are B2C
+      product.category === 'membership' ||
+      product.category === 'template' ||
+      product.category === 'guide' ||
+      product.category === 'toolkit' ||
+      product.category === 'digital-guide' ||
+      // Name-based detection (fallback for products without category set)
+      productNameLower.includes('scam survival kit') ||
+      productNameLower.includes('template') ||
+      productNameLower.includes('guide') ||
+      productNameLower.includes('membership');
+    
+    if (isB2C) return 'B2C';
+    
+    // Default to B2C if nothing matches
+    return 'B2C';
+  };
 
   const handleCardClick = (e) => {
     // Don't navigate if clicking on a button or link
@@ -201,30 +220,28 @@ export default function ProductCard({ product, delay = 0 }) {
             </Button>
           </Box>
           
-          {/* Buy Now button for B2C products */}
-          {isB2C && (
-            <Button
-              variant="outlined"
-              component={Link}
-              href={`/products/${product.slug}`}
-              onClick={(e) => {
-                e.stopPropagation();
-              }}
-              sx={{
-                borderColor: '#063C5E',
-                color: '#063C5E',
-                fontWeight: 600,
-                borderRadius: 2,
-                py: 1,
-                '&:hover': {
-                  borderColor: '#052A42',
-                  backgroundColor: '#E8F4F8',
-                },
-              }}
-            >
-              Buy Now
-            </Button>
-          )}
+          {/* Buy Now button - shows for all products */}
+          <Button
+            variant="outlined"
+            component={Link}
+            href={`/packages?type=${getProductType()}&productId=${product._id}`}
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            sx={{
+              borderColor: '#063C5E',
+              color: '#063C5E',
+              fontWeight: 600,
+              borderRadius: 2,
+              py: 1,
+              '&:hover': {
+                borderColor: '#052A42',
+                backgroundColor: '#E8F4F8',
+              },
+            }}
+          >
+            Buy Now
+          </Button>
         </Box>
       </CardContent>
     </Card>

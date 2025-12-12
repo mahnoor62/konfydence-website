@@ -2,6 +2,7 @@ import Head from 'next/head';
 import { Inter, Poppins } from 'next/font/google';
 import ThemeProvider from '@/components/ThemeProvider';
 import AOSProvider from '@/components/AOSProvider';
+import { AuthProvider } from '@/contexts/AuthContext';
 import '../styles/globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -24,7 +25,9 @@ export default function App({ Component, pageProps }) {
       <div className={`${inter.variable} ${poppins.variable}`}>
         <ThemeProvider>
           <AOSProvider>
-            <Component {...pageProps} />
+            <AuthProvider>
+              <Component {...pageProps} />
+            </AuthProvider>
           </AOSProvider>
         </ThemeProvider>
       </div>
