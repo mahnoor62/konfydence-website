@@ -53,6 +53,7 @@ export default function PackagesPage() {
   const [processingPurchase, setProcessingPurchase] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('organizations_schools'); // 'organizations_schools', 'families'
   const [hasB2BPackages, setHasB2BPackages] = useState(false); // Track if B2B/B2E packages exist
+  const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); // Track if user has used free trial
   const [requestForm, setRequestForm] = useState({
     organizationName: '',
     contactName: '',
@@ -129,6 +130,34 @@ export default function PackagesPage() {
     }
   }, [type, selectedCategory]);
 
+  // Check if user has used free trial
+  const checkFreeTrialUsage = useCallback(async () => {
+    if (!user) {
+      setHasUsedFreeTrial(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setHasUsedFreeTrial(false);
+        return;
+      }
+
+      const response = await axios.get(`${API_URL}/free-trial/has-used-trial`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setHasUsedFreeTrial(response.data.hasUsedTrial || false);
+    } catch (error) {
+      console.error('Error checking free trial usage:', error);
+      // If error, assume user hasn't used trial (show card)
+      setHasUsedFreeTrial(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (router.isReady) {
       // If type is in URL, set category accordingly
@@ -138,8 +167,9 @@ export default function PackagesPage() {
         setSelectedCategory('organizations_schools');
       }
       fetchPackages();
+      checkFreeTrialUsage();
     }
-  }, [router.isReady, type, fetchPackages]);
+  }, [router.isReady, type, fetchPackages, checkFreeTrialUsage]);
 
   // Filter packages by category
   const filterPackagesByCategory = (packagesList, category) => {
@@ -229,6 +259,9 @@ export default function PackagesPage() {
           },
         }
       );
+
+      // Mark that user has used free trial
+      setHasUsedFreeTrial(true);
 
       // Redirect to trial success page with code
       router.push(`/trial-success?code=${response.data.trial.uniqueCode}`);
@@ -501,8 +534,8 @@ export default function PackagesPage() {
                 mb: 4 
               }}
             >
-              {/* Free Trial Card - Show for Organizations & Schools when B2B/B2E packages exist */}
-              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') && hasB2BPackages && packages.length > 0 && (
+              {/* Free Trial Card - Show for Organizations & Schools when B2B/B2E packages exist and user hasn't used trial */}
+              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') && hasB2BPackages && packages.length > 0 && !hasUsedFreeTrial && (
                 <Grid 
                   item 
                   xs={12} 

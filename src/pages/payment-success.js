@@ -227,13 +227,13 @@ export default function PaymentSuccessPage() {
             py: 8,
           }}
         >
-          <Container maxWidth="md">
+          <Container maxWidth="sm">
             <Card sx={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-              <CardContent sx={{ p: 6, textAlign: 'center' }}>
-                <Stack spacing={4} alignItems="center">
+              <CardContent sx={{ p: 2, textAlign: 'center' }}>
+                <Stack spacing={1.5} alignItems="center">
                   <HourglassEmptyIcon
                     sx={{
-                      fontSize: 80,
+                      fontSize: { xs: 40, sm: 50 },
                       color: '#FF9800',
                       animation: 'spin 2s linear infinite',
                       '@keyframes spin': {
@@ -245,28 +245,29 @@ export default function PaymentSuccessPage() {
 
                   <Box>
                     <Typography
-                      variant="h4"
+                      variant="h5"
                       sx={{
                         fontWeight: 700,
                         color: '#063C5E',
-                        mb: 2,
+                        mb: 0.5,
+                        fontSize: { xs: '1.2rem', sm: '1.4rem' },
                       }}
                     >
                       Payment in Processing...
                     </Typography>
-                    <Typography variant="body1" color="text.secondary">
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
                       We are verifying your payment. Please wait while we confirm your transaction.
                     </Typography>
                   </Box>
 
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <CircularProgress size={24} />
-                    <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <CircularProgress size={20} />
+                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                       {checkingStatus ? 'Checking payment status...' : 'Waiting for confirmation...'}
                     </Typography>
                   </Box>
 
-                  <Alert severity="info" sx={{ width: '100%' }}>
+                  <Alert severity="info" sx={{ width: '100%', fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                     This may take a few moments. Please do not close this page.
                   </Alert>
                 </Stack>
@@ -318,14 +319,14 @@ export default function PaymentSuccessPage() {
           py: 8,
         }}
       >
-        <Container maxWidth="md">
+        <Container maxWidth="sm">
           <Card sx={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-            <CardContent sx={{ p: 6, textAlign: 'center' }}>
-              <Stack spacing={4} alignItems="center">
+            <CardContent sx={{ p: 2, textAlign: 'center' }}>
+              <Stack spacing={1.5} alignItems="center">
                 {/* Success Icon */}
                 <CheckCircleIcon
                   sx={{
-                    fontSize: 80,
+                    fontSize: { xs: 40, sm: 50 },
                     color: '#4caf50',
                   }}
                 />
@@ -333,16 +334,17 @@ export default function PaymentSuccessPage() {
                 {/* Success Message */}
                 <Box>
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
                       fontWeight: 700,
                       color: '#063C5E',
-                      mb: 2,
+                      mb: 0.5,
+                      fontSize: { xs: '1.2rem', sm: '1.4rem' },
                     }}
                   >
                     Payment Successful!
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
+                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.8rem', sm: '0.9rem' } }}>
                     Thank you for your purchase. Your order has been confirmed.
                   </Typography>
                 </Box>
@@ -350,15 +352,15 @@ export default function PaymentSuccessPage() {
                 {/* Unique Code */}
                 <Box
                   sx={{
-                    p: 3,
+                    p: 1.5,
                     backgroundColor: '#F5F8FB',
                     borderRadius: 2,
                     border: '2px dashed #0B7897',
                     width: '100%',
-                    maxWidth: 500,
+                    maxWidth: 400,
                   }}
                 >
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                     Your Unique Order Code
                   </Typography>
                   <Box
@@ -366,23 +368,25 @@ export default function PaymentSuccessPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 2,
-                      mt: 1,
+                      gap: 1,
+                      mt: 0.5,
                     }}
                   >
                     <Typography
-                      variant="h3"
+                      variant="h5"
                       sx={{
                         fontWeight: 700,
                         color: '#0B7897',
                         fontFamily: 'monospace',
-                        letterSpacing: 2,
+                        letterSpacing: 1.5,
+                        fontSize: { xs: '1.1rem', sm: '1.3rem' },
                       }}
                     >
                       {transaction.uniqueCode}
                     </Typography>
                     <IconButton
                       onClick={handleCopyCode}
+                      size="small"
                       sx={{
                         color: '#0B7897',
                         '&:hover': {
@@ -390,11 +394,11 @@ export default function PaymentSuccessPage() {
                         },
                       }}
                     >
-                      <ContentCopyIcon />
+                      <ContentCopyIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
                     </IconButton>
                   </Box>
                   {copied && (
-                    <Alert severity="success" sx={{ mt: 2 }}>
+                    <Alert severity="success" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                       Code copied to clipboard!
                     </Alert>
                   )}
@@ -405,17 +409,18 @@ export default function PaymentSuccessPage() {
                   severity="warning" 
                   sx={{ 
                     width: '100%', 
-                    maxWidth: 500,
+                    maxWidth: 400,
                     textAlign: 'left',
+                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
                     '& .MuiAlert-message': {
                       width: '100%'
                     }
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                     Important Instructions:
                   </Typography>
-                  <Typography variant="body2">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
                     Copy this code now - this is a one-time display. Without this code, you cannot play the game. 
                     Make sure to save it in a safe place before proceeding.
                   </Typography>
@@ -426,36 +431,36 @@ export default function PaymentSuccessPage() {
                   sx={{
                     width: '100%',
                     textAlign: 'left',
-                    p: 2,
+                    p: 1.5,
                     backgroundColor: '#F5F8FB',
                     borderRadius: 2,
                   }}
                 >
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.75, fontSize: { xs: '0.85rem', sm: '0.95rem' } }}>
                     Transaction Details
                   </Typography>
-                  <Stack spacing={1}>
+                  <Stack spacing={0.75}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         Package:
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         {transaction.packageId?.name || 'N/A'}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         Amount:
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         {transaction.currency} {transaction.amount.toFixed(2)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         Date:
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                         {new Date(transaction.createdAt).toLocaleDateString()}
                       </Typography>
                     </Box>
@@ -463,18 +468,18 @@ export default function PaymentSuccessPage() {
                 </Box>
 
                 {/* Action Buttons */}
-                <Stack spacing={2} sx={{ width: '100%', maxWidth: 400 }}>
+                <Stack spacing={1} sx={{ width: '100%', maxWidth: 400 }}>
                   <Button
                     variant="contained"
                     fullWidth
-                    size="large"
+                    size="medium"
                     onClick={handlePlayGame}
                     sx={{
                       backgroundColor: '#4CAF50',
                       color: 'white',
                       fontWeight: 700,
-                      py: 1.5,
-                      fontSize: '1.1rem',
+                      py: 1,
+                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
                       '&:hover': {
                         backgroundColor: '#45a049',
                       },
@@ -485,13 +490,14 @@ export default function PaymentSuccessPage() {
                   <Button
                     variant="contained"
                     fullWidth
-                    size="large"
+                    size="medium"
                     onClick={() => router.push('/dashboard')}
                     sx={{
                       backgroundColor: '#0B7897',
                       color: 'white',
                       fontWeight: 700,
-                      py: 1.5,
+                      py: 1,
+                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
                       '&:hover': {
                         backgroundColor: '#063C5E',
                       },
@@ -502,10 +508,13 @@ export default function PaymentSuccessPage() {
                   <Button
                     variant="outlined"
                     fullWidth
+                    size="medium"
                     onClick={() => router.push('/packages')}
                     sx={{
                       borderColor: '#0B7897',
                       color: '#0B7897',
+                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                      py: 1,
                       '&:hover': {
                         borderColor: '#063C5E',
                         backgroundColor: 'rgba(11, 120, 151, 0.1)',
