@@ -73,6 +73,33 @@ export default function Header() {
     setDropdownOpen(!dropdownOpen);
   };
 
+  // Get dashboard route based on user role and membership
+  const getDashboardRoute = () => {
+    if (!user) return '/dashboard';
+    
+    const userRole = user.role;
+    const hasOrganizationId = user.organizationId;
+    const hasSchoolId = user.schoolId;
+    const isMember = hasOrganizationId || hasSchoolId;
+    
+    // Check if user is a member/student
+    if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
+      return '/dashboard/member';
+    }
+    
+    // Check if user is admin
+    if (userRole === 'b2b_user') {
+      return '/dashboard/organization';
+    }
+    
+    if (userRole === 'b2e_user') {
+      return '/dashboard/institute';
+    }
+    
+    // Default dashboard for regular users
+    return '/dashboard';
+  };
+
   return (
     <>
       <AppBar
@@ -147,7 +174,8 @@ export default function Header() {
                 }}
               >
                 {navItems.map((item) => {
-                  const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+                  const safePath = pathname || '';
+                  const isActive = safePath === item.href || (item.href !== '/' && safePath.startsWith(item.href));
                   return (
                     <Button
                       key={item.href}
@@ -231,7 +259,7 @@ export default function Header() {
                         >
                           <Box
                             component={Link}
-                            href="/dashboard"
+                            href={getDashboardRoute()}
                             onClick={() => setDropdownOpen(false)}
                             sx={{
                               display: 'block',
@@ -369,7 +397,8 @@ export default function Header() {
         <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center', pt: 2 }}>
           <List sx={{ px: 1 }}>
             {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+              const safePath = pathname || '';
+              const isActive = safePath === item.href || (item.href !== '/' && safePath.startsWith(item.href));
               return (
                 <ListItem key={item.href} disablePadding>
                   <ListItemButton
@@ -402,7 +431,7 @@ export default function Header() {
             {!authLoading && user ? (
               <>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/dashboard">
+                  <ListItemButton component={Link} href={getDashboardRoute()}>
                     <ListItemText primary="Dashboard" />
                   </ListItemButton>
                 </ListItem>

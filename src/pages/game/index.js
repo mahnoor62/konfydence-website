@@ -121,7 +121,8 @@ const CodeVerificationDialog = ({
   setTrialInfo,
   setSeatsAvailable,
   setCodeVerified,
-  setShowCodeDialog
+  setShowCodeDialog,
+  allowCancel = false // New prop to allow cancel button to close dialog
 }) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -129,6 +130,15 @@ const CodeVerificationDialog = ({
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState(null);
   const [codeFromClipboard, setCodeFromClipboard] = useState('');
+  const [userCancelled, setUserCancelled] = useState(false); // Track if user clicked cancel
+
+  // Reset userCancelled when dialog opens (when open prop changes from false to true)
+  useEffect(() => {
+    if (open) {
+      console.log('Dialog opening - resetting userCancelled');
+      setUserCancelled(false);
+    }
+  }, [open]);
 
   // Check clipboard for code when dialog opens
   useEffect(() => {
@@ -173,18 +183,20 @@ const CodeVerificationDialog = ({
           isTrialCode = true;
           const trial = checkResponse.data.trial;
           
-          // Check if user already played
+          // Check if user already played - show error in dialog but keep dialog open
           if (checkResponse.data.alreadyPlayed || checkResponse.data.seatsFinished) {
             setError('You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
             setVerifying(false);
+            // Keep dialog open so user can try another code
             return;
           }
           
-          // Check if seats are available before proceeding
+          // Check if seats are available before proceeding - show error in dialog but keep dialog open
           if (checkResponse.data.seatsFull || trial.remainingSeats <= 0) {
             const maxSeats = trial.maxSeats || 2;
             setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
             setVerifying(false);
+            // Keep dialog open so user can try another code
             return;
           }
           
@@ -244,10 +256,14 @@ const CodeVerificationDialog = ({
                 sessionStorage.setItem('codeType', 'trial');
                 sessionStorage.setItem('code', codeToVerify);
                 sessionStorage.setItem('trialData', JSON.stringify(trial));
-                // Save packageId for fetching cards
+                // Save packageId and productId for fetching cards
                 if (trial.packageId) {
                   const packageId = trial.packageId._id || trial.packageId;
                   sessionStorage.setItem('packageId', packageId.toString());
+                }
+                if (trial.productId) {
+                  const productId = trial.productId._id || trial.productId;
+                  sessionStorage.setItem('productId', productId.toString());
                 }
                 setCodeVerified(true);
                 setShowCodeDialog(false);
@@ -340,33 +356,37 @@ const CodeVerificationDialog = ({
             // It's a valid purchase code - check details
             const transaction = purchaseCheckResponse.data.transaction;
             
-            // Check package type - only allow digital and digital_physical packages
+            // Check package type - only allow digital and digital_physical packages - show error in dialog but keep dialog open
             const packageType = transaction.packageType || 'standard';
             if (packageType === 'physical') {
               setError('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
               setVerifying(false);
+              // Keep dialog open so user can try another code
               return;
             }
             
-            // Check if user already played
+            // Check if user already played - show error in dialog but keep dialog open
             if (purchaseCheckResponse.data.alreadyPlayed || purchaseCheckResponse.data.seatsFinished) {
               setError('You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
               setVerifying(false);
+              // Keep dialog open so user can try another code
               return;
             }
             
-            // Check if seats are available before proceeding
+            // Check if seats are available before proceeding - show error in dialog but keep dialog open
             if (purchaseCheckResponse.data.seatsFull || !transaction.seatsAvailable || transaction.remainingSeats <= 0) {
               const maxSeats = transaction.maxSeats || 5;
               setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
               setVerifying(false);
+              // Keep dialog open so user can try another code
               return;
             }
             
-            // Check if expired
+            // Check if expired - show error in dialog but keep dialog open
             if (purchaseCheckResponse.data.isExpired) {
               setError('Purchase code has expired. You cannot play the game.');
               setVerifying(false);
+              // Keep dialog open so user can try another code
               return;
             }
             
@@ -431,10 +451,14 @@ const CodeVerificationDialog = ({
                   sessionStorage.setItem('codeType', 'purchase');
                   sessionStorage.setItem('code', codeToVerify);
                   sessionStorage.setItem('transactionData', JSON.stringify(transactionData));
-                  // Save packageId for fetching cards
+                  // Save packageId and productId for fetching cards
                   if (transactionData.packageId) {
                     const packageId = transactionData.packageId._id || transactionData.packageId;
                     sessionStorage.setItem('packageId', packageId.toString());
+                  }
+                  if (transactionData.productId) {
+                    const productId = transactionData.productId._id || transactionData.productId;
+                    sessionStorage.setItem('productId', productId.toString());
                   }
                   setCodeVerified(true);
                   setShowCodeDialog(false);
@@ -528,19 +552,44 @@ const CodeVerificationDialog = ({
     console.log('CodeVerificationDialog - open:', open, 'forceOpen:', forceOpen);
   }, [open, forceOpen]);
 
-  // Force open if forceOpen is true
-  const dialogOpen = forceOpen ? true : open;
+  // Force open if forceOpen is true, but allow closing if user clicked cancel
+  // If user cancelled, always close the dialog regardless of other props
+  const dialogOpen = userCancelled ? false : (forceOpen ? true : (open && !userCancelled));
 
   return (
     <Dialog 
       open={dialogOpen} 
-      onClose={forceOpen ? () => {
-        console.log('Dialog close attempted but forceOpen is true');
-      } : onClose} 
+      onClose={() => {
+        // If user cancelled, allow closing
+        if (userCancelled) {
+          console.log('Dialog closing - user clicked cancel/cross');
+          if (setShowCodeDialog) {
+            setShowCodeDialog(false);
+          }
+          if (onClose) {
+            onClose();
+          }
+          return;
+        }
+        // If forceOpen is true and user hasn't cancelled, don't allow closing
+        if (forceOpen && !userCancelled) {
+          console.log('Dialog close attempted but forceOpen is true - ignoring');
+          return;
+        }
+        // If there's an error, don't allow closing
+        if (error) {
+          console.log('Dialog close attempted but error exists - keeping dialog open');
+          return;
+        }
+        // Otherwise, allow closing
+        if (onClose) {
+          onClose();
+        }
+      }} 
       maxWidth="sm" 
       fullWidth
-      disableEscapeKeyDown={forceOpen}
-      disableBackdropClick={forceOpen}
+      disableEscapeKeyDown={(forceOpen && !userCancelled) || !!error}
+      disableBackdropClick={(forceOpen && !userCancelled) || !!error}
       sx={{
         zIndex: 9999,
         '& .MuiBackdrop-root': {
@@ -561,19 +610,30 @@ const CodeVerificationDialog = ({
           <Typography variant="h5" sx={{ fontWeight: 700, color: '#063C5E' }}>
             Enter Your Code
           </Typography>
-            {!forceOpen && (
-              <IconButton
-                onClick={onClose}
-                sx={{
-                  color: '#063C5E',
-                  '&:hover': {
-                    backgroundColor: 'rgba(6, 60, 94, 0.1)',
-                  },
-                }}
-              >
-                <CloseIcon />
-              </IconButton>
-            )}
+          <IconButton
+            onClick={() => {
+              console.log('Cross button clicked - closing dialog');
+              // Set user cancelled flag to allow closing even when forceOpen is true
+              setUserCancelled(true);
+              // Close the dialog by setting showCodeDialog to false
+              if (setShowCodeDialog) {
+                setShowCodeDialog(false);
+              }
+              // Also call onClose if provided - this will handle the close
+              if (onClose) {
+                onClose();
+              }
+            }}
+            disabled={verifying}
+            sx={{
+              color: '#063C5E',
+              '&:hover': {
+                backgroundColor: 'rgba(6, 60, 94, 0.1)',
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -623,8 +683,34 @@ const CodeVerificationDialog = ({
         </Stack>
       </DialogContent>
       <DialogActions sx={{ p: 3, pt: 0 }}>
+        {!forceOpen && !error && (
+          <Button
+            onClick={onClose}
+            disabled={verifying}
+            sx={{ 
+              color: '#063C5E',
+              '&:hover': {
+                backgroundColor: 'rgba(6, 60, 94, 0.1)',
+              },
+            }}
+          >
+            Close
+          </Button>
+        )}
         <Button
-          onClick={onClose}
+          onClick={() => {
+            console.log('Cancel button clicked - closing dialog');
+            // Set user cancelled flag to allow closing even when forceOpen is true
+            setUserCancelled(true);
+            // Close the dialog by setting showCodeDialog to false
+            if (setShowCodeDialog) {
+              setShowCodeDialog(false);
+            }
+            // Also call onClose if provided - this will handle the close
+            if (onClose) {
+              onClose();
+            }
+          }}
           disabled={verifying}
           sx={{ 
             color: '#063C5E',
@@ -633,19 +719,7 @@ const CodeVerificationDialog = ({
             },
           }}
         >
-          Close
-        </Button>
-        <Button
-          onClick={() => router.push('/packages')}
-          disabled={verifying}
-          sx={{ 
-            color: '#0B7897',
-            '&:hover': {
-              backgroundColor: 'rgba(11, 120, 151, 0.1)',
-            },
-          }}
-        >
-          Get Code
+          Cancel
         </Button>
         <Button
           onClick={(e) => {
@@ -699,9 +773,12 @@ export default function GamePage() {
   const router = useRouter();
   const { user } = useAuth();
   // Initialize state - always start with false to avoid hydration mismatch
+  // Initialize codeVerified and showCodeDialog from sessionStorage on mount
+  // IMPORTANT: Always start with false to ensure dialog shows on page load
   const [codeVerified, setCodeVerified] = useState(false);
-  const [showCodeDialog, setShowCodeDialog] = useState(true);
+  const [showCodeDialog, setShowCodeDialog] = useState(true); // Always start with true to show dialog on load
   const [mounted, setMounted] = useState(false);
+  // IMPORTANT: Always start with 'landing' - don't allow game to start without code verification
   const [gameState, setGameState] = useState('landing'); // landing, levelSelect, game, summary
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [scenarios, setScenarios] = useState([]);
@@ -718,40 +795,117 @@ export default function GamePage() {
   const [completedLevels, setCompletedLevels] = useState([]); // Array to track completed levels with their scores
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
+  const [errorModal, setErrorModal] = useState({ open: false, message: '', title: 'Error' }); // Error modal state
 
   // Mark component as mounted (client-side only)
+  // IMPORTANT: This runs FIRST on page load/refresh
   useEffect(() => {
+    console.log('🚀 Component mounting - ALWAYS show dialog first, then check verification');
+    
+    // CRITICAL: Always show dialog on page load/refresh FIRST
+    // Don't check sessionStorage immediately - let user verify code again
+    setCodeVerified(false);
+    setShowCodeDialog(true);
+    setGameState('landing');
+    
+    // Mark as mounted
     setMounted(true);
+    
+    // Then check sessionStorage in background (but don't auto-verify)
+    if (typeof window !== 'undefined') {
+      const codeVerifiedStorage = sessionStorage.getItem('codeVerified') === 'true';
+      const productId = sessionStorage.getItem('productId');
+      const packageId = sessionStorage.getItem('packageId');
+      const codeType = sessionStorage.getItem('codeType');
+      
+      console.log('🔍 SessionStorage check (for info only):', {
+        codeVerified: codeVerifiedStorage,
+        productId,
+        packageId,
+        codeType
+      });
+      
+      // If we have verified data, restore trialInfo but DON'T auto-verify
+      // User must verify code again via dialog
+      if (codeVerifiedStorage && (productId || packageId)) {
+        console.log('ℹ️ Found verified data in sessionStorage - will restore after user verifies');
+        
+        // Restore trialInfo if available (for display purposes only)
+        if (codeType === 'trial') {
+          const trialDataStr = sessionStorage.getItem('trialData');
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              setTrialInfo({
+                _id: trialData._id || trialData.id,
+                maxSeats: trialData.maxSeats || 2,
+                usedSeats: trialData.usedSeats || 0,
+                remainingSeats: (trialData.maxSeats || 2) - (trialData.usedSeats || 0),
+                codeApplications: trialData.codeApplications || 0,
+                gamePlays: trialData.gamePlays || 0,
+                endDate: trialData.endDate || trialData.expiresAt,
+                isExpired: trialData.isExpired || false,
+                packageName: trialData.packageName || 'Package',
+                productId: productId || trialData.productId?._id || trialData.productId || null
+              });
+            } catch (e) {
+              console.error('Error parsing trialData:', e);
+            }
+          }
+        } else if (codeType === 'purchase') {
+          const transactionDataStr = sessionStorage.getItem('transactionData');
+          if (transactionDataStr) {
+            try {
+              const transactionData = JSON.parse(transactionDataStr);
+              setTrialInfo({
+                _id: transactionData._id || transactionData.id,
+                transactionId: transactionData._id || transactionData.id,
+                maxSeats: transactionData.maxSeats || 5,
+                usedSeats: transactionData.usedSeats || 0,
+                remainingSeats: (transactionData.maxSeats || 5) - (transactionData.usedSeats || 0),
+                codeApplications: transactionData.codeApplications || 0,
+                gamePlays: transactionData.gamePlays || 0,
+                endDate: transactionData.endDate || transactionData.expiresAt,
+                isExpired: transactionData.isExpired || false,
+                packageName: transactionData.packageName || 'Package',
+                productId: productId || transactionData.productId?._id || transactionData.productId || null
+              });
+            } catch (e) {
+              console.error('Error parsing transactionData:', e);
+            }
+          }
+        }
+      } else {
+        console.log('❌ No verified data found - clearing stale sessionStorage');
+        // Clear any stale sessionStorage data
+        sessionStorage.removeItem('codeVerified');
+        sessionStorage.removeItem('codeType');
+        sessionStorage.removeItem('code');
+        sessionStorage.removeItem('trialData');
+        sessionStorage.removeItem('transactionData');
+        setTrialInfo(null);
+        setSeatsAvailable(false);
+      }
+    }
   }, []);
 
-  // ALWAYS show trial code verification dialog on page load - REMOVE sessionStorage check
-  useEffect(() => {
-    if (mounted && typeof window !== 'undefined') {
-      // ALWAYS clear sessionStorage and show popup on every page visit
-      sessionStorage.removeItem('codeVerified');
-      sessionStorage.removeItem('codeType');
-      sessionStorage.removeItem('code');
-      sessionStorage.removeItem('trialData');
-      sessionStorage.removeItem('packageId');
-      
-      console.log('🔍 Game page loaded - ALWAYS showing verification popup');
-      setCodeVerified(false);
-      setShowCodeDialog(true);
-      setTrialInfo(null);
-      setSeatsAvailable(false);
-    }
-  }, [mounted, router.pathname]); // Re-check when route changes
+  // This useEffect is removed - all logic moved to mount useEffect above
 
-  // Ensure dialog stays open when code is not verified
+  // REMOVED: Visibility change handlers - they were causing auto-verification issues
+  // Dialog will show on mount and stay until user verifies code manually
+
+  // Ensure dialog stays open when code is not verified and gameState stays on landing
+  // REMOVED: This was causing auto-verification from sessionStorage
+  // Now we only rely on the mount effect and manual verification
+
+  // Additional safeguard: Block gameState changes if code is not verified
   useEffect(() => {
-    if (mounted && !codeVerified) {
-      console.log('🔓 Code not verified, ensuring dialog is open');
+    if (mounted && !codeVerified && gameState !== 'landing') {
+      console.log('🚫 Blocking gameState change - code not verified');
+      setGameState('landing');
       setShowCodeDialog(true);
-    } else if (mounted && codeVerified) {
-      console.log('🔒 Code verified, closing dialog');
-      setShowCodeDialog(false);
     }
-  }, [codeVerified, mounted]);
+  }, [gameState, codeVerified, mounted]);
 
   const handleCodeVerified = () => {
     // Code verification is handled in CodeVerificationDialog
@@ -760,20 +914,37 @@ export default function GamePage() {
   };
 
   const startGame = useCallback(async () => {
-    // Don't allow game to start without code verification
+    // CRITICAL: Don't allow game to start without code verification
     if (!codeVerified) {
+      console.log('🚫 Game start blocked - code not verified');
       setShowCodeDialog(true);
+      setGameState('landing'); // Ensure we stay on landing screen
+      return;
+    }
+    
+    // Double-check sessionStorage to ensure code is actually verified
+    const codeVerifiedStorage = sessionStorage.getItem('codeVerified') === 'true';
+    const productId = sessionStorage.getItem('productId');
+    const packageId = sessionStorage.getItem('packageId');
+    const isActuallyVerified = codeVerifiedStorage && (productId || packageId);
+    
+    if (!isActuallyVerified) {
+      console.log('🚫 Game start blocked - code verification check failed');
+      setShowCodeDialog(true);
+      setCodeVerified(false);
+      setGameState('landing'); // Ensure we stay on landing screen
       return;
     }
     
     // Check seats availability before starting game
     if (!seatsAvailable) {
-      if (trialInfo?.isExpired) {
-        alert('Trial code has expired. You cannot play the game.');
-      } else {
-        const maxSeats = trialInfo?.maxSeats || 5;
-        alert(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
-      }
+      // Show error in code verification dialog instead of separate modal
+      setShowCodeDialog(true);
+      setCodeVerified(false);
+      setGameState('landing'); // Ensure we stay on landing screen
+      // Clear sessionStorage to force re-verification
+      sessionStorage.removeItem('codeVerified');
+      sessionStorage.removeItem('codeType');
       return;
     }
 
@@ -786,7 +957,9 @@ export default function GamePage() {
     
     if (!code) {
       console.error('No code found in sessionStorage');
-      alert('Code not found. Please verify your code again.');
+      // Show error in code verification dialog instead of separate modal
+      setShowCodeDialog(true);
+      setCodeVerified(false);
       return;
     }
     
@@ -796,7 +969,11 @@ export default function GamePage() {
         const transactionData = JSON.parse(transactionDataStr);
         const packageType = transactionData.packageType || 'standard';
         if (packageType === 'physical') {
-          alert('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
           return;
         }
       } catch (e) {
@@ -809,7 +986,9 @@ export default function GamePage() {
       try {
         const token = localStorage.getItem('token');
         if (!token || !user) {
-          alert('Please login to play the game.');
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
           return;
         }
         
@@ -856,17 +1035,31 @@ export default function GamePage() {
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
-          const errorMsg = errorData.error || `You have only ${errorData.maxSeats || 5} seat${(errorData.maxSeats || 5) > 1 ? 's' : ''}. Your seats are completed.`;
-          alert(errorMsg);
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
           setSeatsAvailable(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
           return;
         }
         if (errorData.alreadyPlayed || errorData.seatsFinished || errorData.error?.includes('seats finish')) {
-          alert(errorData.error || 'You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          // Clear sessionStorage to force re-verification
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          // Don't show error modal - error will be shown in code verification dialog
           return;
         }
         if (errorData.error) {
-          alert(errorData.error);
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          // Don't show error modal - error will be shown in code verification dialog
           return;
         }
         // Continue anyway if there's an error (don't block game start)
@@ -878,7 +1071,9 @@ export default function GamePage() {
       try {
         const token = localStorage.getItem('token');
         if (!token || !user) {
-          alert('Please login to play the game.');
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
           return;
         }
         
@@ -924,17 +1119,31 @@ export default function GamePage() {
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
-          const errorMsg = errorData.error || `You have only ${errorData.maxSeats || 5} seat${(errorData.maxSeats || 5) > 1 ? 's' : ''}. Your seats are completed.`;
-          alert(errorMsg);
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
           setSeatsAvailable(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
           return;
         }
         if (errorData.alreadyPlayed || errorData.seatsFinished || errorData.error?.includes('seats finish')) {
-          alert(errorData.error || 'You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          // Clear sessionStorage to force re-verification
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          // Don't show error modal - error will be shown in code verification dialog
           return;
         }
         if (errorData.error) {
-          alert(errorData.error);
+          // Show error in code verification dialog instead of separate modal
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          // Don't show error modal - error will be shown in code verification dialog
           return;
         }
         // Continue anyway if there's an error (don't block game start)
@@ -942,7 +1151,11 @@ export default function GamePage() {
       }
     } else {
         console.error('Unknown codeType:', codeType);
-        alert('Invalid code type. Please verify your code again.');
+        // Show error in code verification dialog instead of separate modal
+        setShowCodeDialog(true);
+        setCodeVerified(false);
+        sessionStorage.removeItem('codeVerified');
+        sessionStorage.removeItem('codeType');
         return;
     }
     
@@ -950,16 +1163,20 @@ export default function GamePage() {
     setGameState('levelSelect');
   }, [codeVerified, seatsAvailable, trialInfo, user]);
 
-  const selectLevel = useCallback(async (level) => {
+  const selectLevel = useCallback(async (level, isFromNextLevel = false) => {
     setSelectedLevel(level);
     setGameState('loading'); // Show loading state
     
     try {
-      // Get packageId from sessionStorage if available
+      // Get productId and packageId from sessionStorage if available
+      // Priority: productId > packageId
+      const productId = sessionStorage.getItem('productId');
       const packageId = sessionStorage.getItem('packageId');
       
       const params = { level };
-      if (packageId) {
+      if (productId) {
+        params.productId = productId;
+      } else if (packageId) {
         params.packageId = packageId;
       }
       
@@ -988,7 +1205,7 @@ export default function GamePage() {
             id: q._id?.toString() || `q-${idx}`,
             cardId: q.cardId?.toString() || null,
             cardTitle: q.cardTitle || '',
-            title: q.title || 'Untitled Question',
+            title: q.cardTitle || q.title || 'Untitled Question',
             description: q.description || '',
             category: q.category || 'General',
             answers: q.answers.map((a, aIdx) => ({
@@ -1003,8 +1220,14 @@ export default function GamePage() {
         }).filter(Boolean); // Remove null entries
         
         if (formattedScenarios.length === 0) {
-          alert('No valid scenarios available for this level. Please try another level.');
+          if (isFromNextLevel) {
+            // If coming from next level and no scenarios, show a message and go back to level select
+            setErrorModal({ open: true, message: `Level ${level} is not available in your purchased package. Please select another level.`, title: 'Level Not Available' });
+          } else {
+            setErrorModal({ open: true, message: 'No valid scenarios available for this level. Please try another level.', title: 'No Scenarios Available' });
+          }
           setGameState('levelSelect');
+          setSelectedLevel(null);
           return;
         }
         
@@ -1018,14 +1241,25 @@ export default function GamePage() {
         setShowFeedback(false);
         setIsCardLocked(false);
       } else {
-        alert('No scenarios available for this level. Please try another level.');
+        if (isFromNextLevel) {
+          setErrorModal({ open: true, message: `Level ${level} is not available in your purchased package. Please select another level.`, title: 'Level Not Available' });
+        } else {
+          setErrorModal({ open: true, message: 'No scenarios available for this level. Please try another level.', title: 'No Scenarios Available' });
+        }
         setGameState('levelSelect');
+        setSelectedLevel(null);
       }
     } catch (error) {
       console.error('Error loading scenarios:', error);
       console.error('Error details:', error.response?.data || error.message);
-      alert(`Failed to load game scenarios: ${error.response?.data?.error || error.message}. Please try again.`);
+      
+      if (isFromNextLevel) {
+        setErrorModal({ open: true, message: `Level ${level} is not available in your purchased package. Please select another level.`, title: 'Level Not Available' });
+      } else {
+        setErrorModal({ open: true, message: `Failed to load game scenarios: ${error.response?.data?.error || error.message}. Please try again.`, title: 'Load Error' });
+      }
       setGameState('levelSelect');
+      setSelectedLevel(null);
     }
   }, [API_URL]);
 
@@ -1075,172 +1309,207 @@ export default function GamePage() {
         return;
       }
 
-      // Get IDs from sessionStorage
-      const packageId = sessionStorage.getItem('packageId');
-      const code = sessionStorage.getItem('code');
-      const codeType = sessionStorage.getItem('codeType');
+      // Get productId from sessionStorage, trialInfo, or trialData/transactionData
+      let storedProductId = sessionStorage.getItem('productId');
       
-      // Get transaction/freeTrial ID from trialInfo or API
-      let transactionId = null;
-      let freeTrialId = null;
-      let productId = null;
+      // If productId not in sessionStorage, try to get from trialInfo
+      if (!storedProductId && trialInfo?.productId) {
+        storedProductId = typeof trialInfo.productId === 'object' 
+          ? (trialInfo.productId._id || trialInfo.productId.id || trialInfo.productId)
+          : trialInfo.productId;
+        // Save it back to sessionStorage for future use
+        if (storedProductId) {
+          sessionStorage.setItem('productId', storedProductId.toString());
+        }
+      }
       
-      // Handle both purchase and trial users
-      if (codeType === 'purchase') {
-        // Get transactionId from code for purchase users
-        if (code) {
-          try {
-            const transactionResponse = await axios.get(
-              `${API_URL}/payments/transaction/${code}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
+      // If still not found, try to get from trialData/transactionData in sessionStorage
+      if (!storedProductId) {
+        const codeType = sessionStorage.getItem('codeType');
+        if (codeType === 'trial') {
+          const trialDataStr = sessionStorage.getItem('trialData');
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              storedProductId = trialData.productId?._id || trialData.productId?.id || trialData.productId || null;
+              if (storedProductId) {
+                sessionStorage.setItem('productId', storedProductId.toString());
               }
-            );
-            if (transactionResponse.data?._id) {
-              transactionId = transactionResponse.data._id;
+            } catch (e) {
+              console.error('Error parsing trialData for productId:', e);
             }
-          } catch (error) {
-            console.warn('Could not fetch transaction ID:', error);
+          }
+        } else if (codeType === 'purchase') {
+          const transactionDataStr = sessionStorage.getItem('transactionData');
+          if (transactionDataStr) {
+            try {
+              const transactionData = JSON.parse(transactionDataStr);
+              storedProductId = transactionData.productId?._id || transactionData.productId?.id || transactionData.productId || null;
+              if (storedProductId) {
+                sessionStorage.setItem('productId', storedProductId.toString());
+              }
+            } catch (e) {
+              console.error('Error parsing transactionData for productId:', e);
+            }
           }
         }
-        
-        // If still no transactionId, don't save progress
-        if (!transactionId) {
-          console.warn('⚠️ No transaction ID found for purchase user, skipping progress save');
-          console.warn('Code:', code, 'CodeType:', codeType);
-          return;
-        } else {
-          console.log('✅ Transaction ID found:', transactionId);
-        }
-      } else if (codeType === 'trial') {
-        // Get freeTrialId from code for trial users
-        // First try to get from trialInfo (already stored)
-        if (trialInfo?._id) {
-          freeTrialId = trialInfo._id;
-        } else if (code) {
-          try {
-            const freeTrialResponse = await axios.get(
-              `${API_URL}/free-trial/check-code/${code}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            if (freeTrialResponse.data?.trial?._id) {
-              freeTrialId = freeTrialResponse.data.trial._id;
-            } else if (freeTrialResponse.data?.trial?.id) {
-              freeTrialId = freeTrialResponse.data.trial.id;
-            }
-          } catch (error) {
-            console.warn('Could not fetch free trial ID:', error);
-          }
-        }
-        
-        // If still no freeTrialId, don't save progress
-        if (!freeTrialId) {
-          console.warn('⚠️ No free trial ID found for trial user, skipping progress save');
-          console.warn('Code:', code, 'CodeType:', codeType, 'TrialInfo:', trialInfo);
-          return;
-        } else {
-          console.log('✅ Free Trial ID found:', freeTrialId);
-        }
-      } else {
-        console.warn('⚠️ Unknown code type or no code type detected, skipping progress save');
-        console.warn('CodeType:', codeType, 'Code:', code);
+      }
+      
+      const finalProductId = storedProductId || null;
+      
+      if (!finalProductId) {
+        console.error('❌ No productId found - Cannot save progress!', {
+          sessionStorage: sessionStorage.getItem('productId'),
+          trialInfo: trialInfo?.productId,
+          codeType: sessionStorage.getItem('codeType')
+        });
+        console.warn('⚠️ No productId found, skipping progress save');
         return;
       }
       
       console.log(`📊 Saving progress for level ${levelNum}:`, {
-        transactionId,
-        freeTrialId,
-        packageId,
-        productId,
+        productId: finalProductId,
         answerHistoryLength: levelAnswerHistory.length,
         scenariosLength: levelScenarios.length
       });
 
-      // Group answers by cardId and calculate summary only (no question details)
-      const cardProgressMap = new Map();
+      // Create a map of scenarios by questionId to find correct answers
+      const scenarioMap = new Map();
+      levelScenarios.forEach(scenario => {
+        if (scenario.id) {
+          scenarioMap.set(scenario.id, scenario);
+        }
+      });
+
+      // Group answers by cardId
+      const cardsMap = new Map();
       
-      levelAnswerHistory.forEach((answer) => {
+      levelAnswerHistory.forEach((answer, index) => {
         const cardId = answer.cardId;
-        if (!cardId) return; // Skip if no cardId
+        const scenario = scenarioMap.get(answer.questionId);
+        let correctAnswerText = '';
         
-        if (!cardProgressMap.has(cardId)) {
-          cardProgressMap.set(cardId, {
+        // Find correct answer from scenario
+        if (scenario && scenario.answers) {
+          const correctAnswerObj = scenario.answers.find(a => a.isCorrect === true);
+          if (correctAnswerObj) {
+            correctAnswerText = correctAnswerObj.text || '';
+          }
+        }
+
+        if (!cardsMap.has(cardId)) {
+          cardsMap.set(cardId, {
             cardId: cardId,
-            totalScore: 0,
-            correctAnswers: 0,
-            totalQuestions: 0
+            cardTitle: answer.cardTitle || '',
+            questions: []
           });
         }
+
+        const card = cardsMap.get(cardId);
+        card.questions.push({
+          questionNo: card.questions.length + 1,
+          questionId: answer.questionId || answer.cardId + '-' + index,
+          questionText: answer.questionTitle || answer.questionDescription || '',
+          selectedAnswer: answer.selectedAnswerText || '',
+          correctAnswer: correctAnswerText,
+          isCorrect: answer.isCorrect || false,
+          points: answer.points || 0,
+          answeredAt: new Date().toISOString()
+        });
+      });
+
+      // Calculate card-wise stats and overall stats
+      const cards = Array.from(cardsMap.values()).map(card => {
+        const cardTotalScore = card.questions.reduce((sum, q) => sum + (q.points || 0), 0);
+        const cardCorrectAnswers = card.questions.filter(q => q.isCorrect === true).length;
+        const cardTotalQuestions = card.questions.length;
+        const cardMaxScore = cardTotalQuestions * 4;
+        const cardPercentageScore = cardMaxScore > 0 ? Math.round((cardTotalScore / cardMaxScore) * 100) : 0;
+
+        return {
+          ...card,
+          cardTotalScore,
+          cardMaxScore,
+          cardCorrectAnswers,
+          cardTotalQuestions,
+          cardPercentageScore
+        };
+      });
+
+      // Calculate overall totals
+      const totalScore = cards.reduce((sum, card) => sum + card.cardTotalScore, 0);
+      const correctAnswers = cards.reduce((sum, card) => sum + card.cardCorrectAnswers, 0);
+      const totalQuestions = cards.reduce((sum, card) => sum + card.cardTotalQuestions, 0);
+      const maxScore = totalQuestions * 4;
+      const percentageScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+
+      // Save one entry per user per level with cards array (only productId and userId)
+      try {
+        const progressData = {
+          productId: finalProductId,
+          levelNumber: levelNum,
+          cards: cards,
+          totalScore: totalScore,
+          maxScore: maxScore,
+          correctAnswers: correctAnswers,
+          totalQuestions: totalQuestions,
+          percentageScore: percentageScore
+        };
+
+        console.log(`📤 Sending progress data to API:`, {
+          url: `${API_URL}/game-progress`,
+          levelNumber: levelNum,
+          productId: finalProductId,
+          cardsCount: cards.length,
+          totalQuestions: totalQuestions,
+          totalScore: totalScore
+        });
+
+        const response = await axios.post(
+          `${API_URL}/game-progress`,
+          progressData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+          }
+        );
         
-        const cardProgress = cardProgressMap.get(cardId);
-        cardProgress.totalScore += answer.points || 0;
-        if (answer.isCorrect) {
-          cardProgress.correctAnswers += 1;
+        // Check if progress was skipped (trial user)
+        if (response.data?.skipped) {
+          console.log(`⚠️ Progress skipped for level ${levelNum}: ${response.data.message}`);
+          return;
         }
-        cardProgress.totalQuestions += 1;
-      });
-
-      // Calculate final scores for each card
-      cardProgressMap.forEach((cardProgress, cardId) => {
-        const cardMaxScore = cardProgress.totalQuestions * 4;
-        cardProgress.maxScore = cardMaxScore;
-        cardProgress.percentageScore = cardMaxScore > 0 
-          ? Math.round((cardProgress.totalScore / cardMaxScore) * 100) 
-          : 0;
-      });
-
-      // Save progress for each card (summary only, no question details)
-      const savePromises = Array.from(cardProgressMap.entries()).map(async ([cardId, cardProgress]) => {
-        try {
-          const progressData = {
-            cardId: cardId,
-            packageId: packageId || null,
-            productId: productId || trialInfo?.productId || null,
-            transactionId: transactionId || null,
-            freeTrialId: freeTrialId || null,
-            levelNumber: levelNum,
-            totalScore: cardProgress.totalScore,
-            maxScore: cardProgress.maxScore,
-            correctAnswers: cardProgress.correctAnswers,
-            totalQuestions: cardProgress.totalQuestions
-          };
-
-          const response = await axios.post(
-            `${API_URL}/game-progress`,
-            progressData,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          
-          // Check if progress was skipped (trial user)
-          if (response.data?.skipped) {
-            console.log(`Progress skipped for card ${cardId}: ${response.data.message}`);
-            return;
-          }
-          
-          console.log(`Progress saved for card ${cardId}, level ${levelNum}`);
-        } catch (error) {
-          // If error is about trial user, just log and continue
-          if (error.response?.data?.skipped || error.response?.status === 200) {
-            console.log(`Progress skipped for card ${cardId}: Trial user or no transaction ID`);
-            return;
-          }
-          console.error(`Error saving progress for card ${cardId}:`, error);
-          // Don't throw, continue with other cards
+        
+        console.log(`✅ Progress saved successfully for level ${levelNum}:`, {
+          progressId: response.data?.progress?._id,
+          cards: cards.length,
+          totalQuestions: totalQuestions,
+          totalScore: totalScore,
+          percentageScore: percentageScore
+        });
+      } catch (error) {
+        // Log detailed error information
+        console.error(`❌ Error saving progress for level ${levelNum}:`, {
+          message: error.message,
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          method: error.config?.method
+        });
+        
+        // If error is about trial user, just log and continue
+        if (error.response?.data?.skipped || error.response?.status === 200) {
+          console.log(`⚠️ Progress skipped for level ${levelNum}: Trial user or no transaction ID`);
+          return;
         }
-      });
-
-      await Promise.all(savePromises);
-      console.log('Progress save completed');
+        
+        // Don't throw error - just log it so game can continue
+        // But show user-friendly message
+        console.warn(`⚠️ Failed to save progress for level ${levelNum}, but game will continue`);
+      }
     } catch (error) {
       console.error('Error saving game progress:', error);
       // Don't block game flow if progress save fails
@@ -1258,13 +1527,31 @@ export default function GamePage() {
       // This ensures progress is saved for ANY level that is completed
       if (selectedLevel && answerHistory.length > 0) {
         try {
-          console.log(`Saving progress for level ${selectedLevel} with ${answerHistory.length} answers`);
+          console.log(`💾 Saving progress for level ${selectedLevel} with ${answerHistory.length} answers`);
+          
+          // Verify productId before saving
+          const storedProductId = sessionStorage.getItem('productId');
+          if (!storedProductId) {
+            console.warn('⚠️ productId missing, attempting to restore...');
+            // Try to restore from trialInfo
+            if (trialInfo?.productId) {
+              const productId = typeof trialInfo.productId === 'object' 
+                ? (trialInfo.productId._id || trialInfo.productId.id || trialInfo.productId)
+                : trialInfo.productId;
+              if (productId) {
+                sessionStorage.setItem('productId', productId.toString());
+                console.log(`✅ Restored productId: ${productId}`);
+              }
+            }
+          }
+          
           await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
           console.log(`✅ Progress saved successfully for level ${selectedLevel}`);
         } catch (error) {
           console.error(`❌ Error saving progress for level ${selectedLevel}:`, error);
           console.error('Error details:', error.response?.data || error.message);
           // Don't block showing summary if save fails, but log the error
+          // The backup save in useEffect will try again
         }
       } else {
         console.warn(`⚠️ Cannot save progress: selectedLevel=${selectedLevel}, answerHistory.length=${answerHistory?.length || 0}`);
@@ -1307,8 +1594,8 @@ export default function GamePage() {
     }
 
     if (selectedLevel && selectedLevel < 3) {
-      // Move to next level
-      selectLevel(selectedLevel + 1);
+      // Move to next level - pass isFromNextLevel flag
+      selectLevel(selectedLevel + 1, true);
     } else {
       // If on level 3 or no level selected, go back to level selection
       setGameState('levelSelect');
@@ -1353,20 +1640,71 @@ export default function GamePage() {
           try {
             console.log(`🔄 Backup save: Saving progress for level ${selectedLevel} from summary screen`);
             console.log(`📊 Answer history length: ${answerHistory.length}, Score: ${score}`);
+            
+            // Check productId before saving
+            const storedProductId = sessionStorage.getItem('productId');
+            const codeType = sessionStorage.getItem('codeType');
+            
+            if (!storedProductId) {
+              console.error('❌ CRITICAL: productId missing in sessionStorage!');
+              console.log('Attempting to restore from trialInfo or trialData...');
+              
+              // Try to restore productId
+              if (trialInfo?.productId) {
+                const productId = typeof trialInfo.productId === 'object' 
+                  ? (trialInfo.productId._id || trialInfo.productId.id || trialInfo.productId)
+                  : trialInfo.productId;
+                if (productId) {
+                  sessionStorage.setItem('productId', productId.toString());
+                  console.log(`✅ Restored productId from trialInfo: ${productId}`);
+                }
+              } else if (codeType === 'trial') {
+                const trialDataStr = sessionStorage.getItem('trialData');
+                if (trialDataStr) {
+                  try {
+                    const trialData = JSON.parse(trialDataStr);
+                    const productId = trialData.productId?._id || trialData.productId?.id || trialData.productId || null;
+                    if (productId) {
+                      sessionStorage.setItem('productId', productId.toString());
+                      console.log(`✅ Restored productId from trialData: ${productId}`);
+                    }
+                  } catch (e) {
+                    console.error('Error parsing trialData:', e);
+                  }
+                }
+              } else if (codeType === 'purchase') {
+                const transactionDataStr = sessionStorage.getItem('transactionData');
+                if (transactionDataStr) {
+                  try {
+                    const transactionData = JSON.parse(transactionDataStr);
+                    const productId = transactionData.productId?._id || transactionData.productId?.id || transactionData.productId || null;
+                    if (productId) {
+                      sessionStorage.setItem('productId', productId.toString());
+                      console.log(`✅ Restored productId from transactionData: ${productId}`);
+                    }
+                  } catch (e) {
+                    console.error('Error parsing transactionData:', e);
+                  }
+                }
+              }
+            }
+            
             await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
             console.log(`✅ Backup progress saved successfully for level ${selectedLevel}`);
           } catch (error) {
             console.error(`❌ Error in backup save for level ${selectedLevel}:`, error);
             console.error('Error details:', error.response?.data || error.message);
+            // Show user-friendly error message
+            setErrorModal({ open: true, message: 'Warning: Could not save your progress. Please check browser console for details.', title: 'Save Warning' });
           }
         };
         // Add a small delay to ensure state is fully updated
-        setTimeout(ensureProgressSaved, 100);
+        setTimeout(ensureProgressSaved, 500); // Increased delay to ensure state is ready
       } else {
         console.warn(`⚠️ Cannot backup save: No answer history for level ${selectedLevel}`);
       }
     }
-  }, [gameState, selectedLevel, score, answerHistory, scenarios, saveGameProgress]);
+  }, [gameState, selectedLevel, score, answerHistory, scenarios, saveGameProgress, trialInfo]);
 
   // Trigger confetti when share modal opens
   useEffect(() => {
@@ -1375,9 +1713,30 @@ export default function GamePage() {
     }
   }, [showShareModal]);
 
+  // Auto-save progress periodically when user is playing (every 30 seconds)
+  // This ensures progress is saved even if user exits early
+  useEffect(() => {
+    if (selectedLevel && answerHistory && answerHistory.length > 0 && gameState === 'playing') {
+      const autoSaveInterval = setInterval(async () => {
+        try {
+          console.log(`🔄 Auto-saving progress for level ${selectedLevel}`);
+          await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
+          console.log(`✅ Auto-save completed for level ${selectedLevel}`);
+        } catch (error) {
+          console.error(`❌ Auto-save failed for level ${selectedLevel}:`, error);
+        }
+      }, 30000); // Save every 30 seconds
+
+      return () => {
+        clearInterval(autoSaveInterval);
+      };
+    }
+  }, [selectedLevel, answerHistory, scenarios, score, gameState, saveGameProgress]);
+
   // Show code verification dialog if not verified (only after mount to avoid hydration error)
   if (!mounted) {
     // Show loading state during SSR and initial client render
+    // Dialog will show automatically once mounted via useEffect
     return (
       <>
         <Head>
@@ -1413,10 +1772,14 @@ export default function GamePage() {
             </div>
           </div>
         </div>
-        {/* Show dialog immediately even during mount */}
+        {/* Show dialog immediately - ALWAYS show on page load */}
         <CodeVerificationDialog 
           open={true}
-          onClose={() => {}}
+          onClose={() => {
+            // Allow closing when Cancel button is clicked
+            console.log('Dialog closed via Cancel button');
+            setShowCodeDialog(false);
+          }}
           onVerified={handleCodeVerified}
           forceOpen={true}
           setTrialInfo={setTrialInfo}
@@ -1428,8 +1791,9 @@ export default function GamePage() {
     );
   }
 
-  // Show code verification dialog - ALWAYS show popup on game page visit
-  if (mounted && !codeVerified) {
+  // Show code verification dialog - ALWAYS show popup on game page visit if code not verified
+  // Show immediately, don't wait for mounted state
+  if (!codeVerified) {
     return (
       <>
         <Head>
@@ -1469,12 +1833,13 @@ export default function GamePage() {
         <CodeVerificationDialog 
           open={showCodeDialog}
           onClose={() => {
-            // Allow dialog to close, but show floating button
-            console.log('Dialog closed - showing floating button');
+            // Allow closing when Cancel button is clicked
+            console.log('Dialog closed via Cancel button');
             setShowCodeDialog(false);
+            setGameState('landing'); // Ensure we stay on landing
           }}
           onVerified={handleCodeVerified}
-          forceOpen={false}
+          forceOpen={!codeVerified}
           setTrialInfo={setTrialInfo}
           setSeatsAvailable={setSeatsAvailable}
           setCodeVerified={setCodeVerified}
@@ -1493,7 +1858,13 @@ export default function GamePage() {
           >
             <Button
               variant="contained"
-              onClick={() => setShowCodeDialog(true)}
+              onClick={() => {
+                console.log('Floating button clicked - opening dialog');
+                // Ensure dialog opens properly
+                setShowCodeDialog(true);
+                // Also ensure codeVerified is false to show dialog
+                setCodeVerified(false);
+              }}
               sx={{
                 backgroundColor: '#0B7897',
                 color: 'white',
@@ -1526,16 +1897,17 @@ export default function GamePage() {
       </Head>
       <Header />
       
-      {/* Show code verification dialog if needed */}
+      {/* Show code verification dialog if needed - Always show if not verified */}
       {!codeVerified && (
         <CodeVerificationDialog 
-          open={showCodeDialog}
+          open={true}
           onClose={() => {
-            // Allow dialog to close, but show floating button
+            // Allow closing when Cancel button is clicked
+            console.log('Dialog closed via Cancel button');
             setShowCodeDialog(false);
           }}
           onVerified={handleCodeVerified}
-          forceOpen={false}
+          forceOpen={true}
           setTrialInfo={setTrialInfo}
           setSeatsAvailable={setSeatsAvailable}
           setCodeVerified={setCodeVerified}
@@ -1555,7 +1927,13 @@ export default function GamePage() {
         >
           <Button
             variant="contained"
-            onClick={() => setShowCodeDialog(true)}
+            onClick={() => {
+              console.log('Floating button clicked - opening dialog');
+              // Ensure dialog opens properly
+              setShowCodeDialog(true);
+              // Also ensure codeVerified is false to show dialog
+              setCodeVerified(false);
+            }}
             sx={{
               backgroundColor: '#0B7897',
               color: 'white',
@@ -1772,7 +2150,7 @@ export default function GamePage() {
         )}
 
         {/* Level Selection Screen */}
-        {gameState === 'levelSelect' && (
+        {gameState === 'levelSelect' && codeVerified && (
           <div className={`${styles.screen} ${styles.active}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
@@ -1825,7 +2203,7 @@ export default function GamePage() {
         )}
 
         {/* Loading Screen */}
-        {gameState === 'loading' && (
+        {gameState === 'loading' && codeVerified && (
           <div className={`${styles.screen} ${styles.active}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
@@ -1838,7 +2216,7 @@ export default function GamePage() {
         )}
 
         {/* Game Round Screen */}
-        {gameState === 'game' && (
+        {gameState === 'game' && codeVerified && (
           <div className={`${styles.screen} ${styles.active}`}>
             <div className={styles.parallaxBg}></div>
             {currentScenario ? (
@@ -1869,7 +2247,7 @@ export default function GamePage() {
                         </div>
                         <div className={styles.threatHeader}>
                           <span className={styles.threatLabel}>THREAT:</span>
-                          <h3 className={styles.threatTitle}>{currentScenario.title}</h3>
+                          <h3 className={styles.threatTitle}>{currentScenario.cardTitle || currentScenario.title || 'Untitled Question'}</h3>
                         </div>
                         <p className={styles.threatDescription}>{currentScenario.description}</p>
                         <div className={styles.answersContainer}>
@@ -1974,7 +2352,7 @@ export default function GamePage() {
         )}
 
         {/* Summary Screen */}
-        {gameState === 'summary' && (
+        {gameState === 'summary' && codeVerified && (
           <div className={`${styles.screen} ${styles.active}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
@@ -2230,6 +2608,59 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
             </div>
           </div>
         )}
+
+        {/* Error Modal */}
+        <Dialog
+          open={errorModal.open}
+          onClose={() => setErrorModal({ open: false, message: '', title: 'Error' })}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: '12px',
+              padding: '8px',
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            pb: 1
+          }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, color: '#d32f2f' }}>
+              {errorModal.title}
+            </Typography>
+            <IconButton
+              onClick={() => setErrorModal({ open: false, message: '', title: 'Error' })}
+              size="small"
+              sx={{ color: '#666' }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ pt: 2 }}>
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {errorModal.message}
+            </Alert>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button
+              onClick={() => setErrorModal({ open: false, message: '', title: 'Error' })}
+              variant="contained"
+              color="error"
+              fullWidth
+              sx={{
+                borderRadius: '8px',
+                textTransform: 'none',
+                fontWeight: 600,
+                py: 1.5
+              }}
+            >
+              OK
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
       <Footer />
     </>

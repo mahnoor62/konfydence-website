@@ -62,9 +62,24 @@ export default function DashboardPage() {
       return;
     }
     if (authUser) {
-      // Redirect B2B/B2E users to organization dashboard
-      if (authUser.role === 'b2b_user' || authUser.role === 'b2e_user') {
+      // Check if user is a member (has organizationId or schoolId)
+      const hasOrganizationId = authUser.organizationId;
+      const hasSchoolId = authUser.schoolId;
+      const isMember = hasOrganizationId || hasSchoolId;
+      
+      // Redirect members to member dashboard
+      if (isMember && (authUser.role === 'b2b_member' || authUser.role === 'b2e_member')) {
+        router.push('/dashboard/member');
+        return;
+      }
+      
+      // Redirect B2B users to Organization dashboard and B2E users to Institute dashboard
+      if (authUser.role === 'b2b_user') {
         router.push('/dashboard/organization');
+        return;
+      }
+      if (authUser.role === 'b2e_user') {
+        router.push('/dashboard/institute');
         return;
       }
       fetchDashboardData();
@@ -510,31 +525,54 @@ export default function DashboardPage() {
                         Active Packages {activePackages.length > 0 && `(${activePackages.length})`}
                       </Typography>
                       <Grid container spacing={2}>
-                        {activePackages.map((pkg) => (
-                          <Grid item xs={12} sm={6} lg={4} key={pkg.id}>
-                            <Box
-                              sx={{
-                                p: 2,
-                                backgroundColor: '#F5F8FB',
-                                borderRadius: 2,
-                                border: '1px solid #E0E7F0',
-                                height: '100%',
-                              }}
-                            >
-                              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                {pkg.packageName}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                Started: {new Date(pkg.startDate).toLocaleDateString()}
-                              </Typography>
-                              {pkg.endDate && (
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                  Expires: {new Date(pkg.endDate).toLocaleDateString()}
+                        {activePackages.map((pkg) => {
+                          const typeLabel =
+                            pkg.membershipType === 'b2b'
+                              ? 'Organization Package'
+                              : pkg.membershipType === 'b2e'
+                                ? 'Institute Package'
+                                : 'Personal Package';
+
+                          return (
+                            <Grid item xs={12} sm={6} lg={4} key={pkg.id}>
+                              <Box
+                                sx={{
+                                  p: 2,
+                                  backgroundColor: '#F5F8FB',
+                                  borderRadius: 2,
+                                  border: '1px solid #E0E7F0',
+                                  height: '100%',
+                                }}
+                              >
+                                <Stack direction="row" spacing={1} alignItems="center" mb={1} flexWrap="wrap">
+                                  <Chip
+                                    label={typeLabel}
+                                    size="small"
+                                    color={
+                                      pkg.membershipType === 'b2b'
+                                        ? 'primary'
+                                        : pkg.membershipType === 'b2e'
+                                          ? 'secondary'
+                                          : 'success'
+                                    }
+                                    sx={{ fontWeight: 600 }}
+                                  />
+                                </Stack>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
+                                  {pkg.packageName}
                                 </Typography>
-                              )}
-                            </Box>
-                          </Grid>
-                        ))}
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                  Started: {new Date(pkg.startDate).toLocaleDateString()}
+                                </Typography>
+                                {pkg.endDate && (
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                    Expires: {new Date(pkg.endDate).toLocaleDateString()}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Grid>
+                          );
+                        })}
                       </Grid>
                     </CardContent>
                   </Card>

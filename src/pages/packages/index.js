@@ -19,7 +19,11 @@ import {
   Alert,
   Snackbar,
   Tabs,
-  Tab
+  Tab,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -46,15 +50,18 @@ export default function PackagesPage() {
   
   const [packages, setPackages] = useState([]);
   const [allPackages, setAllPackages] = useState([]); // Store all packages
+  const [customPackages, setCustomPackages] = useState([]); // Store custom packages
   const [loading, setLoading] = useState(true);
+  const [loadingCustomPackages, setLoadingCustomPackages] = useState(false);
   const [error, setError] = useState(null);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [processingPurchase, setProcessingPurchase] = useState(null);
-  const [selectedCategory, setSelectedCategory] = useState('organizations_schools'); // 'organizations_schools', 'families'
+  const [selectedCategory, setSelectedCategory] = useState('organizations_schools'); // 'organizations_schools', 'families', 'custom'
   const [hasB2BPackages, setHasB2BPackages] = useState(false); // Track if B2B/B2E packages exist
   const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); // Track if user has used free trial
   const [requestForm, setRequestForm] = useState({
+    entityType: '',
     organizationName: '',
     contactName: '',
     contactEmail: '',
@@ -88,12 +95,9 @@ export default function PackagesPage() {
       }
 
       // If type is specified in URL, use it (for backward compatibility)
-      if (type === 'B2B') {
-        params.targetAudience = 'B2B';
-      } else if (type === 'B2E') {
-        params.targetAudience = 'B2E';
-      } else if (type === 'B2B_B2E') {
-        params.targetAudience = 'B2B_B2E'; // Backend supports this special value
+      // For B2B/B2E, always fetch all B2B and B2E packages
+      if (type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') {
+        params.targetAudience = 'B2B_B2E'; // Always fetch all B2B and B2E packages
       } else if (type === 'B2C') {
         params.targetAudience = 'B2C';
       } else {
@@ -158,6 +162,55 @@ export default function PackagesPage() {
     }
   }, [user]);
 
+  // Fetch custom packages
+  const fetchCustomPackages = useCallback(async () => {
+    // Only fetch if user is logged in (B2B/B2E users)
+    if (!user || (user.role !== 'b2b_user' && user.role !== 'b2e_user')) {
+      setCustomPackages([]);
+      return;
+    }
+    
+    try {
+      setLoadingCustomPackages(true);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setCustomPackages([]);
+        return;
+      }
+
+      console.log('🔍 Fetching custom packages for user:', user._id, 'Role:', user.role);
+      const response = await axios.get(`${API_URL}/custom-packages`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...NO_CACHE_HEADERS
+        }
+      });
+
+      console.log('📦 Custom packages response:', response.data);
+      if (Array.isArray(response.data)) {
+        // Filter custom packages that are available for purchase
+        // Only show packages with status 'pending' (not yet purchased)
+        // Once purchased, they will have a transaction and won't show here
+        const availableCustomPackages = response.data.filter(cp => {
+          // Only show pending packages (not yet purchased)
+          // Active packages are already purchased and should not show for purchase again
+          const isPending = cp.status === 'pending';
+          console.log('📦 Custom package:', cp._id, 'Status:', cp.status, 'IsPending:', isPending);
+          return isPending;
+        });
+        console.log('✅ Available custom packages for purchase:', availableCustomPackages.length);
+        setCustomPackages(availableCustomPackages);
+      } else {
+        setCustomPackages([]);
+      }
+    } catch (err) {
+      console.error('❌ Error fetching custom packages:', err);
+      setCustomPackages([]);
+    } finally {
+      setLoadingCustomPackages(false);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (router.isReady) {
       // If type is in URL, set category accordingly
@@ -168,8 +221,12 @@ export default function PackagesPage() {
       }
       fetchPackages();
       checkFreeTrialUsage();
+      // Fetch custom packages if user is logged in
+      if (user) {
+        fetchCustomPackages();
+      }
     }
-  }, [router.isReady, type, fetchPackages, checkFreeTrialUsage]);
+  }, [router.isReady, type, fetchPackages, checkFreeTrialUsage, fetchCustomPackages, user]);
 
   // Filter packages by category
   const filterPackagesByCategory = (packagesList, category) => {
@@ -302,8 +359,13 @@ export default function PackagesPage() {
     return false;
   };
 
-  const handleRequestCustomPackage = (pkg) => {
-    setSelectedPackage(pkg);
+  const handleRequestCustomPackage = () => {
+    // Check if user is logged in
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+    setSelectedPackage(null);
     setRequestDialogOpen(true);
   };
 
@@ -311,6 +373,7 @@ export default function PackagesPage() {
     setRequestDialogOpen(false);
     setSelectedPackage(null);
     setRequestForm({
+      entityType: '',
       organizationName: '',
       contactName: '',
       contactEmail: '',
@@ -321,7 +384,7 @@ export default function PackagesPage() {
     });
   };
 
-  const handleBuyNow = async (pkg) => {
+  const handleBuyNow = async (pkg, isCustomPackage = false) => {
     if (!user) {
       router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
@@ -338,12 +401,19 @@ export default function PackagesPage() {
       }
 
       // Create Stripe Checkout Session
+      const requestData = isCustomPackage 
+        ? { 
+            customPackageId: pkg._id,
+            productId: productId || null
+          }
+        : { 
+            packageId: pkg._id,
+            productId: productId || null
+          };
+
       const response = await axios.post(
         `${API_URL}/payments/create-checkout-session`,
-        { 
-          packageId: pkg._id,
-          productId: productId || null
-        },
+        requestData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -374,7 +444,7 @@ export default function PackagesPage() {
   };
 
   const handleSubmitRequest = async () => {
-    if (!requestForm.organizationName || !requestForm.contactName || !requestForm.contactEmail) {
+    if (!requestForm.entityType || !requestForm.organizationName || !requestForm.contactName || !requestForm.contactEmail) {
       setSnackbar({
         open: true,
         message: 'Please fill in all required fields',
@@ -385,8 +455,24 @@ export default function PackagesPage() {
 
     try {
       setSubmitting(true);
+      
+      // Get auth token if user is logged in (for B2B/B2E users)
+      let authHeaders = { ...NO_CACHE_HEADERS };
+      let token = null;
+      try {
+        // Try to get token from localStorage or sessionStorage
+        if (typeof window !== 'undefined') {
+          token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        }
+        if (token) {
+          authHeaders.Authorization = `Bearer ${token}`;
+        }
+      } catch (e) {
+        console.log('No auth token available');
+      }
+      
       const requestData = {
-        basePackageId: selectedPackage._id,
+        entityType: requestForm.entityType || undefined,
         organizationName: requestForm.organizationName,
         contactName: requestForm.contactName,
         contactEmail: requestForm.contactEmail,
@@ -396,12 +482,13 @@ export default function PackagesPage() {
           seatLimit: requestForm.seatLimit ? parseInt(requestForm.seatLimit) : undefined,
           customPricing: requestForm.customPricing ? {
             notes: requestForm.customPricing
-          } : undefined
+          } : undefined,
+          cardsToAdd: [] // Cards will be selected by admin when creating product
         }
       };
 
       await axios.post(`${API_URL}/custom-package-requests`, requestData, {
-        headers: NO_CACHE_HEADERS,
+        headers: authHeaders,
       });
 
       setSnackbar({
@@ -489,6 +576,12 @@ export default function PackagesPage() {
               >
                 <Tab label="Organizations & Schools" value="organizations_schools" />
                 <Tab label="For Families" value="families" />
+                {user && (user.role === 'b2b_user' || user.role === 'b2e_user') && (
+                  <Tab 
+                    label={`Custom Packages ${customPackages.length > 0 ? `(${customPackages.length})` : ''}`} 
+                    value="custom" 
+                  />
+                )}
               </Tabs>
             </Box>
           )}
@@ -516,6 +609,228 @@ export default function PackagesPage() {
 
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Packages" />
+          ) : selectedCategory === 'custom' ? (
+            // Custom Packages Tab
+            <Box>
+              {loadingCustomPackages ? (
+                <LoadingState message="Loading custom packages..." />
+              ) : customPackages.length === 0 ? (
+                <Box textAlign="center" py={6}>
+                  <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
+                    No custom packages available at the moment.
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Custom packages will appear here once they are approved by our team.
+                  </Typography>
+                </Box>
+              ) : (
+                <Grid
+                  container
+                  spacing={3}
+                  sx={{ 
+                    alignItems: 'stretch',
+                    justifyContent: 'center',
+                    mb: 4 
+                  }}
+                >
+                  {customPackages.map((pkg, index) => {
+                    const features = parseDescriptionToFeatures(pkg.description || pkg.basePackageId?.description || '');
+                    const isPurchased = pkg.status === 'active';
+                    
+                    return (
+                      <Grid 
+                        item 
+                        xs={12} 
+                        sm={6} 
+                        md={6} 
+                        lg={3} 
+                        key={pkg._id}
+                        sx={{
+                          display: 'flex',
+                        }}
+                      >
+                        <Card
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            borderRadius: 3,
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                            backgroundColor: 'white',
+                            border: '2px solid #E0E0E0',
+                            position: 'relative',
+                            overflow: 'visible',
+                            '&:hover': {
+                              boxShadow: '0 12px 48px rgba(0,0,0,0.2)',
+                              transform: 'translateY(-4px)',
+                              transition: 'all 0.3s ease',
+                            },
+                          }}
+                        >
+                          <CardContent 
+                            sx={{ 
+                              flexGrow: 1, 
+                              display: 'flex', 
+                              flexDirection: 'column',
+                              p: 3,
+                            }}
+                          >
+                            {/* Custom Package Badge */}
+                            <Box sx={{ position: 'absolute', top: 12, right: 12, display: 'flex', flexDirection: 'column', gap: 0.5, alignItems: 'flex-end' }}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  px: 1.5,
+                                  py: 0.5,
+                                  borderRadius: 1,
+                                  fontWeight: 700,
+                                  fontSize: '0.75rem',
+                                }}
+                              >
+                                CUSTOM
+                              </Typography>
+                              {/* Category Badge for Custom Package */}
+                              {(pkg.basePackageId?.packageType || pkg.packageType) && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    display: 'inline-block',
+                                    px: 1.5,
+                                    py: 0.5,
+                                    borderRadius: '12px',
+                                    backgroundColor: (pkg.basePackageId?.packageType || pkg.packageType) === 'digital' ? '#E3F2FD' : 
+                                                    (pkg.basePackageId?.packageType || pkg.packageType) === 'physical' ? '#FFF3E0' : 
+                                                    (pkg.basePackageId?.packageType || pkg.packageType) === 'digital_physical' ? '#F3E5F5' :
+                                                    (pkg.basePackageId?.packageType || pkg.packageType) === 'renewal' ? '#E8F5E9' :
+                                                    '#F5F5F5',
+                                    color: (pkg.basePackageId?.packageType || pkg.packageType) === 'digital' ? '#1976D2' : 
+                                            (pkg.basePackageId?.packageType || pkg.packageType) === 'physical' ? '#F57C00' : 
+                                            (pkg.basePackageId?.packageType || pkg.packageType) === 'digital_physical' ? '#7B1FA2' :
+                                            (pkg.basePackageId?.packageType || pkg.packageType) === 'renewal' ? '#2E7D32' :
+                                            '#424242',
+                                    fontWeight: 600,
+                                    fontSize: '0.7rem',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px',
+                                  }}
+                                >
+                                  {(pkg.basePackageId?.packageType || pkg.packageType) === 'digital' ? 'Digital' : 
+                                   (pkg.basePackageId?.packageType || pkg.packageType) === 'physical' ? 'Physical' : 
+                                   (pkg.basePackageId?.packageType || pkg.packageType) === 'digital_physical' ? 'Digital + Physical' : 
+                                   (pkg.basePackageId?.packageType || pkg.packageType) === 'renewal' ? 'Renewal' : 
+                                   (pkg.basePackageId?.packageType || pkg.packageType) === 'standard' ? 'Standard' :
+                                   (pkg.basePackageId?.packageType || pkg.packageType)}
+                                </Typography>
+                              )}
+                            </Box>
+
+                            <Typography 
+                              variant="h5" 
+                              component="h3" 
+                              sx={{ 
+                                fontWeight: 700,
+                                color: '#063C5E',
+                                mb: 2,
+                                mt: 1,
+                                fontSize: { xs: '1.25rem', md: '1.5rem' },
+                              }}
+                            >
+                              {pkg.name || pkg.basePackageId?.name || 'Custom Package'}
+                            </Typography>
+
+                            <Box sx={{ mb: 3 }}>
+                              <Typography
+                                variant="h3"
+                                sx={{
+                                  fontWeight: 700,
+                                  color: '#0B7897',
+                                  fontSize: { xs: '2rem', md: '2.5rem' },
+                                  lineHeight: 1,
+                                  mb: 0.5,
+                                }}
+                              >
+                                {pkg.contractPricing?.currency === 'EUR' ? '€' : pkg.contractPricing?.currency || '€'}{pkg.contractPricing?.amount || 0}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                {getBillingTypeLabel(pkg.contractPricing?.billingType || 'one_time')}
+                              </Typography>
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color: 'text.secondary',
+                                  fontSize: '0.875rem',
+                                  mt: 0.5,
+                                }}
+                              >
+                                {pkg.seatLimit || 0} Seats
+                              </Typography>
+                            </Box>
+
+                            <Stack spacing={1.5} sx={{ flexGrow: 1, mb: 3 }}>
+                              {features.slice(0, 5).map((feature, idx) => (
+                                <Box key={idx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography sx={{ color: '#0B7897', fontSize: '1.2rem' }}>✓</Typography>
+                                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    {feature}
+                                  </Typography>
+                                </Box>
+                              ))}
+                              {pkg.seatLimit && (
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Typography sx={{ color: '#0B7897', fontSize: '1.2rem' }}>✓</Typography>
+                                  <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                    {pkg.seatLimit} Seats Included
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Stack>
+
+                            <Button
+                              variant="contained"
+                              fullWidth
+                              onClick={() => handleBuyNow(pkg, true)}
+                              disabled={isPurchased || processingPurchase === pkg._id}
+                              sx={{
+                                background: isPurchased 
+                                  ? 'linear-gradient(90deg, #4CAF50 0%, #45A049 100%)'
+                                  : 'linear-gradient(90deg, #0B7897 0%, #063C5E 100%)',
+                                color: 'white',
+                                fontWeight: 700,
+                                py: 1.5,
+                                '&:hover': {
+                                  background: isPurchased
+                                    ? 'linear-gradient(90deg, #45A049 0%, #4CAF50 100%)'
+                                    : 'linear-gradient(90deg, #063C5E 0%, #0B7897 100%)',
+                                },
+                                '&:disabled': {
+                                  background: '#4CAF50',
+                                  color: 'white',
+                                },
+                              }}
+                            >
+                              {processingPurchase === pkg._id 
+                                ? 'Processing...' 
+                                : isPurchased 
+                                ? 'Purchased' 
+                                : 'Purchase Now'}
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              )}
+            </Box>
           ) : loading ? (
             <LoadingState message="Loading packages..." />
           ) : packages.length === 0 ? (
@@ -534,6 +849,119 @@ export default function PackagesPage() {
                 mb: 4 
               }}
             >
+              {/* Request Custom Package Card - Show for Organizations & Schools */}
+              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') && (
+                <Grid 
+                  item 
+                  xs={12} 
+                  sm={6} 
+                  md={6} 
+                  lg={3}
+                  sx={{
+                    display: 'flex',
+                  }}
+                >
+                  <Card
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 3,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                      backgroundColor: 'white',
+                      border: '2px solid #0B7897',
+                      position: 'relative',
+                      overflow: 'visible',
+                      '&:hover': {
+                        boxShadow: '0 12px 48px rgba(11,120,151,0.3)',
+                        transform: 'translateY(-4px)',
+                        transition: 'all 0.3s ease',
+                      },
+                    }}
+                  >
+                    <CardContent 
+                      sx={{ 
+                        flexGrow: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        p: 4,
+                      }}
+                    >
+                      <Typography 
+                        variant="h5" 
+                        component="h3" 
+                        sx={{ 
+                          fontWeight: 700,
+                          color: '#063C5E',
+                          mb: 2,
+                          fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        }}
+                      >
+                        Need a Custom Package?
+                      </Typography>
+
+                      <Box sx={{ mb: 3 }}>
+                        <Typography
+                          variant="body1"
+                          sx={{
+                            color: 'text.secondary',
+                            fontSize: '0.9375rem',
+                            lineHeight: 1.6,
+                            mb: 2,
+                          }}
+                        >
+                          Tell us your specific requirements and we&apos;ll create a tailored package for your organization.
+                        </Typography>
+                      </Box>
+
+                      <Stack spacing={1.5} sx={{ flexGrow: 1, mb: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#0B7897', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Custom Seat Limits
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#0B7897', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Flexible Pricing Options
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#0B7897', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                            Tailored Card Selection
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      <Button
+                        variant="contained"
+                        fullWidth
+                        onClick={handleRequestCustomPackage}
+                        sx={{
+                          backgroundColor: '#0B7897',
+                          color: 'white',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          borderRadius: 2,
+                          py: 1.5,
+                          fontSize: { xs: '0.875rem', md: '0.9375rem' },
+                          '&:hover': {
+                            backgroundColor: '#063C5E',
+                            transform: 'scale(1.02)',
+                          },
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        Request Custom Package
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              )}
+
               {/* Free Trial Card - Show for Organizations & Schools when B2B/B2E packages exist and user hasn't used trial */}
               {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') && hasB2BPackages && packages.length > 0 && !hasUsedFreeTrial && (
                 <Grid 
@@ -721,6 +1149,46 @@ export default function PackagesPage() {
                           p: 4,
                         }}
                       >
+                        {/* Category Badge */}
+                        {pkg.packageType && (
+                          <Box sx={{ mb: 1.5 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                display: 'inline-block',
+                                px: 1.5,
+                                py: 0.5,
+                                borderRadius: '12px',
+                                backgroundColor: highlighted 
+                                  ? 'rgba(255, 255, 255, 0.2)' 
+                                  : (pkg.packageType === 'digital' ? '#E3F2FD' : 
+                                      pkg.packageType === 'physical' ? '#FFF3E0' : 
+                                      pkg.packageType === 'digital_physical' ? '#F3E5F5' :
+                                      pkg.packageType === 'renewal' ? '#E8F5E9' :
+                                      '#F5F5F5'),
+                                color: highlighted 
+                                  ? '#FFD700' 
+                                  : (pkg.packageType === 'digital' ? '#1976D2' : 
+                                      pkg.packageType === 'physical' ? '#F57C00' : 
+                                      pkg.packageType === 'digital_physical' ? '#7B1FA2' :
+                                      pkg.packageType === 'renewal' ? '#2E7D32' :
+                                      '#424242'),
+                                fontWeight: 600,
+                                fontSize: '0.75rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px',
+                              }}
+                            >
+                              {pkg.packageType === 'digital' ? 'Digital' : 
+                               pkg.packageType === 'physical' ? 'Physical' : 
+                               pkg.packageType === 'digital_physical' ? 'Digital + Physical' : 
+                               pkg.packageType === 'renewal' ? 'Renewal' : 
+                               pkg.packageType === 'standard' ? 'Standard' :
+                               pkg.packageType}
+                            </Typography>
+                          </Box>
+                        )}
+
                         {/* Package Name */}
                         <Typography 
                           variant="h5" 
@@ -837,7 +1305,7 @@ export default function PackagesPage() {
                           >
                             Max Seats: <strong>{pkg.maxSeats || 5}</strong>
                           </Typography>
-                          {pkg.expiryDate && (
+                          {pkg.expiryTime && pkg.expiryTimeUnit && (
                             <Typography
                               variant="body2"
                               sx={{
@@ -846,11 +1314,7 @@ export default function PackagesPage() {
                                 mb: pkg.includedCardIds?.length > 0 ? 1 : 0,
                               }}
                             >
-                              Expires: <strong>{new Date(pkg.expiryDate).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                              })}</strong>
+                              Expiry Time: <strong>{pkg.expiryTime} {pkg.expiryTimeUnit === 'months' ? 'Month' : 'Year'}{pkg.expiryTime !== 1 ? 's' : ''}</strong>
                             </Typography>
                           )}
                           {pkg.includedCardIds?.length > 0 && (
@@ -868,29 +1332,6 @@ export default function PackagesPage() {
 
                         {/* CTA Buttons */}
                         <Stack spacing={1.5}>
-                          {showRequestCustomButton && (
-                            <Button
-                              variant="contained"
-                              fullWidth
-                              onClick={() => handleRequestCustomPackage(pkg)}
-                              sx={{
-                                backgroundColor: '#0B7897',
-                                color: 'white',
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                borderRadius: 2,
-                                py: 1.5,
-                                fontSize: { xs: '0.875rem', md: '0.9375rem' },
-                                '&:hover': {
-                                  backgroundColor: '#063C5E',
-                                  transform: 'scale(1.02)',
-                                },
-                                transition: 'all 0.2s ease',
-                              }}
-                            >
-                              Request Custom Package
-                            </Button>
-                          )}
                           <Button
                             variant="outlined"
                             fullWidth
@@ -933,14 +1374,21 @@ export default function PackagesPage() {
       >
         <DialogTitle>
           Request Custom Package
-          {selectedPackage && (
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Based on: <strong>{selectedPackage.name}</strong>
-            </Typography>
-          )}
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
+            <FormControl fullWidth required>
+              <InputLabel>Entity Type</InputLabel>
+              <Select
+                value={requestForm.entityType}
+                label="Entity Type"
+                onChange={(e) => setRequestForm({ ...requestForm, entityType: e.target.value })}
+              >
+                <MenuItem value="">Select Type</MenuItem>
+                <MenuItem value="organization">Organization</MenuItem>
+                <MenuItem value="institute">Institute</MenuItem>
+              </Select>
+            </FormControl>
             <TextField
               fullWidth
               label="Organization Name *"

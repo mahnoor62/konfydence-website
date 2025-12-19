@@ -13,6 +13,9 @@ import {
   Alert,
   Link as MuiLink,
   Stack,
+  Tabs,
+  Tab,
+  CircularProgress,
 } from '@mui/material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -20,7 +23,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, user, loading: authLoading } = useAuth();
+  const { login, user, loading: authLoading, checkAuth } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -28,7 +31,34 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push(redirect || '/dashboard');
+      // Get correct dashboard route based on user role
+      const getDashboardRoute = () => {
+        if (!user) return '/dashboard';
+        
+        const userRole = user.role;
+        const hasOrganizationId = user.organizationId;
+        const hasSchoolId = user.schoolId;
+        const isMember = hasOrganizationId || hasSchoolId;
+        
+        // Check if user is a member/student
+        if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
+          return '/dashboard/member';
+        }
+        
+        // Check if user is admin
+        if (userRole === 'b2b_user') {
+          return '/dashboard/organization';
+        }
+        
+        if (userRole === 'b2e_user') {
+          return '/dashboard/institute';
+        }
+        
+        // Default dashboard for regular users
+        return '/dashboard';
+      };
+      
+      router.push(redirect || getDashboardRoute());
     }
   }, [user, authLoading, redirect, router]);
 
@@ -37,17 +67,35 @@ export default function LoginPage() {
     setError('');
     setSubmitting(true);
 
+    // Login with email and password only
     const result = await login(formData.email, formData.password);
     
     if (result.success) {
       setSubmitting(false);
-      // Role-based redirect
-      const userRole = result.user?.role;
+      
+      // Get user data from result
+      const userData = result.user;
+      const userRole = userData?.role;
+      
+      // Check if user is a member (has organizationId or schoolId)
+      const hasOrganizationId = userData?.organizationId;
+      const hasSchoolId = userData?.schoolId;
+      const isMember = hasOrganizationId || hasSchoolId;
+      
       let redirectPath = redirect || '/dashboard';
       
-      if (userRole === 'b2b_user' || userRole === 'b2e_user') {
+      // Route based on role and membership
+      if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
+        // User is a member/student - route to member dashboard
+        redirectPath = '/dashboard/member';
+      } else if (userRole === 'b2b_user') {
+        // User is organization admin
         redirectPath = '/dashboard/organization';
+      } else if (userRole === 'b2e_user') {
+        // User is institute admin
+        redirectPath = '/dashboard/institute';
       } else if (userRole === 'b2c_user') {
+        // Regular user
         redirectPath = '/dashboard';
       }
       
@@ -129,6 +177,7 @@ export default function LoginPage() {
                 </Alert>
               )}
 
+              {/* Single Login Form - Email and Password Only */}
               <Box component="form" onSubmit={handleSubmit}>
                 <Stack spacing={3}>
                   <TextField
@@ -155,6 +204,7 @@ export default function LoginPage() {
                     variant="contained"
                     size="large"
                     disabled={submitting}
+                    startIcon={submitting ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
                     sx={{
                       backgroundColor: '#0B7897',
                       color: 'white',

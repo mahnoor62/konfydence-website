@@ -453,7 +453,7 @@ export default function PaymentSuccessPage() {
                         Amount:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                        {transaction.currency} {transaction.amount.toFixed(2)}
+                        {(transaction.currency === 'EUR' ? '€' : transaction.currency)} {transaction.amount.toFixed(2)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

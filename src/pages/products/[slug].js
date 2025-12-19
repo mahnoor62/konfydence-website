@@ -330,66 +330,147 @@ export default function ProductDetailPage({ product, error }) {
               </Typography>
 
               {/* Attached Cards Section */}
-              {product.cardIds && product.cardIds.length > 0 && (
-                <Box sx={{ mb: 4, p: 2, backgroundColor: '#F5F8FB', borderRadius: 2, border: '1px solid #E0E7F0' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#063C5E' }}>
-                    Included Cards
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    This product includes {product.cardIds.length} card{product.cardIds.length !== 1 ? 's' : ''} with the following levels:
-                  </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                    {product.cardIds.map((card, index) => {
-                      const levelCount = card.levels?.length || 0;
-                      const totalQuestions = card.levels?.reduce((sum, level) => sum + (level.questions?.length || 0), 0) || 0;
-                      return (
-                        <Box
-                          key={card._id || index}
-                          sx={{
-                            p: 1.5,
-                            backgroundColor: 'white',
-                            borderRadius: 1,
-                            border: '1px solid #E0E7F0',
-                          }}
-                        >
-                          <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
-                            {card.title || 'Untitled Card'}
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mt: 1 }}>
-                            <Chip
-                              label={`${levelCount} Level${levelCount !== 1 ? 's' : ''}`}
-                              size="small"
+              {(() => {
+                const level1Cards = product.level1 || [];
+                const level2Cards = product.level2 || [];
+                const level3Cards = product.level3 || [];
+                const legacyCards = product.cardIds || [];
+                const totalCards = level1Cards.length + level2Cards.length + level3Cards.length || legacyCards.length;
+                
+                if (totalCards === 0) return null;
+                
+                return (
+                  <Box sx={{ mb: 4, p: 2, backgroundColor: '#F5F8FB', borderRadius: 2, border: '1px solid #E0E7F0' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: '#063C5E' }}>
+                      Included Cards
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      This product includes {totalCards} card{totalCards !== 1 ? 's' : ''} organized by levels:
+                    </Typography>
+                    
+                    {/* Level 1 Cards */}
+                    {level1Cards.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#0B7897' }}>
+                          Level 1 Cards ({level1Cards.length})
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {level1Cards.map((card, index) => (
+                            <Box
+                              key={card._id || index}
                               sx={{
-                                backgroundColor: 'rgba(11, 120, 151, 0.1)',
-                                color: '#0B7897',
-                                fontWeight: 500,
+                                p: 1.5,
+                                backgroundColor: 'white',
+                                borderRadius: 1,
+                                border: '1px solid #E0E7F0',
                               }}
-                            />
-                            {totalQuestions > 0 && (
-                              <Chip
-                                label={`${totalQuestions} Question${totalQuestions !== 1 ? 's' : ''}`}
-                                size="small"
-                                sx={{
-                                  backgroundColor: 'rgba(6, 60, 94, 0.1)',
-                                  color: '#063C5E',
-                                  fontWeight: 500,
-                                }}
-                              />
-                            )}
-                            {card.category && (
-                              <Chip
-                                label={card.category}
-                                size="small"
-                                variant="outlined"
-                              />
-                            )}
-                          </Box>
+                            >
+                              <Typography variant="body2" fontWeight={500}>
+                                {card.title || 'Untitled Card'}
+                              </Typography>
+                              {card.category && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {card.category}
+                                </Typography>
+                              )}
+                            </Box>
+                          ))}
                         </Box>
-                      );
-                    })}
+                      </Box>
+                    )}
+                    
+                    {/* Level 2 Cards */}
+                    {level2Cards.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#0B7897' }}>
+                          Level 2 Cards ({level2Cards.length})
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {level2Cards.map((card, index) => (
+                            <Box
+                              key={card._id || index}
+                              sx={{
+                                p: 1.5,
+                                backgroundColor: 'white',
+                                borderRadius: 1,
+                                border: '1px solid #E0E7F0',
+                              }}
+                            >
+                              <Typography variant="body2" fontWeight={500}>
+                                {card.title || 'Untitled Card'}
+                              </Typography>
+                              {card.category && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {card.category}
+                                </Typography>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    
+                    {/* Level 3 Cards */}
+                    {level3Cards.length > 0 && (
+                      <Box sx={{ mb: 2 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: '#0B7897' }}>
+                          Level 3 Cards ({level3Cards.length})
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                          {level3Cards.map((card, index) => (
+                            <Box
+                              key={card._id || index}
+                              sx={{
+                                p: 1.5,
+                                backgroundColor: 'white',
+                                borderRadius: 1,
+                                border: '1px solid #E0E7F0',
+                              }}
+                            >
+                              <Typography variant="body2" fontWeight={500}>
+                                {card.title || 'Untitled Card'}
+                              </Typography>
+                              {card.category && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {card.category}
+                                </Typography>
+                              )}
+                            </Box>
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    
+                    {/* Legacy Cards (backward compatibility) */}
+                    {legacyCards.length > 0 && level1Cards.length === 0 && level2Cards.length === 0 && level3Cards.length === 0 && (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        {legacyCards.map((card, index) => {
+                          return (
+                            <Box
+                              key={card._id || index}
+                              sx={{
+                                p: 1.5,
+                                backgroundColor: 'white',
+                                borderRadius: 1,
+                                border: '1px solid #E0E7F0',
+                              }}
+                            >
+                              <Typography variant="body2" fontWeight={500}>
+                                {card.title || 'Untitled Card'}
+                              </Typography>
+                              {card.category && (
+                                <Typography variant="caption" color="text.secondary">
+                                  {card.category}
+                                </Typography>
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    )}
                   </Box>
-                </Box>
-              )}
+                );
+              })()}
 
               {/* Price */}
               {hasPrice && (
