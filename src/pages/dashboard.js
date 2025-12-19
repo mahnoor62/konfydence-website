@@ -30,7 +30,13 @@ import {
   Divider,
   IconButton,
   CircularProgress,
+  Tabs,
+  Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -55,6 +61,7 @@ export default function DashboardPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [selectedTab, setSelectedTab] = useState(0);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -319,6 +326,11 @@ export default function DashboardPage() {
 
   const { user, membership, allMemberships, activePackages, progress, transactions, gameProgress, organizations } = dashboardData;
 
+  // Determine which tabs to show
+  const hasProgress = (gameProgress && gameProgress.totalLevelsPlayed > 0) || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0)));
+  const hasTransactions = transactions && transactions.length > 0;
+  const hasMemberships = (allMemberships && allMemberships.length > 0) || (activePackages && activePackages.length > 0);
+
   return (
     <>
       <Header />
@@ -580,223 +592,290 @@ export default function DashboardPage() {
               </Grid>
             ) : null}
 
-            {/* Progress Tracking - Only show if there's progress data */}
-            {(gameProgress && gameProgress.totalLevelsPlayed > 0) || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0))) ? (
-              <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, mb: 3, height: '100%' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 3 }}>
-                      Progress Tracking
-                    </Typography>
-                    
-                    {/* Game Progress Section */}
-                    {gameProgress && gameProgress.totalLevelsPlayed > 0 && (
-                      <Box sx={{ mb: 3 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-                          Game Progress
-                        </Typography>
-                        <Box sx={{ mb: 2 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                            <Typography variant="body2" color="text.secondary">
-                              Overall Game Score
+            {/* Main Content Area with Tabs */}
+            {(hasProgress || hasTransactions) && (
+              <Grid item xs={12}>
+                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
+                  <CardContent sx={{ p: 0 }}>
+                    <Tabs
+                      value={selectedTab}
+                      onChange={(e, newValue) => setSelectedTab(newValue)}
+                      sx={{
+                        borderBottom: 1,
+                        borderColor: 'divider',
+                        px: 3,
+                        '& .MuiTab-root': {
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          fontSize: '1rem',
+                          minHeight: 64,
+                        },
+                      }}
+                    >
+                      {hasProgress && (
+                        <Tab label="Progress Tracking" />
+                      )}
+                      {hasTransactions && (
+                        <Tab label="Purchase History" />
+                      )}
+                    </Tabs>
+
+                    {/* Progress Tracking Tab */}
+                    {hasProgress && selectedTab === 0 && (
+                      <Box sx={{ p: 3 }}>
+                        {/* Overall Game Progress */}
+                        {gameProgress && gameProgress.totalLevelsPlayed > 0 && (
+                          <Box sx={{ mb: 4 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                              Game Progress
                             </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {gameProgress.overallPercentage}%
-                            </Typography>
-                          </Box>
-                          <LinearProgress
-                            variant="determinate"
-                            value={gameProgress.overallPercentage}
-                            sx={{
-                              height: 10,
-                              borderRadius: 5,
-                              backgroundColor: '#E0E7F0',
-                              '& .MuiLinearProgress-bar': {
-                                backgroundColor: '#0B7897',
-                              },
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                            Score: {gameProgress.overallScore} / {gameProgress.overallMaxScore} 
-                            ({gameProgress.cards?.reduce((sum, c) => sum + c.correctAnswers, 0) || 0} correct answers out of {gameProgress.cards?.reduce((sum, c) => sum + c.totalQuestions, 0) || 0} questions)
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                            Total Levels Played: {gameProgress.totalLevelsPlayed}
-                          </Typography>
-                        </Box>
-
-                        {gameProgress.cards && gameProgress.cards.length > 0 && (
-                          <Stack spacing={2}>
-                            {gameProgress.cards.map((card, idx) => (
-                              <Box
-                                key={idx}
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: '#F5F8FB',
-                                  borderRadius: 2,
-                                  border: '1px solid #E0E7F0',
-                                }}
-                              >
-                                <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                  {card.cardTitle}
+                            <Box sx={{ mb: 3 }}>
+                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                                <Typography variant="body2" color="text.secondary">
+                                  Overall Game Score
                                 </Typography>
-                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Card Score
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                    {card.percentageScore}%
-                                  </Typography>
-                                </Box>
-                                <LinearProgress
-                                  variant="determinate"
-                                  value={card.percentageScore}
-                                  sx={{
-                                    height: 8,
-                                    borderRadius: 4,
-                                    backgroundColor: '#E0E7F0',
-                                    '& .MuiLinearProgress-bar': {
-                                      backgroundColor: '#FFD700',
-                                    },
-                                  }}
-                                />
-                                <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                  {card.correctAnswers} of {card.totalQuestions} correct • 
-                                  Levels: {card.levels.map(l => `L${l.levelNumber}: ${l.score}/${l.maxScore} (${l.correctAnswers}/${l.totalQuestions})`).join(', ')}
-                                </Typography>
-                              </Box>
-                            ))}
-                          </Stack>
-                        )}
-                      </Box>
-                    )}
-
-                    {/* Card Progress Section */}
-                    {progress && progress.totalCards > 0 && (
-                      <Box sx={{ mb: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                          <Typography variant="body2" color="text.secondary">
-                            Overall Card Progress
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {progress.totalProgress}%
-                          </Typography>
-                        </Box>
-                        <LinearProgress
-                          variant="determinate"
-                          value={progress.totalProgress}
-                          sx={{
-                            height: 10,
-                            borderRadius: 5,
-                            backgroundColor: '#E0E7F0',
-                            '& .MuiLinearProgress-bar': {
-                              backgroundColor: '#0B7897',
-                            },
-                          }}
-                        />
-                        <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                          {progress.completedCards} of {progress.totalCards} cards completed
-                        </Typography>
-                      </Box>
-                    )}
-
-                    {progress && progress.packageProgress && progress.packageProgress.length > 0 && (
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2 }}>
-                          Package Progress
-                        </Typography>
-                        <Stack spacing={2}>
-                          {progress.packageProgress.map((pkg, idx) => (
-                            <Box key={idx}>
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                <Typography variant="body2">{pkg.packageName}</Typography>
                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                  {pkg.completionPercentage}%
+                                  {gameProgress.overallPercentage}%
                                 </Typography>
                               </Box>
                               <LinearProgress
                                 variant="determinate"
-                                value={pkg.completionPercentage}
+                                value={gameProgress.overallPercentage}
                                 sx={{
-                                  height: 8,
-                                  borderRadius: 4,
+                                  height: 10,
+                                  borderRadius: 5,
                                   backgroundColor: '#E0E7F0',
                                   '& .MuiLinearProgress-bar': {
-                                    backgroundColor: '#FFD700',
+                                    backgroundColor: '#0B7897',
                                   },
                                 }}
                               />
-                              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                                {pkg.completedCards} of {pkg.totalCards} cards completed
+                              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                                Score: {gameProgress.overallScore} / {gameProgress.overallMaxScore} 
+                                ({gameProgress.cards?.reduce((sum, c) => sum + c.correctAnswers, 0) || 0} correct answers out of {gameProgress.cards?.reduce((sum, c) => sum + c.totalQuestions, 0) || 0} questions)
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                Total Levels Played: {gameProgress.totalLevelsPlayed}
                               </Typography>
                             </Box>
-                          ))}
-                        </Stack>
+
+                            {/* Levels-wise Progress Table */}
+                            {gameProgress.cards && gameProgress.cards.length > 0 && (
+                              <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #E0E7F0', borderRadius: 2 }}>
+                                <Table>
+                                  <TableHead>
+                                    <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                      <TableCell sx={{ fontWeight: 600 }}>Card Title</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Card Score</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Correct Answers</TableCell>
+                                      <TableCell sx={{ fontWeight: 600 }}>Levels</TableCell>
+                                    </TableRow>
+                                  </TableHead>
+                                  <TableBody>
+                                    {gameProgress.cards.map((card, idx) => (
+                                      <TableRow key={idx}>
+                                        <TableCell>
+                                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                            {card.cardTitle}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                            <LinearProgress
+                                              variant="determinate"
+                                              value={card.percentageScore}
+                                              sx={{
+                                                width: 80,
+                                                height: 8,
+                                                borderRadius: 4,
+                                                backgroundColor: '#E0E7F0',
+                                                '& .MuiLinearProgress-bar': {
+                                                  backgroundColor: '#FFD700',
+                                                },
+                                              }}
+                                            />
+                                            <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>
+                                              {card.percentageScore}%
+                                            </Typography>
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Typography variant="body2">
+                                            {card.correctAnswers} / {card.totalQuestions}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Stack spacing={0.5}>
+                                            {card.levels && card.levels.length > 0 ? (
+                                              card.levels.map((level, levelIdx) => (
+                                                <Box key={levelIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                  <Chip
+                                                    label={`L${level.levelNumber}: ${level.score}/${level.maxScore} (${level.correctAnswers}/${level.totalQuestions})`}
+                                                    size="small"
+                                                    sx={{
+                                                      backgroundColor: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#E8F5E9' : '#FFF3E0',
+                                                      color: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#2E7D32' : '#E65100',
+                                                      fontWeight: 600,
+                                                      fontSize: '0.7rem',
+                                                    }}
+                                                  />
+                                                  {level.completedAt && (
+                                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                      {new Date(level.completedAt).toLocaleDateString()}
+                                                    </Typography>
+                                                  )}
+                                                </Box>
+                                              ))
+                                            ) : (
+                                              <Typography variant="caption" color="text.secondary">
+                                                No levels played
+                                              </Typography>
+                                            )}
+                                          </Stack>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </TableContainer>
+                            )}
+                          </Box>
+                        )}
+
+                        {/* Card Progress Section */}
+                        {progress && progress.totalCards > 0 && (
+                          <Box sx={{ mb: 3 }}>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                              Card Progress
+                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                              <Typography variant="body2" color="text.secondary">
+                                Overall Card Progress
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {progress.totalProgress}%
+                              </Typography>
+                            </Box>
+                            <LinearProgress
+                              variant="determinate"
+                              value={progress.totalProgress}
+                              sx={{
+                                height: 10,
+                                borderRadius: 5,
+                                backgroundColor: '#E0E7F0',
+                                '& .MuiLinearProgress-bar': {
+                                  backgroundColor: '#0B7897',
+                                },
+                              }}
+                            />
+                            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                              {progress.completedCards} of {progress.totalCards} cards completed
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {/* Package Progress */}
+                        {progress && progress.packageProgress && progress.packageProgress.length > 0 && (
+                          <Box>
+                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                              Package Progress
+                            </Typography>
+                            <Stack spacing={2}>
+                              {progress.packageProgress.map((pkg, idx) => (
+                                <Box key={idx}>
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                    <Typography variant="body2">{pkg.packageName}</Typography>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                      {pkg.completionPercentage}%
+                                    </Typography>
+                                  </Box>
+                                  <LinearProgress
+                                    variant="determinate"
+                                    value={pkg.completionPercentage}
+                                    sx={{
+                                      height: 8,
+                                      borderRadius: 4,
+                                      backgroundColor: '#E0E7F0',
+                                      '& .MuiLinearProgress-bar': {
+                                        backgroundColor: '#FFD700',
+                                      },
+                                    }}
+                                  />
+                                  <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                                    {pkg.completedCards} of {pkg.totalCards} cards completed
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Stack>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+
+                    {/* Purchase History Tab */}
+                    {hasTransactions && selectedTab === (hasProgress ? 1 : 0) && (
+                      <Box sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                          Purchase History
+                        </Typography>
+                        <TableContainer 
+                          sx={{ 
+                            maxHeight: transactions.length > 5 ? '600px' : 'auto',
+                            border: '1px solid #E0E7F0',
+                            borderRadius: 2,
+                          }}
+                        >
+                          <Table stickyHeader>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Package</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Type</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Amount</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Status</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {transactions.map((tx) => (
+                                <TableRow key={tx.id} hover>
+                                  <TableCell>
+                                    {new Date(tx.createdAt).toLocaleDateString()}
+                                  </TableCell>
+                                  <TableCell>{tx.packageName}</TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={tx.type.replace('_', ' ').toUpperCase()}
+                                      size="small"
+                                      sx={{ textTransform: 'capitalize' }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    {tx.currency} {tx.amount.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={tx.status}
+                                      color={
+                                        tx.status === 'paid'
+                                          ? 'success'
+                                          : tx.status === 'pending'
+                                          ? 'warning'
+                                          : 'default'
+                                      }
+                                      size="small"
+                                    />
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
                       </Box>
                     )}
                   </CardContent>
                 </Card>
               </Grid>
-            ) : null}
-
-            {/* Purchase History - Only show if there are transactions */}
-            {transactions && transactions.length > 0 ? (
-              <Grid item xs={12} md={6}>
-                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, height: '100%' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                      Purchase History
-                    </Typography>
-                    <TableContainer>
-                      <Table>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Package</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {transactions.map((tx) => (
-                            <TableRow key={tx.id}>
-                              <TableCell>
-                                {new Date(tx.createdAt).toLocaleDateString()}
-                              </TableCell>
-                              <TableCell>{tx.packageName}</TableCell>
-                              <TableCell>
-                                <Chip
-                                  label={tx.type.replace('_', ' ').toUpperCase()}
-                                  size="small"
-                                  sx={{ textTransform: 'capitalize' }}
-                                />
-                              </TableCell>
-                              <TableCell>
-                                {tx.currency} {tx.amount.toFixed(2)}
-                              </TableCell>
-                              <TableCell>
-                                <Chip
-                                  label={tx.status}
-                                  color={
-                                    tx.status === 'paid'
-                                      ? 'success'
-                                      : tx.status === 'pending'
-                                      ? 'warning'
-                                      : 'default'
-                                  }
-                                  size="small"
-                                />
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ) : null}
+            )}
           </Grid>
         </Container>
       </Box>
