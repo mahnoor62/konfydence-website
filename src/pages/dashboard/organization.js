@@ -474,17 +474,27 @@ export default function OrganizationDashboardPage() {
 
         if (dashboardResponse.data?.transactions && Array.isArray(dashboardResponse.data.transactions)) {
           const userTransactions = dashboardResponse.data.transactions.filter(tx => {
-            // Filter transactions that belong to this organization/school
+            // IMPORTANT: Always filter by userId first - user can only see their own transactions
+            const txUserId = tx.userId?._id || tx.userId;
+            const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+            const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+            
+            // First check: Transaction must belong to logged-in user
+            if (userStr !== txUserStr) {
+              return false;
+            }
+            
+            // Second check: Filter transactions that belong to this organization/school (if applicable)
             const txOrgId = tx.organizationId?._id || tx.organizationId || tx.orgId;
             const txSchoolId = tx.schoolId?._id || tx.schoolId;
-            const txUserId = tx.userId?._id || tx.userId;
 
             if (activeOrganizationId) {
               const orgIdStr = typeof activeOrganizationId === 'object' 
                 ? (activeOrganizationId._id || activeOrganizationId.id || activeOrganizationId.toString())
                 : activeOrganizationId.toString();
               const txOrgIdStr = txOrgId ? (typeof txOrgId === 'object' ? (txOrgId._id || txOrgId.toString()) : txOrgId.toString()) : null;
-              return txOrgIdStr === orgIdStr || txUserId === user._id;
+              // Transaction must belong to user AND match organization (or have no organizationId)
+              return txOrgIdStr === orgIdStr || !txOrgId;
             }
 
             if (activeSchoolId) {
@@ -492,10 +502,12 @@ export default function OrganizationDashboardPage() {
                 ? (activeSchoolId._id || activeSchoolId.id || activeSchoolId.toString())
                 : activeSchoolId.toString();
               const txSchoolIdStr = txSchoolId ? (typeof txSchoolId === 'object' ? (txSchoolId._id || txSchoolId.toString()) : txSchoolId.toString()) : null;
-              return txSchoolIdStr === schoolIdStr || txUserId === user._id;
+              // Transaction must belong to user AND match school (or have no schoolId)
+              return txSchoolIdStr === schoolIdStr || !txSchoolId;
             }
 
-            return txUserId === user._id;
+            // If no organization/school filter, just return user's transactions
+            return true;
           });
 
           allTransactions = userTransactions;
@@ -518,9 +530,17 @@ export default function OrganizationDashboardPage() {
           });
 
           if (Array.isArray(transactionsResponse.data)) {
+            // Filter transactions to ensure they belong to logged-in user
+            const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+            const userTransactions = transactionsResponse.data.filter(tx => {
+              const txUserId = tx.userId?._id || tx.userId;
+              const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+              return userStr === txUserStr; // Only include transactions that belong to logged-in user
+            });
+            
             // Merge with existing transactions, avoiding duplicates
             const existingIds = new Set(allTransactions.map(tx => tx._id || tx.id));
-            const newTransactions = transactionsResponse.data.filter(tx => {
+            const newTransactions = userTransactions.filter(tx => {
               const txId = tx._id || tx.id;
               return txId && !existingIds.has(txId);
             });
@@ -1107,10 +1127,37 @@ export default function OrganizationDashboardPage() {
         if (dashboardResponse.data?.transactions && Array.isArray(dashboardResponse.data.transactions)) {
           const userTransactions = dashboardResponse.data.transactions
             .filter(tx => {
-              // Filter transactions that belong to this organization/school
+              // IMPORTANT: First filter by userId - user can only see their own transactions
+              const txUserId = tx.userId?._id || tx.userId;
+              const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+              const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+              
+              // Transaction must belong to logged-in user
+              if (userStr !== txUserStr) {
+                return false;
+              }
+              
+              // Then filter transactions that belong to this organization/school
               const txOrgId = tx.organizationId?._id || tx.organizationId;
-              return txOrgId === activeOrganizationId || txOrgId === activeSchoolId ||
-                (!txOrgId && (user.organizationId === activeOrganizationId || user.schoolId === activeSchoolId));
+              const txSchoolId = tx.schoolId?._id || tx.schoolId;
+              
+              if (activeOrganizationId) {
+                const orgIdStr = typeof activeOrganizationId === 'object' 
+                  ? (activeOrganizationId._id || activeOrganizationId.id || activeOrganizationId.toString())
+                  : activeOrganizationId.toString();
+                const txOrgIdStr = txOrgId ? (typeof txOrgId === 'object' ? (txOrgId._id || txOrgId.toString()) : txOrgId.toString()) : null;
+                return txOrgIdStr === orgIdStr || !txOrgId;
+              }
+              
+              if (activeSchoolId) {
+                const schoolIdStr = typeof activeSchoolId === 'object'
+                  ? (activeSchoolId._id || activeSchoolId.id || activeSchoolId.toString())
+                  : activeSchoolId.toString();
+                const txSchoolIdStr = txSchoolId ? (typeof txSchoolId === 'object' ? (txSchoolId._id || txSchoolId.toString()) : txSchoolId.toString()) : null;
+                return txSchoolIdStr === schoolIdStr || !txSchoolId;
+              }
+              
+              return true; // User's transaction with no org/school filter
             })
             .map(tx => {
               // Log COMPLETE transaction data
@@ -1267,14 +1314,19 @@ export default function OrganizationDashboardPage() {
                   params: { organizationId: orgId }
                 });
                 if (Array.isArray(transactionsResponse.data)) {
-                  transactionIds = transactionsResponse.data.map(tx => tx._id || tx.id);
+                  // Filter transactions to ensure they belong to logged-in user
+                  const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+                  const userTransactions = transactionsResponse.data.filter(tx => {
+                    const txUserId = tx.userId?._id || tx.userId;
+                    const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+                    return userStr === txUserStr; // Only include transactions that belong to logged-in user
+                  });
+                  transactionIds = userTransactions.map(tx => tx._id || tx.id);
                 }
               } catch (txErr) {
                 console.error('Error fetching from transactions endpoint:', txErr);
               }
             }
-
-
 
             console.log("transactions", transactions)
 
@@ -1292,9 +1344,12 @@ export default function OrganizationDashboardPage() {
                     headers: { Authorization: `Bearer ${token}` },
                   });
                   if (allTransactionsResponse.data?.transactions) {
-                    const userTransactions = allTransactionsResponse.data.transactions.filter(
-                      tx => tx.userId === user._id || (tx.userId?._id || tx.userId)?.toString() === user._id.toString()
-                    );
+                    const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+                    const userTransactions = allTransactionsResponse.data.transactions.filter(tx => {
+                      const txUserId = tx.userId?._id || tx.userId;
+                      const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+                      return userStr === txUserStr; // Only include transactions that belong to logged-in user
+                    });
                     transactionIds = userTransactions.map(tx => tx._id || tx.id);
                   }
                 }
@@ -1556,17 +1611,24 @@ export default function OrganizationDashboardPage() {
             try {
               const transactionsResponse = await axios.get(`${API_URL}/transactions/b2b-b2e`, {
                 headers: { Authorization: `Bearer ${token}` },
-                params: { organizationId: activeSchoolId }
+                params: { schoolId: activeSchoolId }
               });
               if (Array.isArray(transactionsResponse.data)) {
-                transactionIds = transactionsResponse.data.map(tx => tx._id || tx.id);
+                // Filter transactions to ensure they belong to logged-in user
+                const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+                const userTransactions = transactionsResponse.data.filter(tx => {
+                  const txUserId = tx.userId?._id || tx.userId;
+                  const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+                  return userStr === txUserStr; // Only include transactions that belong to logged-in user
+                });
+                transactionIds = userTransactions.map(tx => tx._id || tx.id);
               }
             } catch (txErr) {
               console.error('Error fetching from transactions endpoint:', txErr);
             }
           }
 
-          // Also fetch transactions by userId (for transactions that don't have organizationId set)
+          // Also fetch transactions by userId (for transactions that don't have schoolId set)
           if (transactionIds.length === 0 && user._id) {
             try {
               // Fetch all transactions and filter by userId
@@ -1574,9 +1636,12 @@ export default function OrganizationDashboardPage() {
                 headers: { Authorization: `Bearer ${token}` },
               });
               if (allTransactionsResponse.data?.transactions) {
-                const userTransactions = allTransactionsResponse.data.transactions.filter(
-                  tx => tx.userId === user._id || (tx.userId?._id || tx.userId)?.toString() === user._id.toString()
-                );
+                const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
+                const userTransactions = allTransactionsResponse.data.transactions.filter(tx => {
+                  const txUserId = tx.userId?._id || tx.userId;
+                  const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
+                  return userStr === txUserStr; // Only include transactions that belong to logged-in user
+                });
                 transactionIds = userTransactions.map(tx => tx._id || tx.id);
               }
             } catch (userTxErr) {
