@@ -66,6 +66,7 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         error: error.response?.data?.error || 'Login failed. Please try again.',
+        errorCode: error.response?.data?.errorCode || null,
       };
     }
   };

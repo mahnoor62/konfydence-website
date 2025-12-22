@@ -26,6 +26,7 @@ export default function LoginPage() {
   const { login, user, loading: authLoading, checkAuth } = useAuth();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [errorCode, setErrorCode] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const { redirect } = router.query;
 
@@ -65,6 +66,7 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setErrorCode(null);
     setSubmitting(true);
 
     // Login with email and password only
@@ -104,6 +106,7 @@ export default function LoginPage() {
       // Display human-readable error message
       const errorMessage = result.error || 'Login failed. Please try again.';
       setError(errorMessage);
+      setErrorCode(result.errorCode || null);
       setSubmitting(false);
     }
   };
@@ -162,7 +165,7 @@ export default function LoginPage() {
                   severity="error" 
                   sx={{ mb: 3 }}
                   action={
-                    error.includes('verify your email') && (
+                    errorCode === 'EMAIL_NOT_VERIFIED' && (
                       <Button
                         size="small"
                         href="/resend-verification"
