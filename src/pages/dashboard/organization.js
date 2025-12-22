@@ -286,7 +286,13 @@ export default function OrganizationDashboardPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      setMemberRequests(response.data.requests || []);
+      
+      // Filter out requests where user is null or missing (invalid requests)
+      const validRequests = (response.data.requests || []).filter(request => 
+        request.user && request.user._id && (request.user.name || request.user.email)
+      );
+      
+      setMemberRequests(validRequests);
     } catch (err) {
       console.error('Error fetching member requests:', err);
       setMemberRequests([]);
