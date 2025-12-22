@@ -93,7 +93,9 @@
   transition: opacity 0.5s ease, transform 0.5s ease;
   pointer-events: none;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 
@@ -229,6 +231,7 @@
 .screenTitle {
   font-size: clamp(1.8rem, 5vw, 2.5rem);
   font-weight: 700;
+  margin-top: clamp(2rem, 4vw, 3rem);
   margin-bottom: clamp(2rem, 5vw, 3rem);
   color: #0F1F2B;
   line-height: 1.2;
@@ -2121,8 +2124,8 @@
 .instructionsGrid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-  margin-bottom: 3rem;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
   perspective: 1000px;
   width: 100%;
   max-width: 1200px;
@@ -2132,8 +2135,43 @@
   box-sizing: border-box;
 }
 
+/* Portrait orientation optimization - 1080x1920 */
+@media (orientation: portrait) and (max-width: 1080px) {
+  .instructionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0 0.75rem;
+  }
+  
+  .instructionCard {
+    height: 250px;
+  }
+  
+  .instructionNumber {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .instructionCard h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .instructionCard p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  
+  .instructionCardFront,
+  .instructionCardBack {
+    padding: 1.25rem;
+  }
+}
+
 /* Tablet - 2 cards per row */
-@media (max-width: 1024px) and (min-width: 769px) {
+@media (max-width: 1024px) and (min-width: 769px) and (orientation: landscape) {
   .instructionsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
@@ -2141,7 +2179,7 @@
 }
 
 .instructionCard {
-  height: 350px;
+  height: 280px;
   perspective: 1000px;
   cursor: pointer;
   animation: fadeInUp 0.6s ease both;
@@ -2187,11 +2225,12 @@
   height: 100%;
   backface-visibility: hidden;
   border-radius: 20px;
-  padding: 2rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  text-align: center;
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 2px solid rgba(255, 255, 255, 0.1);
@@ -2206,17 +2245,17 @@
 }
 
 .instructionNumber {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   background: linear-gradient(135deg, #008B8B 0%, #33BABA 100%);
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   box-shadow: 0 4px 15px rgba(0, 139, 139, 0.4);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -2233,16 +2272,16 @@
 }
 
 .instructionCard h3 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.75rem;
   color: #33BABA;
   font-weight: 700;
 }
 
 .instructionCard p {
   color: #4F6272;
-  line-height: 1.8;
-  font-size: 1rem;
+  line-height: 1.6;
+  font-size: 0.9rem;
 }
 
 .instructionCardBack p {
@@ -2358,6 +2397,7 @@
 
   .screenTitle {
     font-size: clamp(1.5rem, 5vw, 2rem);
+    margin-top: clamp(1.5rem, 4vw, 2.5rem);
   }
 
   .levelsGrid {
@@ -2374,24 +2414,43 @@
   .instructionsGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    padding: 0 0.75rem;
   }
 
   .instructionCard {
-    height: 300px;
+    height: auto;
+    min-height: 300px;
+  }
+  
+  .instructionCardFront,
+  .instructionCardBack {
+    padding: 1.5rem;
   }
 
   .instructionNumber {
     width: 50px;
     height: 50px;
     font-size: 1.5rem;
+    margin-bottom: 0.75rem;
   }
 
   .instructionCard h3 {
-    font-size: 1.2rem;
+    font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+    margin-bottom: 0.75rem;
   }
 
   .instructionCard p {
-    font-size: 0.9rem;
+    font-size: clamp(0.85rem, 2vw, 0.95rem);
+    line-height: 1.6;
+  }
+  
+  .contentContainer {
+    padding: 0 0.75rem;
+  }
+  
+  .screen {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .resultCard {
@@ -2556,6 +2615,34 @@
   .instructionsGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
+    padding: 0 0.5rem;
+  }
+  
+  .instructionCard {
+    height: auto;
+    min-height: 280px;
+  }
+  
+  .instructionCardFront,
+  .instructionCardBack {
+    padding: 1.25rem;
+  }
+  
+  .instructionNumber {
+    width: 45px;
+    height: 45px;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .instructionCard h3 {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    margin-bottom: 0.5rem;
+  }
+  
+  .instructionCard p {
+    font-size: clamp(0.8rem, 2.5vw, 0.9rem);
+    line-height: 1.5;
   }
 
   .questionCardFront,

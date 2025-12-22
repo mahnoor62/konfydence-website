@@ -1042,6 +1042,19 @@ export default function GamePage() {
         console.error('Error starting purchase game play:', error);
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
+        if (errorData.noCardsAvailable || errorData.error?.includes('No cards are available')) {
+          // Show error modal - cards not available
+          setErrorModal({
+            open: true,
+            title: 'No Cards Available',
+            message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
+          });
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          return;
+        }
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
           // Show error in code verification dialog instead of separate modal
           setShowCodeDialog(true);
@@ -1126,6 +1139,19 @@ export default function GamePage() {
         console.error('Error starting trial game play:', error);
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
+        if (errorData.noCardsAvailable || errorData.error?.includes('No cards are available')) {
+          // Show error modal - cards not available
+          setErrorModal({
+            open: true,
+            title: 'No Cards Available',
+            message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
+          });
+          setShowCodeDialog(true);
+          setCodeVerified(false);
+          sessionStorage.removeItem('codeVerified');
+          sessionStorage.removeItem('codeType');
+          return;
+        }
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
           // Show error in code verification dialog instead of separate modal
           setShowCodeDialog(true);
