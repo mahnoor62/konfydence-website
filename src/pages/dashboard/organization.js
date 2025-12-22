@@ -104,6 +104,8 @@ export default function OrganizationDashboardPage() {
   const [descriptionDialogOpen, setDescriptionDialogOpen] = useState(false);
   const [selectedPackageDescription, setSelectedPackageDescription] = useState('');
   const [selectedRequestForNotes, setSelectedRequestForNotes] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
 
   // Helper function to map visible tab index to content index
   // Visible tabs structure (after commenting out Student Activities):
@@ -164,6 +166,7 @@ export default function OrganizationDashboardPage() {
       fetchPackages();
       fetchAvailableCustomPackages(); // Also fetch available custom packages
       fetchCustomPackageRequests(); // Fetch custom package requests to show tab if user has requests
+      fetchTransactions(); // Fetch transactions for display
     }
   }, [authUser]);
 
@@ -413,7 +416,11 @@ export default function OrganizationDashboardPage() {
         message: 'Member membership terminated successfully. The member has been notified via email.',
         severity: 'success'
       });
+      // Refresh members list
       await fetchAllMembers();
+      // Refresh organizations list to update member count
+      await fetchOrganizations();
+      // Refresh member activities
       await fetchMemberActivities();
     } catch (err) {
       setSnackbar({
@@ -432,6 +439,106 @@ export default function OrganizationDashboardPage() {
     }
     setRemoveDialogOpen(false);
     setMemberToRemove(null);
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      setLoadingTransactions(true);
+      const token = getAuthToken();
+
+      // Get user's organization/school
+      const userResponse = await axios.get(`${API_URL}/auth/user/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const user = userResponse.data;
+
+      // Fallback to first organization/school from state if user object does not carry ids
+      const fallbackOrgId = !user.organizationId && organizations?.length > 0 ? organizations[0].id : null;
+      const activeOrganizationId = user.organizationId || fallbackOrgId;
+      const fallbackSchoolId = !user.schoolId && user.segment === 'B2E' && organizations?.length > 0 ? organizations[0].id : null;
+      const activeSchoolId = user.schoolId || fallbackSchoolId;
+
+      let allTransactions = [];
+
+      // Try to get transactions from user dashboard first
+      try {
+        const dashboardResponse = await axios.get(`${API_URL}/user/dashboard`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (dashboardResponse.data?.transactions && Array.isArray(dashboardResponse.data.transactions)) {
+          const userTransactions = dashboardResponse.data.transactions.filter(tx => {
+            // Filter transactions that belong to this organization/school
+            const txOrgId = tx.organizationId?._id || tx.organizationId || tx.orgId;
+            const txSchoolId = tx.schoolId?._id || tx.schoolId;
+            const txUserId = tx.userId?._id || tx.userId;
+
+            if (activeOrganizationId) {
+              const orgIdStr = typeof activeOrganizationId === 'object' 
+                ? (activeOrganizationId._id || activeOrganizationId.id || activeOrganizationId.toString())
+                : activeOrganizationId.toString();
+              const txOrgIdStr = txOrgId ? (typeof txOrgId === 'object' ? (txOrgId._id || txOrgId.toString()) : txOrgId.toString()) : null;
+              return txOrgIdStr === orgIdStr || txUserId === user._id;
+            }
+
+            if (activeSchoolId) {
+              const schoolIdStr = typeof activeSchoolId === 'object'
+                ? (activeSchoolId._id || activeSchoolId.id || activeSchoolId.toString())
+                : activeSchoolId.toString();
+              const txSchoolIdStr = txSchoolId ? (typeof txSchoolId === 'object' ? (txSchoolId._id || txSchoolId.toString()) : txSchoolId.toString()) : null;
+              return txSchoolIdStr === schoolIdStr || txUserId === user._id;
+            }
+
+            return txUserId === user._id;
+          });
+
+          allTransactions = userTransactions;
+        }
+      } catch (dashboardErr) {
+        console.error('Error fetching transactions from dashboard:', dashboardErr);
+      }
+
+      // Also fetch from transactions endpoint
+      if (activeOrganizationId || activeSchoolId) {
+        try {
+          const orgId = activeOrganizationId || activeSchoolId;
+          const orgIdStr = typeof orgId === 'object'
+            ? (orgId._id || orgId.id || orgId.toString())
+            : orgId.toString();
+
+          const transactionsResponse = await axios.get(`${API_URL}/transactions/b2b-b2e`, {
+            headers: { Authorization: `Bearer ${token}` },
+            params: activeOrganizationId ? { organizationId: orgIdStr } : { schoolId: orgIdStr }
+          });
+
+          if (Array.isArray(transactionsResponse.data)) {
+            // Merge with existing transactions, avoiding duplicates
+            const existingIds = new Set(allTransactions.map(tx => tx._id || tx.id));
+            const newTransactions = transactionsResponse.data.filter(tx => {
+              const txId = tx._id || tx.id;
+              return txId && !existingIds.has(txId);
+            });
+            allTransactions = [...allTransactions, ...newTransactions];
+          }
+        } catch (txErr) {
+          console.error('Error fetching transactions from endpoint:', txErr);
+        }
+      }
+
+      // Sort by date (newest first)
+      allTransactions.sort((a, b) => {
+        const dateA = new Date(a.createdAt || a.created_at || 0);
+        const dateB = new Date(b.createdAt || b.created_at || 0);
+        return dateB - dateA;
+      });
+
+      setTransactions(allTransactions);
+    } catch (err) {
+      console.error('Error fetching transactions:', err);
+      setTransactions([]);
+    } finally {
+      setLoadingTransactions(false);
+    }
   };
 
   const fetchMemberActivities = async () => {
@@ -2085,6 +2192,7 @@ export default function OrganizationDashboardPage() {
           </Tabs>
 
           {getContentIndex(selectedTab) === 0 && (
+            <>
             <Grid container spacing={3}>
               {organizations && organizations.length > 0 ? (
                 organizations.map((org) => (
@@ -2241,6 +2349,125 @@ export default function OrganizationDashboardPage() {
                 </Grid>
               )}
             </Grid>
+
+            {/* Transactions Table in First Tab */}
+            {transactions.length > 0 && (
+              <Grid container spacing={3} sx={{ mt: 2 }}>
+              <Grid item xs={12}>
+                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                        Transactions ({transactions.length})
+                      </Typography>
+                      <Button
+                        size="small"
+                        onClick={fetchTransactions}
+                        disabled={loadingTransactions}
+                        startIcon={loadingTransactions ? <CircularProgress size={16} /> : null}
+                      >
+                        {loadingTransactions ? 'Loading...' : 'Refresh'}
+                      </Button>
+                    </Box>
+
+                    {loadingTransactions ? (
+                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                        <CircularProgress />
+                      </Box>
+                    ) : (
+                      <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 600 }}>
+                        <Table stickyHeader>
+                          <TableHead>
+                            <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Package</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>Payment ID</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {transactions.map((tx) => {
+                              const packageName = tx.packageId?.name || 
+                                                 tx.customPackageId?.name || 
+                                                 (typeof tx.packageId === 'object' && tx.packageId?.name) ||
+                                                 tx.packageName || 
+                                                 'Unknown Package';
+                                const txType = tx.type || 'purchase';
+                                const amount = tx.amount || 0;
+                                const currency = tx.currency || 'EUR';
+                                const status = tx.status || 'pending';
+                                const createdAt = tx.createdAt || tx.created_at || new Date();
+                                const stripePaymentIntentId = tx.stripePaymentIntentId || 'N/A';
+
+                              return (
+                                <TableRow key={tx._id || tx.id} hover>
+                                  <TableCell>
+                                    <Typography variant="body2">
+                                      {new Date(createdAt).toLocaleDateString('en-GB', {
+                                        day: 'numeric',
+                                        month: 'short',
+                                        year: 'numeric'
+                                      })}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {new Date(createdAt).toLocaleTimeString('en-GB', {
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                      })}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                      {packageName}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={txType.replace('_', ' ').toUpperCase()}
+                                      size="small"
+                                      sx={{ textTransform: 'capitalize' }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                      {currency === 'EUR' ? '€' : currency} {amount.toFixed(2)}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={status}
+                                      size="small"
+                                      color={
+                                        status === 'paid'
+                                          ? 'success'
+                                          : status === 'pending'
+                                            ? 'warning'
+                                            : status === 'failed'
+                                              ? 'error'
+                                              : 'default'
+                                      }
+                                    />
+                                  </TableCell>
+                                    <TableCell>
+                                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                        {stripePaymentIntentId}
+                                      </Typography>
+                                    </TableCell>
+                                </TableRow>
+                              );
+                            })}
+                          </TableBody>
+                        </Table>
+                      </TableContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+            )}
+            </>
           )}
 
           {getContentIndex(selectedTab) === 1 && (
@@ -3642,7 +3869,9 @@ export default function OrganizationDashboardPage() {
       <Dialog open={removeDialogOpen} onClose={() => { setRemoveDialogOpen(false); setMemberToRemove(null); }}>
         <DialogTitle>Confirm Removal</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to remove this member? This action cannot be undone.</Typography>
+          <Typography>
+            Are you sure you want to remove this member? This user will no longer be a member of your {authUser?.schoolId || authUser?.role === 'b2e_user' ? 'institute' : 'organization'}. This action cannot be undone.
+          </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => { setRemoveDialogOpen(false); setMemberToRemove(null); }}>Cancel</Button>

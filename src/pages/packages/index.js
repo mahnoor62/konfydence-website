@@ -72,6 +72,8 @@ export default function PackagesPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [product, setProduct] = useState(null); // Store product data when productId is present
+  const [roleMismatch, setRoleMismatch] = useState({ show: false, message: '' }); // Track role mismatch
 
   // Determine if we should show "Request Custom Package" button
   // Show only for B2B/B2E, not for B2C
@@ -211,6 +213,96 @@ export default function PackagesPage() {
     }
   }, [user]);
 
+  // Fetch product data when productId is present
+  const fetchProduct = useCallback(async () => {
+    if (!productId) {
+      setProduct(null);
+      setRoleMismatch({ show: false, message: '' });
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${API_URL}/products/${productId}`, {
+        headers: NO_CACHE_HEADERS
+      });
+      const fetchedProduct = response.data;
+      setProduct(fetchedProduct);
+
+      // Check URL type parameter first - if type matches user role, don't show error
+      if (user && user.role) {
+        const userRole = user.role;
+        const urlType = type; // Get type from URL query parameter
+
+        // Check if URL type matches user role
+        let urlTypeMatchesRole = false;
+        if (urlType === 'B2B' && (userRole === 'b2b_user' || userRole === 'b2b_member' || userRole === 'admin')) {
+          urlTypeMatchesRole = true;
+        } else if (urlType === 'B2E' && (userRole === 'b2e_user' || userRole === 'b2e_member' || userRole === 'admin')) {
+          urlTypeMatchesRole = true;
+        } else if (urlType === 'B2C' && (userRole === 'b2c_user' || userRole === 'admin')) {
+          urlTypeMatchesRole = true;
+        }
+
+        // If URL type matches user role, don't show error (user chose correct type)
+        if (urlTypeMatchesRole) {
+          setRoleMismatch({ show: false, message: '' });
+          return;
+        }
+
+        // If URL type doesn't match user role, check product targetAudience
+        const productTargetAudience = fetchedProduct.targetAudience || fetchedProduct.category;
+        let mismatch = false;
+        let message = '';
+
+        // Map product targetAudience to user roles
+        // businesses → B2B (b2b_user, b2b_member)
+        // schools → B2E (b2e_user, b2e_member)
+        // private-users → B2C (b2c_user)
+
+        if (productTargetAudience === 'businesses') {
+          // Product is for B2B - only show error if user is NOT B2B
+          if (userRole !== 'b2b_user' && userRole !== 'b2b_member' && userRole !== 'admin') {
+            mismatch = true;
+            if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+              message = 'You are a B2E user. You can only purchase B2E products.';
+            } else if (userRole === 'b2c_user') {
+              message = 'You are a B2C user. You can only purchase B2C products.';
+            }
+          }
+        } else if (productTargetAudience === 'schools') {
+          // Product is for B2E - only show error if user is NOT B2E
+          if (userRole !== 'b2e_user' && userRole !== 'b2e_member' && userRole !== 'admin') {
+            mismatch = true;
+            if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+              message = 'You are a B2B user. You can only purchase B2B products.';
+            } else if (userRole === 'b2c_user') {
+              message = 'You are a B2C user. You can only purchase B2C products.';
+            }
+          }
+        } else if (productTargetAudience === 'private-users') {
+          // Product is for B2C - only show error if user is NOT B2C
+          if (userRole !== 'b2c_user' && userRole !== 'admin') {
+            mismatch = true;
+            if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+              message = 'You are a B2B user. You can only purchase B2B products.';
+            } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+              message = 'You are a B2E user. You can only purchase B2E products.';
+            }
+          }
+        }
+
+        setRoleMismatch({ show: mismatch, message });
+      } else {
+        // User not logged in, no mismatch check needed
+        setRoleMismatch({ show: false, message: '' });
+      }
+    } catch (err) {
+      console.error('Error fetching product:', err);
+      setProduct(null);
+      setRoleMismatch({ show: false, message: '' });
+    }
+  }, [productId, user, type]);
+
   useEffect(() => {
     if (router.isReady) {
       // If type is in URL, set category accordingly
@@ -221,40 +313,79 @@ export default function PackagesPage() {
       }
       fetchPackages();
       checkFreeTrialUsage();
+      // Fetch product if productId exists - only after router is ready
+      if (productId) {
+        fetchProduct();
+      }
       // Fetch custom packages if user is logged in
       if (user) {
         fetchCustomPackages();
       }
     }
-  }, [router.isReady, type, fetchPackages, checkFreeTrialUsage, fetchCustomPackages, user]);
+  }, [router.isReady, type, productId, fetchPackages, checkFreeTrialUsage, fetchCustomPackages, fetchProduct, user]);
+
+  // Re-filter packages when product changes
+  useEffect(() => {
+    if (product && allPackages.length > 0) {
+      const categoryToUse = selectedCategory;
+      filterPackagesByCategory(allPackages, categoryToUse);
+    }
+  }, [product, allPackages, selectedCategory]);
 
   // Filter packages by category
   const filterPackagesByCategory = (packagesList, category) => {
+    let filtered = packagesList;
+    
+    // If productId exists and product is loaded, filter packages by product targetAudience first
+    if (productId && product) {
+      const productTargetAudience = product.targetAudience || product.category;
+      let allowedTargetAudiences = [];
+      
+      // Map product targetAudience to package targetAudiences
+      if (productTargetAudience === 'businesses') {
+        allowedTargetAudiences = ['B2B'];
+      } else if (productTargetAudience === 'schools') {
+        allowedTargetAudiences = ['B2E'];
+      } else if (productTargetAudience === 'private-users') {
+        allowedTargetAudiences = ['B2C'];
+      }
+      
+      // Filter packages that match product targetAudience
+      if (allowedTargetAudiences.length > 0) {
+        filtered = packagesList.filter(pkg => {
+          if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
+            return false;
+          }
+          return pkg.targetAudiences.some(ta => allowedTargetAudiences.includes(ta));
+        });
+      }
+    }
+    
     if (category === 'organizations_schools') {
       // Filter for B2B or B2E (organizations and schools)
-      const filtered = packagesList.filter(pkg => {
+      const categoryFiltered = filtered.filter(pkg => {
         if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
           return false;
         }
         return pkg.targetAudiences.includes('B2B') || pkg.targetAudiences.includes('B2E');
       });
-      setPackages(filtered);
+      setPackages(categoryFiltered);
       // Check if there are any B2B or B2E packages
-      setHasB2BPackages(filtered.length > 0);
+      setHasB2BPackages(categoryFiltered.length > 0);
     } else if (category === 'families') {
       // Filter for B2C (families)
-      const filtered = packagesList.filter(pkg => {
+      const categoryFiltered = filtered.filter(pkg => {
         if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
           return false;
         }
         return pkg.targetAudiences.includes('B2C');
       });
-      setPackages(filtered);
+      setPackages(categoryFiltered);
       setHasB2BPackages(false); // No free trial for B2C
     } else {
-      setPackages(packagesList);
+      setPackages(filtered);
       // Check if there are any B2B or B2E packages in all packages
-      const hasB2B = packagesList.some(pkg => {
+      const hasB2B = filtered.some(pkg => {
         if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
           return false;
         }
@@ -390,6 +521,104 @@ export default function PackagesPage() {
       return;
     }
 
+    // Validate product before purchase (if productId is in URL)
+    if (productId) {
+      try {
+        const productToValidate = product || await axios.get(`${API_URL}/products/${productId}`, { headers: NO_CACHE_HEADERS }).then(r => r.data).catch(() => null);
+        
+        if (productToValidate) {
+          const userRole = user.role;
+          const productTargetAudience = productToValidate.targetAudience || productToValidate.category;
+
+          // Check if URL type matches user role - if yes, allow purchase (skip validation)
+          let urlTypeMatchesRole = false;
+          if (type === 'B2B' && (userRole === 'b2b_user' || userRole === 'b2b_member' || userRole === 'admin')) {
+            urlTypeMatchesRole = true;
+          } else if (type === 'B2E' && (userRole === 'b2e_user' || userRole === 'b2e_member' || userRole === 'admin')) {
+            urlTypeMatchesRole = true;
+          } else if (type === 'B2C' && (userRole === 'b2c_user' || userRole === 'admin')) {
+            urlTypeMatchesRole = true;
+          }
+
+          // If URL type matches user role, skip validation (user chose correct type)
+          if (!urlTypeMatchesRole) {
+            // If URL type doesn't match, check product targetAudience against user role
+            let productMismatch = false;
+            let productMessage = '';
+
+            if (productTargetAudience === 'businesses') {
+              // Product is for B2B - only error if user is NOT B2B
+              if (userRole !== 'b2b_user' && userRole !== 'b2b_member' && userRole !== 'admin') {
+                productMismatch = true;
+                if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+                  productMessage = 'You are a B2E user. You can only purchase B2E products.';
+                } else if (userRole === 'b2c_user') {
+                  productMessage = 'You are a B2C user. You can only purchase B2C products.';
+                }
+              }
+            } else if (productTargetAudience === 'schools') {
+              // Product is for B2E - only error if user is NOT B2E
+              if (userRole !== 'b2e_user' && userRole !== 'b2e_member' && userRole !== 'admin') {
+                productMismatch = true;
+                if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+                  productMessage = 'You are a B2B user. You can only purchase B2B products.';
+                } else if (userRole === 'b2c_user') {
+                  productMessage = 'You are a B2C user. You can only purchase B2C products.';
+                }
+              }
+            } else if (productTargetAudience === 'private-users') {
+              // Product is for B2C - only error if user is NOT B2C
+              if (userRole !== 'b2c_user' && userRole !== 'admin') {
+                productMismatch = true;
+                if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+                  productMessage = 'You are a B2B user. You can only purchase B2B products.';
+                } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+                  productMessage = 'You are a B2E user. You can only purchase B2E products.';
+                }
+              }
+            }
+
+            if (productMismatch) {
+              setSnackbar({
+                open: true,
+                message: productMessage,
+                severity: 'error'
+              });
+              setProcessingPurchase(null);
+              return;
+            }
+          }
+
+          // Check package targetAudiences against product targetAudience (only if URL type doesn't match)
+          // If URL type matches, we trust the user chose the right packages
+          if (!urlTypeMatchesRole && pkg.targetAudiences && Array.isArray(pkg.targetAudiences)) {
+            let packageMatchesProduct = false;
+            
+            if (productTargetAudience === 'businesses') {
+              packageMatchesProduct = pkg.targetAudiences.includes('B2B');
+            } else if (productTargetAudience === 'schools') {
+              packageMatchesProduct = pkg.targetAudiences.includes('B2E');
+            } else if (productTargetAudience === 'private-users') {
+              packageMatchesProduct = pkg.targetAudiences.includes('B2C');
+            }
+
+            if (!packageMatchesProduct) {
+              setSnackbar({
+                open: true,
+                message: 'This package does not match the product type. Please select a compatible package.',
+                severity: 'error'
+              });
+              setProcessingPurchase(null);
+              return;
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error validating product before purchase:', err);
+        // Continue with purchase if validation fails (backend will catch it)
+      }
+    }
+
     try {
       setProcessingPurchase(pkg._id);
       
@@ -404,11 +633,13 @@ export default function PackagesPage() {
       const requestData = isCustomPackage 
         ? { 
             customPackageId: pkg._id,
-            productId: productId || null
+            productId: productId || null,
+            urlType: type || null // Pass URL type to server for validation
           }
         : { 
             packageId: pkg._id,
-            productId: productId || null
+            productId: productId || null,
+            urlType: type || null // Pass URL type to server for validation
           };
 
       const response = await axios.post(
@@ -584,6 +815,24 @@ export default function PackagesPage() {
                 )}
               </Tabs>
             </Box>
+          )}
+
+          {/* Role Mismatch Banner */}
+          {roleMismatch.show && (
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 3,
+                backgroundColor: '#ffebee',
+                color: '#c62828',
+                '& .MuiAlert-icon': {
+                  color: '#c62828'
+                }
+              }}
+              onClose={() => setRoleMismatch({ show: false, message: '' })}
+            >
+              {roleMismatch.message}
+            </Alert>
           )}
 
           {/* Section Heading based on type */}

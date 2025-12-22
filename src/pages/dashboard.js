@@ -38,6 +38,7 @@ import {
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -62,6 +63,7 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedLevelTab, setSelectedLevelTab] = useState(0);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -104,6 +106,8 @@ export default function DashboardPage() {
         },
       });
       setDashboardData(response.data);
+      // Reset level tab when data changes
+      setSelectedLevelTab(0);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
       setError(err);
@@ -444,17 +448,45 @@ export default function DashboardPage() {
               </Card>
             </Grid>
 
-            {/* Membership & Packages */}
-            {(allMemberships && allMemberships.length > 0) || (activePackages && activePackages.length > 0) ? (
+            {/* Membership - Only show for B2C users, hide Active Packages */}
+            {allMemberships && allMemberships.length > 0 && (
               <Grid item xs={12} md={8}>
-                {allMemberships && allMemberships.length > 0 && (
-                  <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, mb: 3 }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                        Membership {allMemberships.length > 0 && `(${allMemberships.length})`}
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {allMemberships.map((mem) => (
+                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                      Membership {allMemberships.length > 0 && `(${allMemberships.length})`}
+                    </Typography>
+                    <Grid container spacing={2}>
+                      {allMemberships.map((mem) => {
+                        // Find related transaction for seats information
+                        const memPackageId = mem.packageId || mem.package?._id || mem.package?.id;
+                        const memPackageName = mem.package?.name;
+                        
+                        const relatedTransaction = transactions?.find(tx => {
+                          const txPackageId = tx.packageId;
+                          const txPackageName = tx.packageName;
+                          
+                          // Match by package ID or package name
+                          if (memPackageId && txPackageId) {
+                            const memPkgIdStr = typeof memPackageId === 'object' ? (memPackageId._id || memPackageId.toString()) : memPackageId.toString();
+                            const txPkgIdStr = typeof txPackageId === 'object' ? (txPackageId._id || txPackageId.toString()) : txPackageId.toString();
+                            if (memPkgIdStr === txPkgIdStr) return true;
+                          }
+                          
+                          // Match by package name
+                          if (memPackageName && txPackageName && memPackageName === txPackageName) {
+                            return true;
+                          }
+                          
+                          return false;
+                        });
+
+                        const maxSeats = relatedTransaction?.maxSeats || 1;
+                        const usedSeats = relatedTransaction?.usedSeats || 0;
+                        const remainingSeats = maxSeats - usedSeats;
+                        const uniqueCode = relatedTransaction?.uniqueCode || null;
+
+                        return (
                           <Grid item xs={12} sm={6} lg={4} key={mem.id}>
                             <Box
                               sx={{
@@ -489,6 +521,92 @@ export default function DashboardPage() {
                                   Expires: {new Date(mem.endDate).toLocaleDateString()}
                                 </Typography>
                               )}
+
+                              {/* Unique Code for Game Play */}
+                              {uniqueCode && (
+                                <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #E0E7F0' }}>
+                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
+                                    Game Play Unique Code
+                                  </Typography>
+                                  <Box
+                                    sx={{
+                                      p: 1.5,
+                                      bgcolor: '#fff',
+                                      borderRadius: 1,
+                                      border: '1px solid #E0E7F0',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="body2"
+                                      sx={{
+                                        fontFamily: 'monospace',
+                                        fontWeight: 600,
+                                        color: '#063C5E',
+                                        letterSpacing: 0.5,
+                                        fontSize: '0.85rem',
+                                      }}
+                                    >
+                                      {uniqueCode}
+                                    </Typography>
+                                    <IconButton
+                                      size="small"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(uniqueCode);
+                                        setSnackbar({
+                                          open: true,
+                                          message: 'Code copied to clipboard!',
+                                          severity: 'success'
+                                        });
+                                      }}
+                                      sx={{ ml: 1, color: '#0B7897' }}
+                                    >
+                                      <ContentCopyIcon sx={{ fontSize: 16 }} />
+                                    </IconButton>
+                                  </Box>
+                                </Box>
+                              )}
+
+                              {/* Seats Information */}
+                              <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #E0E7F0' }}>
+                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
+                                  Seats Information
+                                </Typography>
+                                <Grid container spacing={1}>
+                                  <Grid item xs={4}>
+                                    <Box sx={{ textAlign: 'center', p: 1, bgcolor: '#fff', borderRadius: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>
+                                        Total
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                        {maxSeats}
+                                      </Typography>
+                                    </Box>
+                                  </Grid>
+                                  <Grid item xs={4}>
+                                    <Box sx={{ textAlign: 'center', p: 1, bgcolor: '#fff', borderRadius: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>
+                                        Used
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#F59E0B' }}>
+                                        {usedSeats}
+                                      </Typography>
+                                    </Box>
+                                  </Grid>
+                                  <Grid item xs={4}>
+                                    <Box sx={{ textAlign: 'center', p: 1, bgcolor: '#fff', borderRadius: 1 }}>
+                                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.65rem' }}>
+                                        Remaining
+                                      </Typography>
+                                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#10B981' }}>
+                                        {remainingSeats}
+                                      </Typography>
+                                    </Box>
+                                  </Grid>
+                                </Grid>
+                              </Box>
                               
                               {/* Game Progress for this Membership */}
                               {mem.gameProgress && mem.gameProgress.totalLevelsPlayed > 0 && (
@@ -524,73 +642,13 @@ export default function DashboardPage() {
                               )}
                             </Box>
                           </Grid>
-                        ))}
-                      </Grid>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {activePackages && activePackages.length > 0 && (
-                  <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-                    <CardContent sx={{ p: 3 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                        Active Packages {activePackages.length > 0 && `(${activePackages.length})`}
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {activePackages.map((pkg) => {
-                          const typeLabel =
-                            pkg.membershipType === 'b2b'
-                              ? 'Organization Package'
-                              : pkg.membershipType === 'b2e'
-                                ? 'Institute Package'
-                                : 'Personal Package';
-
-                          return (
-                            <Grid item xs={12} sm={6} lg={4} key={pkg.id}>
-                              <Box
-                                sx={{
-                                  p: 2,
-                                  backgroundColor: '#F5F8FB',
-                                  borderRadius: 2,
-                                  border: '1px solid #E0E7F0',
-                                  height: '100%',
-                                }}
-                              >
-                                <Stack direction="row" spacing={1} alignItems="center" mb={1} flexWrap="wrap">
-                                  <Chip
-                                    label={typeLabel}
-                                    size="small"
-                                    color={
-                                      pkg.membershipType === 'b2b'
-                                        ? 'primary'
-                                        : pkg.membershipType === 'b2e'
-                                          ? 'secondary'
-                                          : 'success'
-                                    }
-                                    sx={{ fontWeight: 600 }}
-                                  />
-                                </Stack>
-                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1 }}>
-                                  {pkg.packageName}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                  Started: {new Date(pkg.startDate).toLocaleDateString()}
-                                </Typography>
-                                {pkg.endDate && (
-                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                    Expires: {new Date(pkg.endDate).toLocaleDateString()}
-                                  </Typography>
-                                )}
-                              </Box>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </CardContent>
-                  </Card>
-                )}
+                        );
+                      })}
+                    </Grid>
+                  </CardContent>
+                </Card>
               </Grid>
-            ) : null}
+            )}
 
             {/* Main Content Area with Tabs */}
             {(hasProgress || hasTransactions) && (
@@ -659,86 +717,293 @@ export default function DashboardPage() {
                               </Typography>
                             </Box>
 
-                            {/* Levels-wise Progress Table */}
-                            {gameProgress.cards && gameProgress.cards.length > 0 && (
-                              <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #E0E7F0', borderRadius: 2 }}>
-                                <Table>
-                                  <TableHead>
-                                    <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
-                                      <TableCell sx={{ fontWeight: 600 }}>Card Title</TableCell>
-                                      <TableCell sx={{ fontWeight: 600 }}>Card Score</TableCell>
-                                      <TableCell sx={{ fontWeight: 600 }}>Correct Answers</TableCell>
-                                      <TableCell sx={{ fontWeight: 600 }}>Levels</TableCell>
-                                    </TableRow>
-                                  </TableHead>
-                                  <TableBody>
-                                    {gameProgress.cards.map((card, idx) => (
-                                      <TableRow key={idx}>
-                                        <TableCell>
-                                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                            {card.cardTitle}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                            <LinearProgress
-                                              variant="determinate"
-                                              value={card.percentageScore}
-                                              sx={{
-                                                width: 80,
-                                                height: 8,
-                                                borderRadius: 4,
-                                                backgroundColor: '#E0E7F0',
-                                                '& .MuiLinearProgress-bar': {
-                                                  backgroundColor: '#FFD700',
-                                                },
-                                              }}
-                                            />
-                                            <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>
-                                              {card.percentageScore}%
-                                            </Typography>
-                                          </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                          <Typography variant="body2">
-                                            {card.correctAnswers} / {card.totalQuestions}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell>
-                                          <Stack spacing={0.5}>
-                                            {card.levels && card.levels.length > 0 ? (
-                                              card.levels.map((level, levelIdx) => (
-                                                <Box key={levelIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                  <Chip
-                                                    label={`L${level.levelNumber}: ${level.score}/${level.maxScore} (${level.correctAnswers}/${level.totalQuestions})`}
-                                                    size="small"
-                                                    sx={{
-                                                      backgroundColor: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#E8F5E9' : '#FFF3E0',
-                                                      color: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#2E7D32' : '#E65100',
-                                                      fontWeight: 600,
-                                                      fontSize: '0.7rem',
-                                                    }}
-                                                  />
-                                                  {level.completedAt && (
-                                                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
-                                                      {new Date(level.completedAt).toLocaleDateString()}
-                                                    </Typography>
-                                                  )}
-                                                </Box>
-                                              ))
-                                            ) : (
-                                              <Typography variant="caption" color="text.secondary">
-                                                No levels played
+                            {/* Level Tabs */}
+                            {(() => {
+                              // Check if we have level data (level1, level2, level3)
+                              const hasLevelData = [1, 2, 3].some(levelNum => {
+                                const levelArray = gameProgress[`level${levelNum}`] || [];
+                                return levelArray.length > 0;
+                              });
+
+                              if (!hasLevelData && gameProgress.cards && gameProgress.cards.length > 0) {
+                                // Fallback to old structure (cards grouped by card)
+                                return (
+                                  <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #E0E7F0', borderRadius: 2 }}>
+                                    <Table>
+                                      <TableHead>
+                                        <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                          <TableCell sx={{ fontWeight: 600 }}>Card Title</TableCell>
+                                          <TableCell sx={{ fontWeight: 600 }}>Card Score</TableCell>
+                                          <TableCell sx={{ fontWeight: 600 }}>Correct Answers</TableCell>
+                                          <TableCell sx={{ fontWeight: 600 }}>Levels</TableCell>
+                                        </TableRow>
+                                      </TableHead>
+                                      <TableBody>
+                                        {gameProgress.cards.map((card, idx) => (
+                                          <TableRow key={idx}>
+                                            <TableCell>
+                                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                {card.cardTitle}
                                               </Typography>
-                                            )}
-                                          </Stack>
-                                        </TableCell>
-                                      </TableRow>
-                                    ))}
-                                  </TableBody>
-                                </Table>
-                              </TableContainer>
-                            )}
+                                            </TableCell>
+                                            <TableCell>
+                                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                <LinearProgress
+                                                  variant="determinate"
+                                                  value={card.percentageScore}
+                                                  sx={{
+                                                    width: 80,
+                                                    height: 8,
+                                                    borderRadius: 4,
+                                                    backgroundColor: '#E0E7F0',
+                                                    '& .MuiLinearProgress-bar': {
+                                                      backgroundColor: '#FFD700',
+                                                    },
+                                                  }}
+                                                />
+                                                <Typography variant="body2" sx={{ fontWeight: 600, minWidth: 40 }}>
+                                                  {card.percentageScore}%
+                                                </Typography>
+                                              </Box>
+                                            </TableCell>
+                                            <TableCell>
+                                              <Typography variant="body2">
+                                                {card.correctAnswers} / {card.totalQuestions}
+                                              </Typography>
+                                            </TableCell>
+                                            <TableCell>
+                                              <Stack spacing={0.5}>
+                                                {card.levels && card.levels.length > 0 ? (
+                                                  card.levels.map((level, levelIdx) => (
+                                                    <Box key={levelIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                      <Chip
+                                                        label={`L${level.levelNumber}: ${level.score}/${level.maxScore} (${level.correctAnswers}/${level.totalQuestions})`}
+                                                        size="small"
+                                                        sx={{
+                                                          backgroundColor: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#E8F5E9' : '#FFF3E0',
+                                                          color: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#2E7D32' : '#E65100',
+                                                          fontWeight: 600,
+                                                          fontSize: '0.7rem',
+                                                        }}
+                                                      />
+                                                      {level.completedAt && (
+                                                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem' }}>
+                                                          {new Date(level.completedAt).toLocaleDateString()}
+                                                        </Typography>
+                                                      )}
+                                                    </Box>
+                                                  ))
+                                                ) : (
+                                                  <Typography variant="caption" color="text.secondary">
+                                                    No levels played
+                                                  </Typography>
+                                                )}
+                                              </Stack>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </TableContainer>
+                                );
+                              }
+
+                              // New structure: Level tabs
+                              const availableLevels = [1, 2, 3].filter(levelNum => {
+                                const levelArray = gameProgress[`level${levelNum}`] || [];
+                                return levelArray.length > 0;
+                              });
+
+                              if (availableLevels.length === 0) {
+                                return (
+                                  <Alert severity="info">
+                                    No game progress found.
+                                  </Alert>
+                                );
+                              }
+
+                              return (
+                                <Box>
+                                  <Tabs
+                                    value={selectedLevelTab}
+                                    onChange={(e, newValue) => setSelectedLevelTab(newValue)}
+                                    sx={{
+                                      borderBottom: 1,
+                                      borderColor: 'divider',
+                                      mb: 2,
+                                      '& .MuiTab-root': {
+                                        textTransform: 'none',
+                                        fontWeight: 600,
+                                        fontSize: '1rem',
+                                        minHeight: 48,
+                                      },
+                                    }}
+                                  >
+                                    {availableLevels.map((levelNum) => {
+                                      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+                                      const levelTotalScore = levelStats.totalScore || 0;
+                                      const levelMaxScore = levelStats.maxScore || 0;
+                                      const levelCorrectAnswers = levelStats.correctAnswers || 0;
+                                      const levelTotalQuestions = levelStats.totalQuestions || 0;
+                                      const levelPercentage = levelMaxScore > 0 ? Math.round((levelTotalScore / levelMaxScore) * 100) : 0;
+
+                                      return (
+                                        <Tab
+                                          key={levelNum}
+                                          label={
+                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                                Level {levelNum}
+                                              </Typography>
+                                              <Chip
+                                                label={`${levelPercentage}%`}
+                                                size="small"
+                                                color={levelPercentage >= 80 ? 'success' : levelPercentage >= 50 ? 'warning' : 'error'}
+                                                sx={{ fontWeight: 700, fontSize: '0.7rem' }}
+                                              />
+                                            </Box>
+                                          }
+                                        />
+                                      );
+                                    })}
+                                  </Tabs>
+
+                                  {availableLevels.map((levelNum, tabIndex) => {
+                                    if (selectedLevelTab !== tabIndex) return null;
+
+                                    const levelArray = gameProgress[`level${levelNum}`] || [];
+                                    const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+
+                                    const levelTotalScore = levelStats.totalScore || 0;
+                                    const levelMaxScore = levelStats.maxScore || 0;
+                                    const levelCorrectAnswers = levelStats.correctAnswers || 0;
+                                    const levelTotalQuestions = levelStats.totalQuestions || 0;
+                                    const levelPercentage = levelMaxScore > 0 ? Math.round((levelTotalScore / levelMaxScore) * 100) : 0;
+
+                                    return (
+                                      <Box key={levelNum}>
+                                        {/* Level Summary */}
+                                        <Box sx={{ mb: 2, p: 2, bgcolor: '#F5F8FB', borderRadius: 2 }}>
+                                          <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={4}>
+                                              <Box sx={{ textAlign: 'center' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                                  Score
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                                  {levelTotalScore} / {levelMaxScore}
+                                                </Typography>
+                                              </Box>
+                                            </Grid>
+                                            <Grid item xs={12} sm={4}>
+                                              <Box sx={{ textAlign: 'center' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                                  Correct Answers
+                                                </Typography>
+                                                <Typography variant="h6" sx={{ fontWeight: 700, color: 'success.main' }}>
+                                                  {levelCorrectAnswers} / {levelTotalQuestions}
+                                                </Typography>
+                                              </Box>
+                                            </Grid>
+                                            <Grid item xs={12} sm={4}>
+                                              <Box sx={{ textAlign: 'center' }}>
+                                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                                  Percentage
+                                                </Typography>
+                                                <Chip
+                                                  label={`${levelPercentage}%`}
+                                                  color={levelPercentage >= 80 ? 'success' : levelPercentage >= 50 ? 'warning' : 'error'}
+                                                  sx={{ fontWeight: 700 }}
+                                                />
+                                              </Box>
+                                            </Grid>
+                                          </Grid>
+                                        </Box>
+
+                                        {/* Cards Table */}
+                                        {!levelArray || levelArray.length === 0 ? (
+                                          <Alert severity="info">
+                                            No cards played in Level {levelNum} yet.
+                                          </Alert>
+                                        ) : (
+                                          <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #E0E7F0', borderRadius: 2 }}>
+                                            <Table>
+                                              <TableHead>
+                                                <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                                  <TableCell sx={{ fontWeight: 600 }}>Card Title</TableCell>
+                                                  <TableCell sx={{ fontWeight: 600 }}>Score</TableCell>
+                                                  <TableCell sx={{ fontWeight: 600 }}>Correct Answers</TableCell>
+                                                  <TableCell sx={{ fontWeight: 600 }}>Percentage</TableCell>
+                                                  <TableCell sx={{ fontWeight: 600 }}>Completed Time</TableCell>
+                                                </TableRow>
+                                              </TableHead>
+                                              <TableBody>
+                                                {levelArray.map((card, cardIndex) => {
+                                                  // Handle card data structure - cardId might be populated or just an ID
+                                                  const cardTitle = card.cardTitle || 
+                                                                    (card.cardId && typeof card.cardId === 'object' ? card.cardId.title : null) || 
+                                                                    'Unknown Card';
+                                                  const cardScore = card.cardTotalScore || 0;
+                                                  const cardMaxScore = card.cardMaxScore || 0;
+                                                  const cardCorrect = card.cardCorrectAnswers || 0;
+                                                  const cardTotal = card.cardTotalQuestions || 0;
+                                                  const cardPercentage = card.cardPercentageScore !== undefined && card.cardPercentageScore !== null 
+                                                    ? card.cardPercentageScore 
+                                                    : (cardMaxScore > 0 ? Math.round((cardScore / cardMaxScore) * 100) : 0);
+                                                  const completedAt = levelStats.completedAt || card.completedAt;
+
+                                                  return (
+                                                    <TableRow
+                                                      key={cardIndex}
+                                                      sx={{
+                                                        '&:hover': {
+                                                          backgroundColor: '#FAFAFA',
+                                                        }
+                                                      }}
+                                                    >
+                                                      <TableCell>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E' }}>
+                                                          {cardTitle}
+                                                        </Typography>
+                                                      </TableCell>
+                                                      <TableCell>
+                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                          {cardScore} / {cardMaxScore}
+                                                        </Typography>
+                                                      </TableCell>
+                                                      <TableCell>
+                                                        <Typography variant="body2" sx={{ fontWeight: 500, color: cardCorrect > 0 ? 'success.main' : 'text.primary' }}>
+                                                          {cardCorrect} / {cardTotal}
+                                                        </Typography>
+                                                      </TableCell>
+                                                      <TableCell>
+                                                        <Chip
+                                                          label={`${cardPercentage}%`}
+                                                          size="small"
+                                                          color={cardPercentage >= 80 ? 'success' : cardPercentage >= 50 ? 'warning' : 'error'}
+                                                          sx={{ fontWeight: 600 }}
+                                                        />
+                                                      </TableCell>
+                                                      <TableCell>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                          {completedAt
+                                                            ? new Date(completedAt).toLocaleString()
+                                                            : 'N/A'}
+                                                        </Typography>
+                                                      </TableCell>
+                                                    </TableRow>
+                                                  );
+                                                })}
+                                              </TableBody>
+                                            </Table>
+                                          </TableContainer>
+                                        )}
+                                      </Box>
+                                    );
+                                  })}
+                                </Box>
+                              );
+                            })()}
                           </Box>
                         )}
 
@@ -833,6 +1098,7 @@ export default function DashboardPage() {
                                 <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Type</TableCell>
                                 <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Amount</TableCell>
                                 <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Status</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Payment ID</TableCell>
                               </TableRow>
                             </TableHead>
                             <TableBody>
@@ -850,7 +1116,7 @@ export default function DashboardPage() {
                                     />
                                   </TableCell>
                                   <TableCell>
-                                    {tx.currency} {tx.amount.toFixed(2)}
+                                    {tx.currency === 'EUR' ? '€' : tx.currency} {tx.amount.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
                                     <Chip
@@ -864,6 +1130,11 @@ export default function DashboardPage() {
                                       }
                                       size="small"
                                     />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                      {tx.stripePaymentIntentId || tx.paymentIntentId || 'N/A'}
+                                    </Typography>
                                   </TableCell>
                                 </TableRow>
                               ))}

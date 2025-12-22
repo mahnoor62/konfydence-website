@@ -298,8 +298,11 @@ const CodeVerificationDialog = ({
                 errorMsg = 'This trial code is no longer active.';
               } else if (useErr.response?.status === 404) {
                 errorMsg = 'Invalid code. Please check and try again.';
-              } else if (useErr.response?.status === 401 || useErr.response?.status === 403) {
+              } else if (useErr.response?.status === 401) {
                 errorMsg = 'Authentication failed. Please login again.';
+              } else if (useErr.response?.status === 403) {
+                // Show backend error message for 403 (member validation errors)
+                errorMsg = errorData.error || 'You do not have permission to use this code.';
               } else if (useErr.response?.status === 500) {
                 errorMsg = 'Server error. Please try again later.';
               } else if (!errorData.error && useErr.message) {
@@ -471,7 +474,7 @@ const CodeVerificationDialog = ({
                   }
                   setVerifying(false);
                 }
-                return;
+                return;image.png
               } catch (useErr) {
                 const errorData = useErr.response?.data || {};
                 let errorMsg = errorData.error || 'Cannot use this purchase code';
@@ -486,8 +489,11 @@ const CodeVerificationDialog = ({
                   errorMsg = 'Purchase code has expired. You cannot play the game.';
                 } else if (useErr.response?.status === 404) {
                   errorMsg = 'Invalid code. Please check and try again.';
-                } else if (useErr.response?.status === 401 || useErr.response?.status === 403) {
+                } else if (useErr.response?.status === 401) {
                   errorMsg = 'Authentication failed. Please login again.';
+                } else if (useErr.response?.status === 403) {
+                  // Show backend error message for 403 (member validation errors)
+                  errorMsg = errorData.error || 'You do not have permission to use this code.';
                 }
                 
                 setError(errorMsg);
@@ -1274,8 +1280,13 @@ export default function GamePage() {
     setSelectedAnswer(answerIndex);
     setIsCardLocked(true);
     
-    // Calculate score (4 points for correct, 0 for incorrect)
-    const points = selectedAnswerObj.isCorrect ? 4 : 0;
+    // Calculate score using actual scoring value from card answer (not hardcoded 4)
+    const points = selectedAnswerObj.scoring || 0;
+    
+    // Calculate max possible points for this question (highest scoring answer)
+    const maxPoints = currentScenario.answers.length > 0 
+      ? Math.max(...currentScenario.answers.map(a => a.scoring || 0))
+      : 0;
     
     setScore(prevScore => prevScore + points);
     
@@ -1291,8 +1302,8 @@ export default function GamePage() {
       selectedAnswerText: selectedAnswerObj.text,
       selectedAnswerScoring: selectedAnswerObj.scoring,
       isCorrect: selectedAnswerObj.isCorrect,
-      points: points,
-      maxPoints: 4
+      points: points, // Use actual scoring value
+      maxPoints: maxPoints // Use actual max scoring value
     }]);
     
     // Show feedback after short delay
@@ -1406,6 +1417,10 @@ export default function GamePage() {
         }
 
         const card = cardsMap.get(cardId);
+        
+        // Get maxPoints from answer history (stored when answer was clicked)
+        const maxPoints = answer.maxPoints || 0;
+        
         card.questions.push({
           questionNo: card.questions.length + 1,
           questionId: answer.questionId || answer.cardId + '-' + index,
@@ -1413,23 +1428,45 @@ export default function GamePage() {
           selectedAnswer: answer.selectedAnswerText || '',
           correctAnswer: correctAnswerText,
           isCorrect: answer.isCorrect || false,
-          points: answer.points || 0,
+          points: answer.points || 0, // Use actual scoring value from answer
+          maxPoints: maxPoints, // Store maxPoints for this question
           answeredAt: new Date().toISOString()
         });
       });
 
       // Calculate card-wise stats and overall stats
       const cards = Array.from(cardsMap.values()).map(card => {
+        // Calculate max score for this card (sum of maxPoints from all questions)
+        const cardMaxScore = card.questions.reduce((sum, q) => sum + (q.maxPoints || 0), 0);
+        
+        // Fallback: If maxPoints not available, calculate from scenarios
+        let calculatedMaxScore = 0;
+        if (cardMaxScore === 0) {
+          const cardScenarios = Array.from(scenarioMap.values()).filter(s => {
+            const scenarioCardId = s.cardId?.toString() || s.cardId;
+            return scenarioCardId === card.cardId?.toString() || scenarioCardId === card.cardId;
+          });
+          
+          cardScenarios.forEach(scenario => {
+            if (scenario.answers && scenario.answers.length > 0) {
+              const maxScoring = Math.max(...scenario.answers.map(a => a.scoring || 0));
+              calculatedMaxScore += maxScoring;
+            }
+          });
+        }
+        
+        // Use calculated maxScore if cardMaxScore is 0
+        const finalCardMaxScore = cardMaxScore > 0 ? cardMaxScore : calculatedMaxScore;
+        
         const cardTotalScore = card.questions.reduce((sum, q) => sum + (q.points || 0), 0);
         const cardCorrectAnswers = card.questions.filter(q => q.isCorrect === true).length;
         const cardTotalQuestions = card.questions.length;
-        const cardMaxScore = cardTotalQuestions * 4;
-        const cardPercentageScore = cardMaxScore > 0 ? Math.round((cardTotalScore / cardMaxScore) * 100) : 0;
+        const cardPercentageScore = finalCardMaxScore > 0 ? Math.round((cardTotalScore / finalCardMaxScore) * 100) : 0;
 
         return {
           ...card,
           cardTotalScore,
-          cardMaxScore,
+          cardMaxScore: finalCardMaxScore,
           cardCorrectAnswers,
           cardTotalQuestions,
           cardPercentageScore
@@ -1440,7 +1477,8 @@ export default function GamePage() {
       const totalScore = cards.reduce((sum, card) => sum + card.cardTotalScore, 0);
       const correctAnswers = cards.reduce((sum, card) => sum + card.cardCorrectAnswers, 0);
       const totalQuestions = cards.reduce((sum, card) => sum + card.cardTotalQuestions, 0);
-      const maxScore = totalQuestions * 4;
+      // Calculate maxScore from sum of all card max scores (not hardcoded 4 per question)
+      const maxScore = cards.reduce((sum, card) => sum + card.cardMaxScore, 0);
       const percentageScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
       // Save one entry per user per level with cards array (only productId and userId)
@@ -1581,10 +1619,21 @@ export default function GamePage() {
       setCompletedLevels(prev => {
         const existing = prev.find(l => l.level === selectedLevel);
         if (!existing) {
+          // Calculate maxScore from scenarios (sum of highest scoring answer for each card)
+          const levelMaxScore = scenarios.length > 0
+            ? scenarios.reduce((total, scenario) => {
+                if (scenario.answers && scenario.answers.length > 0) {
+                  const maxScoring = Math.max(...scenario.answers.map(a => a.scoring || 0));
+                  return total + maxScoring;
+                }
+                return total;
+              }, 0)
+            : (scenarios.length * 4); // Fallback
+          
           return [...prev, {
             level: selectedLevel,
             score: score,
-            maxScore: scenarios.length * 4,
+            maxScore: levelMaxScore,
             correctAnswers: answerHistory.filter(ans => ans.isCorrect).length,
             totalQuestions: scenarios.length
           }];
@@ -1610,8 +1659,33 @@ export default function GamePage() {
   // Calculate performance metrics
   const totalQuestions = scenarios.length;
   const correctAnswers = answerHistory.filter(ans => ans.isCorrect).length;
-  const percentageScore = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
-  const maxScore = totalQuestions * 4; // 4 points per correct answer
+  
+  // Calculate maxScore from actual max scoring values in scenarios (not hardcoded 4 per question)
+  // Sum of highest scoring answer for each scenario/card
+  const calculateMaxScore = () => {
+    if (scenarios.length === 0) return 0;
+    
+    return scenarios.reduce((total, scenario) => {
+      if (scenario.answers && scenario.answers.length > 0) {
+        // Find highest scoring answer in this scenario
+        const maxScoring = Math.max(...scenario.answers.map(a => a.scoring || 0));
+        return total + maxScoring;
+      }
+      return total;
+    }, 0);
+  };
+  
+  const maxScoreFromScenarios = calculateMaxScore();
+  
+  // Calculate maxScore from actual maxPoints in answerHistory (more accurate if available)
+  const maxScoreFromHistory = answerHistory.length > 0 
+    ? answerHistory.reduce((sum, ans) => sum + (ans.maxPoints || 0), 0)
+    : 0;
+  
+  // Use maxScoreFromHistory if available (more accurate), otherwise use calculated maxScore
+  const maxScore = maxScoreFromHistory > 0 ? maxScoreFromHistory : maxScoreFromScenarios;
+  
+  const percentageScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
   
   // Initialize AOS
   useEffect(() => {
@@ -2226,7 +2300,7 @@ export default function GamePage() {
                     <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
                   </div>
                   <div className={styles.scoreDisplay}>
-                    <span>Score: <span>{score}</span> / {scenarios.length * 4}</span>
+                    <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
                   </div>
                 </div>
                 <div className={styles.gameContent}>
@@ -2287,33 +2361,29 @@ export default function GamePage() {
                             <div className={styles.answerValue}>
                               {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
                                 <>
-                                  {String.fromCharCode(65 + selectedAnswer)}
-                                  {currentScenario.answers[selectedAnswer].isCorrect ? (
-                                    <span className={styles.correctBadge}> ✓ Correct</span>
-                                  ) : (
-                                    <span className={styles.incorrectBadge}> ✗ Incorrect</span>
-                                  )}
+                                  {String.fromCharCode(65 + selectedAnswer)} - Score: {currentScenario.answers[selectedAnswer].scoring || 0}
                                 </>
                               ) : (
                                 'No answer selected'
                               )}
                             </div>
-                            {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] && !currentScenario.answers[selectedAnswer].isCorrect && (
-                              <div className={styles.correctAnswerSection}>
-                                <div className={styles.correctAnswerLabel}>CORRECT ANSWER:</div>
-                                <div className={styles.correctAnswerValue}>
-                                  {currentScenario.answers
-                                    .map((ans, idx) => {
-                                      if (ans.isCorrect) {
-                                        return String.fromCharCode(65 + idx);
-                                      }
-                                      return null;
-                                    })
-                                    .filter(Boolean)
-                                    .join(' OR ')}
-                                </div>
+                            {/* Always show highest scoring answer */}
+                            <div className={styles.correctAnswerSection}>
+                              <div className={styles.correctAnswerLabel}>HIGHEST SCORING ANSWER:</div>
+                              <div className={styles.correctAnswerValue}>
+                                {currentScenario.answers
+                                  .map((ans, idx) => {
+                                    if (ans.isCorrect) {
+                                      const letter = String.fromCharCode(65 + idx);
+                                      const answerScore = ans.scoring || 0;
+                                      return `${letter} - Score: ${answerScore}`;
+                                    }
+                                    return null;
+                                  })
+                                  .filter(Boolean)
+                                  .join(' OR ')}
                               </div>
-                            )}
+                            </div>
                           </div>
                           <div className={styles.rationaleSection}>
                             <div className={styles.rationaleLabel}>RATIONALE:</div>
