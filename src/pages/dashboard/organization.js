@@ -982,14 +982,17 @@ export default function OrganizationDashboardPage() {
               packageName = tx.customPackageId.name ||
                 tx.customPackageId.basePackageId?.name ||
                 'Custom Package';
-              packageExpiryDate = tx.customPackageId.contract?.endDate ||
+              // Prioritize transaction's calculated expiry date over custom package's contract endDate
+              packageExpiryDate = tx.contractPeriod?.endDate ||
+                tx.customPackageId.contract?.endDate ||
                 tx.customPackageId.basePackageId?.expiryDate ||
                 null;
             } else if (tx.packageId) {
               // Regular package purchase
               packageData = tx.packageId || {};
               packageName = packageData.name || 'Package';
-              packageExpiryDate = packageData.expiryDate || tx.packageId?.expiryDate || null;
+              // Prioritize transaction's calculated expiry date over package's static expiryDate
+              packageExpiryDate = tx.contractPeriod?.endDate || packageData.expiryDate || tx.packageId?.expiryDate || null;
             }
 
             // Extract ALL transaction fields explicitly - ensure we get ALL data from tx
@@ -1197,8 +1200,8 @@ export default function OrganizationDashboardPage() {
                 (typeof tx.packageId === 'object' && tx.packageId?.name) ||
                 'Package';
 
-              // Get package expiry date from Package table
-              const packageExpiryDate = packageData.expiryDate || null;
+              // Get package expiry date - prioritize transaction's calculated expiry date
+              const packageExpiryDate = tx.contractPeriod?.endDate || packageData.expiryDate || null;
 
               // Extract all transaction fields explicitly
               const transactionData = {
@@ -1411,8 +1414,8 @@ export default function OrganizationDashboardPage() {
                     tx.customPackageId?.name ||
                     'Package';
 
-                  // Get package expiry date from Package table
-                  const packageExpiryDate = packageData.expiryDate || null;
+                  // Get package expiry date - prioritize transaction's calculated expiry date
+                  const packageExpiryDate = tx.contractPeriod?.endDate || packageData.expiryDate || null;
 
                   // Extract all transaction fields explicitly
                   const transactionData = {
@@ -1701,8 +1704,8 @@ export default function OrganizationDashboardPage() {
                   tx.customPackageId?.name ||
                   'Package';
 
-                // Get package expiry date from Package table
-                const packageExpiryDate = packageData.expiryDate || null;
+                // Get package expiry date - prioritize transaction's calculated expiry date
+                const packageExpiryDate = tx.contractPeriod?.endDate || packageData.expiryDate || null;
 
                 // Extract all transaction fields explicitly
                 const transactionData = {
@@ -2997,8 +3000,8 @@ export default function OrganizationDashboardPage() {
                                 </Box>
                               )}
 
-                              {/* Expiry Date - From Package table (packageId.expiryDate) or Contract */}
-                              {(pkg.packageId?.expiryDate || pkg.packageExpiryDate || pkg.contract?.endDate || pkg.transaction?.contractPeriod?.endDate) && (
+                              {/* Expiry Date - Prioritize transaction's calculated expiry date */}
+                              {(pkg.transaction?.contractPeriod?.endDate || pkg.contract?.endDate || pkg.packageExpiryDate || pkg.packageId?.expiryDate) && (
                                 <Box sx={{
                                   p: 2,
                                   bgcolor: '#FFF7ED',
@@ -3010,10 +3013,10 @@ export default function OrganizationDashboardPage() {
                                   </Typography>
                                   <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
                                     {new Date(
-                                      pkg.packageId?.expiryDate ||
-                                      pkg.packageExpiryDate ||
+                                      pkg.transaction?.contractPeriod?.endDate ||
                                       pkg.contract?.endDate ||
-                                      pkg.transaction?.contractPeriod?.endDate
+                                      pkg.packageExpiryDate ||
+                                      pkg.packageId?.expiryDate
                                     ).toLocaleDateString('en-GB', {
                                       day: 'numeric',
                                       month: 'long',
@@ -3023,10 +3026,10 @@ export default function OrganizationDashboardPage() {
                                   <Typography variant="caption" color="text.secondary">
                                     {(() => {
                                       const endDate = new Date(
-                                        pkg.packageId?.expiryDate ||
-                                        pkg.packageExpiryDate ||
+                                        pkg.transaction?.contractPeriod?.endDate ||
                                         pkg.contract?.endDate ||
-                                        pkg.transaction?.contractPeriod?.endDate
+                                        pkg.packageExpiryDate ||
+                                        pkg.packageId?.expiryDate
                                       );
                                       const now = new Date();
                                       const diffTime = endDate - now;
