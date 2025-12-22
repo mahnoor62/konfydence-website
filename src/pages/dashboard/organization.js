@@ -99,6 +99,8 @@ export default function OrganizationDashboardPage() {
   const [customPackageRequests, setCustomPackageRequests] = useState([]);
   const [loadingCustomRequests, setLoadingCustomRequests] = useState(false);
   const [adminNotesDialogOpen, setAdminNotesDialogOpen] = useState(false);
+  const [productDetailsDialogOpen, setProductDetailsDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [availableCustomPackages, setAvailableCustomPackages] = useState([]);
   const [loadingAvailableCustomPackages, setLoadingAvailableCustomPackages] = useState(false);
   const [descriptionDialogOpen, setDescriptionDialogOpen] = useState(false);
@@ -1088,6 +1090,9 @@ export default function OrganizationDashboardPage() {
             }
           });
 
+          // Only show packages that have transactions (purchased)
+          // Custom packages without transactions should NOT appear in Purchased Packages
+          // They will show in "Available Custom Packages" section for purchase
           setPackages(uniquePackages);
 
           // Initialize package tabs to 0 (Package Information) for all packages
@@ -1797,12 +1802,15 @@ export default function OrganizationDashboardPage() {
         }
       });
 
+      // Only show packages that have transactions (purchased)
+      // Custom packages without transactions should NOT appear in Purchased Packages
+      // They will show in "Available Custom Packages" section for purchase
       console.log('📦 Final packages array before setting state:', {
         totalPackages: uniquePackages.length,
         packages: uniquePackages.map(pkg => ({
           id: pkg._id,
           name: pkg.name,
-          isCustomPackage: pkg.isCustomPackage,
+          isCustomPackage: !!pkg.customPackageId,
           isTransaction: pkg.isTransaction,
           organizationId: pkg.organizationId
         }))
@@ -1832,11 +1840,13 @@ export default function OrganizationDashboardPage() {
       setLoadingCustomRequests(true);
       const token = getAuthToken();
 
+      // Fetch custom package requests (backend now includes completed requests with customPackageId populated)
       const response = await axios.get(`${API_URL}/custom-package-requests`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       if (Array.isArray(response.data)) {
+        // Backend already populates customPackageId, so we can use it directly
         setCustomPackageRequests(response.data);
       } else {
         setCustomPackageRequests([]);
@@ -1904,7 +1914,15 @@ export default function OrganizationDashboardPage() {
 
   // Handle custom package purchase
   const handleBuyCustomPackage = async (customPackage) => {
+    console.log('🛒 Buy Now clicked for custom package:', {
+      customPackage: customPackage,
+      customPackageId: customPackage._id || customPackage.id,
+      user: user?._id,
+      hasToken: !!getAuthToken()
+    });
+
     if (!user) {
+      console.warn('⚠️ User not logged in, redirecting to login');
       router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
@@ -1912,17 +1930,21 @@ export default function OrganizationDashboardPage() {
     try {
       const token = getAuthToken();
       if (!token) {
+        console.warn('⚠️ No auth token found, redirecting to login');
         router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 
-      console.log('🛒 Creating checkout session for custom package:', customPackage._id || customPackage.id);
+      const customPackageId = customPackage._id || customPackage.id;
+      console.log('🛒 Creating checkout session for custom package:', customPackageId);
+      console.log('🛒 API URL:', `${API_URL}/payments/create-checkout-session`);
+      console.log('🛒 Request payload:', { customPackageId });
 
       // Create Stripe Checkout Session - same as packages page
       const response = await axios.post(
         `${API_URL}/payments/create-checkout-session`,
         {
-          customPackageId: customPackage._id || customPackage.id,
+          customPackageId: customPackageId,
         },
         {
           headers: {
@@ -1934,24 +1956,31 @@ export default function OrganizationDashboardPage() {
       console.log('✅ Checkout session response:', response.data);
 
       // Redirect to Stripe Checkout - same as packages page
-      if (response.data.url) {
+      if (response.data && response.data.url) {
+        console.log('✅ Redirecting to Stripe Checkout:', response.data.url);
         window.location.href = response.data.url;
       } else {
         console.error('❌ No URL in checkout session response:', response.data);
         setSnackbar({
           open: true,
-          message: 'Failed to create checkout session',
+          message: 'Failed to create checkout session. Please try again.',
           severity: 'error',
         });
       }
     } catch (error) {
       console.error('❌ Error creating checkout session:', error);
-      console.error('Error response:', error.response?.data);
+      console.error('❌ Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        statusText: error.response?.statusText
+      });
 
       // Show error in snackbar instead of alert
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to start checkout process';
       setSnackbar({
         open: true,
-        message: error.response?.data?.error || 'Failed to start checkout process',
+        message: errorMessage,
         severity: 'error',
       });
     }
@@ -2160,7 +2189,7 @@ export default function OrganizationDashboardPage() {
       setSubmitting(false);
     }
   };
-
+console.log("customPackageRequests", customPackageRequests)
 
   console.log("📦 Current packages state:", packages.length, packages);
   console.log("📦 Available custom packages state:", availableCustomPackages.length, availableCustomPackages);
@@ -2231,6 +2260,8 @@ export default function OrganizationDashboardPage() {
               if (contentIndex === 4) {
                 fetchPackages();
                 fetchAvailableCustomPackages(); // Also fetch available custom packages for purchase
+                // Also fetch requests to include completed custom packages
+                fetchCustomPackageRequests();
               }
               // Fetch custom package requests when switching to that tab
               if (contentIndex === 5) {
@@ -3648,6 +3679,255 @@ export default function OrganizationDashboardPage() {
                         No custom package requests found. Submit a request to create a custom package.
                       </Alert>
                     )}
+
+                    {/* Show Created Custom Packages - Only show if NOT purchased yet (no transaction exists) */}
+                    {customPackageRequests.filter(req => {
+                      if (!req.customPackageId) return false;
+                      // Check if this custom package has been purchased (has transaction)
+                      const cpId = req.customPackageId._id || req.customPackageId.id || req.customPackageId;
+                      const isPurchased = packages.some(pkg => {
+                        const pkgCustomId = pkg.customPackageId?._id || pkg.customPackageId?.id || pkg.customPackageId;
+                        return pkgCustomId && cpId && pkgCustomId.toString() === cpId.toString();
+                      });
+                      return !isPurchased; // Only show if NOT purchased
+                    }).length > 0 && (
+                      <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                          Created Custom Packages (Available for Purchase)
+                        </Typography>
+                        <Grid container spacing={2}>
+                          {customPackageRequests
+                            .filter(req => {
+                              if (!req.customPackageId) return false;
+                              // Check if this custom package has been purchased (has transaction)
+                              const cpId = req.customPackageId._id || req.customPackageId.id || req.customPackageId;
+                              const isPurchased = packages.some(pkg => {
+                                const pkgCustomId = pkg.customPackageId?._id || pkg.customPackageId?.id || pkg.customPackageId;
+                                return pkgCustomId && cpId && pkgCustomId.toString() === cpId.toString();
+                              });
+                              return !isPurchased; // Only show if NOT purchased
+                            })
+                            .map((request) => {
+                              const cp = request.customPackageId;
+                              // Debug: Log product data
+                              if (cp && cp.productIds) {
+                                console.log('📦 Custom Package Products:', {
+                                  packageId: cp._id,
+                                  packageName: cp.name,
+                                  productIds: cp.productIds,
+                                  productCount: cp.productIds.length,
+                                  firstProduct: cp.productIds[0]
+                                });
+                              }
+                              return (
+                                <Grid item xs={12} md={6} lg={4} key={cp._id || cp.id}>
+                                  <Card sx={{ 
+                                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
+                                    borderRadius: 3, 
+                                    height: '100%',
+                                    border: '2px solid #4CAF50'
+                                  }}>
+                                    <CardContent sx={{ p: 3 }}>
+                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                          {cp.name || 'Custom Package'}
+                                        </Typography>
+                                        <Chip
+                                          label={cp.status || 'active'}
+                                          size="small"
+                                          color="success"
+                                          sx={{ fontWeight: 600 }}
+                                        />
+                                      </Box>
+
+                                      {cp.description && (
+                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                          {cp.description}
+                                        </Typography>
+                                      )}
+
+                                      <Divider sx={{ my: 2 }} />
+
+                                      <Stack spacing={1.5}>
+                                        <Box>
+                                          <Typography variant="caption" color="text.secondary">
+                                            Package Price
+                                          </Typography>
+                                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {cp.contractPricing?.currency === 'EUR' ? '€' : cp.contractPricing?.currency || '€'}
+                                            {cp.contractPricing?.amount || 0} {' '}
+                                            {cp.contractPricing?.billingType === 'one_time' ? '(One Time)' :
+                                             cp.contractPricing?.billingType === 'subscription' ? '(Subscription)' :
+                                             '(Per Seat)'}
+                                          </Typography>
+                                        </Box>
+
+                                        <Box>
+                                          <Typography variant="caption" color="text.secondary">
+                                            Seat Limit
+                                          </Typography>
+                                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                            {cp.seatLimit || 'N/A'}
+                                          </Typography>
+                                        </Box>
+
+                                        {cp.contract?.startDate && (
+                                          <Box>
+                                            <Typography variant="caption" color="text.secondary">
+                                              Contract Start Date
+                                            </Typography>
+                                            <Typography variant="body2">
+                                              {new Date(cp.contract.startDate).toLocaleDateString()}
+                                            </Typography>
+                                          </Box>
+                                        )}
+
+                                        {cp.contract?.endDate && (
+                                          <Box>
+                                            <Typography variant="caption" color="text.secondary">
+                                              Contract End Date
+                                            </Typography>
+                                            <Typography variant="body2">
+                                              {new Date(cp.contract.endDate).toLocaleDateString()}
+                                            </Typography>
+                                          </Box>
+                                        )}
+
+                                        {cp.productIds && cp.productIds.length > 0 && (
+                                          <Box>
+                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                              Products ({cp.productIds.length})
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                              {cp.productIds.map((product, idx) => (
+                                                <Card 
+                                                  key={product._id || idx}
+                                                  sx={{ 
+                                                    border: '1px solid #e0e0e0',
+                                                    borderRadius: 2,
+                                                    p: 1,
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: 1.5,
+                                                    cursor: 'pointer',
+                                                    '&:hover': {
+                                                      boxShadow: 2,
+                                                      borderColor: '#0B7897'
+                                                    }
+                                                  }}
+                                                  onClick={() => {
+                                                    setSelectedProduct(product);
+                                                    setProductDetailsDialogOpen(true);
+                                                  }}
+                                                >
+                                                  {/* Product Image */}
+                                                  {product.imageUrl ? (
+                                                    <Box
+                                                      component="img"
+                                                      src={product.imageUrl}
+                                                      alt={product.name || 'Product'}
+                                                      sx={{
+                                                        width: 60,
+                                                        height: 60,
+                                                        objectFit: 'cover',
+                                                        borderRadius: 1,
+                                                        flexShrink: 0
+                                                      }}
+                                                    />
+                                                  ) : (
+                                                    <Box
+                                                      sx={{
+                                                        width: 60,
+                                                        height: 60,
+                                                        bgcolor: '#e0e0e0',
+                                                        borderRadius: 1,
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        flexShrink: 0
+                                                      }}
+                                                    >
+                                                      <BusinessIcon sx={{ color: '#999' }} />
+                                                    </Box>
+                                                  )}
+                                                  
+                                                  {/* Product Info */}
+                                                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                    <Typography 
+                                                      variant="body2" 
+                                                      sx={{ 
+                                                        fontWeight: 600,
+                                                        color: '#063C5E',
+                                                        mb: 0.5,
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap'
+                                                      }}
+                                                    >
+                                                      {product.name || 'Product'}
+                                                    </Typography>
+                                                    {product.price !== undefined && (
+                                                      <Typography variant="caption" color="text.secondary">
+                                                        €{product.price || 0}
+                                                      </Typography>
+                                                    )}
+                                                  </Box>
+                                                  
+                                                  {/* View Details Button */}
+                                                  <Button
+                                                    size="small"
+                                                    variant="outlined"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      setSelectedProduct(product);
+                                                      setProductDetailsDialogOpen(true);
+                                                    }}
+                                                    sx={{
+                                                      borderColor: '#0B7897',
+                                                      color: '#0B7897',
+                                                      '&:hover': {
+                                                        borderColor: '#063C5E',
+                                                        bgcolor: '#063C5E',
+                                                        color: '#fff'
+                                                      }
+                                                    }}
+                                                  >
+                                                    View Details
+                                                  </Button>
+                                                </Card>
+                                              ))}
+                                            </Box>
+                                          </Box>
+                                        )}
+                                      </Stack>
+
+                                      <Divider sx={{ my: 2 }} />
+
+                                      {/* Buy Now Button */}
+                                      <Button
+                                        fullWidth
+                                        variant="contained"
+                                        onClick={() => handleBuyCustomPackage(cp)}
+                                        sx={{
+                                          bgcolor: '#0B7897',
+                                          color: '#fff',
+                                          fontWeight: 600,
+                                          py: 1.5,
+                                          '&:hover': {
+                                            bgcolor: '#063C5E'
+                                          }
+                                        }}
+                                      >
+                                        Buy Now
+                                      </Button>
+                                    </CardContent>
+                                  </Card>
+                                </Grid>
+                              );
+                            })}
+                        </Grid>
+                      </Box>
+                    )}
                   </CardContent>
                 </Card>
               </Grid>
@@ -4189,6 +4469,185 @@ export default function OrganizationDashboardPage() {
         <DialogActions>
           <Button
             onClick={() => setDescriptionDialogOpen(false)}
+            variant="contained"
+            sx={{ bgcolor: '#0B7897', '&:hover': { bgcolor: '#063C5E' } }}
+          >
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Product Details Dialog */}
+      <Dialog
+        open={productDetailsDialogOpen}
+        onClose={() => {
+          setProductDetailsDialogOpen(false);
+          setSelectedProduct(null);
+        }}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 700, color: '#063C5E', display: 'flex', alignItems: 'center', gap: 2 }}>
+          {selectedProduct?.imageUrl && (
+            <Box
+              component="img"
+              src={selectedProduct.imageUrl}
+              alt={selectedProduct.name || 'Product'}
+              sx={{
+                width: 60,
+                height: 60,
+                objectFit: 'cover',
+                borderRadius: 1
+              }}
+            />
+          )}
+          <Box>
+            <Typography variant="h6">{selectedProduct?.name || 'Product Details'}</Typography>
+            {selectedProduct?.price !== undefined && (
+              <Typography variant="body2" color="text.secondary">
+                €{selectedProduct.price || 0}
+              </Typography>
+            )}
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {selectedProduct && (
+            <Stack spacing={2} sx={{ mt: 1 }}>
+              {/* Product Image */}
+              {selectedProduct.imageUrl && (
+                <Box
+                  component="img"
+                  src={selectedProduct.imageUrl}
+                  alt={selectedProduct.name || 'Product'}
+                  sx={{
+                    width: '100%',
+                    maxHeight: 300,
+                    objectFit: 'contain',
+                    borderRadius: 2,
+                    bgcolor: '#f5f5f5',
+                    p: 2
+                  }}
+                />
+              )}
+
+              {/* Product Description */}
+              {selectedProduct.description && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    Description
+                  </Typography>
+                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+                    {selectedProduct.description}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Product Price */}
+              {selectedProduct.price !== undefined && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    Price
+                  </Typography>
+                  <Typography variant="h6" sx={{ color: '#063C5E' }}>
+                    €{selectedProduct.price || 0}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Attached Cards */}
+              {(selectedProduct.level1?.length > 0 || selectedProduct.level2?.length > 0 || selectedProduct.level3?.length > 0) && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    Attached Cards
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                    {selectedProduct.level1?.length > 0 && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          Level 1 ({selectedProduct.level1.length} cards)
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selectedProduct.level1.map((card, idx) => (
+                            <Chip
+                              key={card._id || idx}
+                              label={card.title || `Card ${idx + 1}`}
+                              size="small"
+                              sx={{ fontSize: '0.75rem' }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    {selectedProduct.level2?.length > 0 && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          Level 2 ({selectedProduct.level2.length} cards)
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selectedProduct.level2.map((card, idx) => (
+                            <Chip
+                              key={card._id || idx}
+                              label={card.title || `Card ${idx + 1}`}
+                              size="small"
+                              sx={{ fontSize: '0.75rem' }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                    {selectedProduct.level3?.length > 0 && (
+                      <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                          Level 3 ({selectedProduct.level3.length} cards)
+                        </Typography>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selectedProduct.level3.map((card, idx) => (
+                            <Chip
+                              key={card._id || idx}
+                              label={card.title || `Card ${idx + 1}`}
+                              size="small"
+                              sx={{ fontSize: '0.75rem' }}
+                            />
+                          ))}
+                        </Box>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              )}
+
+              {/* Product Visibility */}
+              {selectedProduct.visibility !== undefined && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    Visibility
+                  </Typography>
+                  <Chip
+                    label={selectedProduct.visibility === 'public' ? 'Public' : 'Private'}
+                    color={selectedProduct.visibility === 'public' ? 'success' : 'default'}
+                    size="small"
+                  />
+                </Box>
+              )}
+
+              {/* Product Category */}
+              {selectedProduct.category && (
+                <Box>
+                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+                    Category
+                  </Typography>
+                  <Chip label={selectedProduct.category} size="small" />
+                </Box>
+              )}
+            </Stack>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setProductDetailsDialogOpen(false);
+              setSelectedProduct(null);
+            }}
             variant="contained"
             sx={{ bgcolor: '#0B7897', '&:hover': { bgcolor: '#063C5E' } }}
           >
