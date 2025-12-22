@@ -787,6 +787,8 @@ export default function GamePage() {
   // IMPORTANT: Always start with 'landing' - don't allow game to start without code verification
   const [gameState, setGameState] = useState('landing'); // landing, levelSelect, game, summary
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [availableLevels, setAvailableLevels] = useState([]); // Track which levels are available - start empty until checked
+  const [checkingLevels, setCheckingLevels] = useState(false); // Track if we're checking levels
   const [scenarios, setScenarios] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -1268,6 +1270,55 @@ export default function GamePage() {
       setSelectedLevel(null);
     }
   }, [API_URL]);
+
+  // Check which levels are available for the current product/package
+  const checkAvailableLevels = useCallback(async () => {
+    if (checkingLevels) return; // Prevent multiple checks
+    
+    setCheckingLevels(true);
+    const productId = sessionStorage.getItem('productId');
+    const packageId = sessionStorage.getItem('packageId');
+    
+    if (!productId && !packageId) {
+      // If no product/package, disable all levels
+      setAvailableLevels([]);
+      setCheckingLevels(false);
+      return;
+    }
+
+    try {
+      const params = {};
+      if (productId) {
+        params.productId = productId;
+      } else if (packageId) {
+        params.packageId = packageId;
+      }
+      
+      // Use backend endpoint to get available levels
+      const response = await axios.get(`${API_URL}/cards/public/available-levels`, {
+        params
+      });
+      
+      if (response.data && response.data.availableLevels) {
+        setAvailableLevels(response.data.availableLevels);
+      } else {
+        setAvailableLevels([]);
+      }
+    } catch (error) {
+      console.error('Error checking available levels:', error);
+      // On error, disable all levels
+      setAvailableLevels([]);
+    } finally {
+      setCheckingLevels(false);
+    }
+  }, [API_URL, checkingLevels]);
+
+  // Check available levels when entering level selection screen
+  useEffect(() => {
+    if (gameState === 'levelSelect' && codeVerified) {
+      checkAvailableLevels();
+    }
+  }, [gameState, codeVerified, checkAvailableLevels]);
 
   const handleAnswerClick = useCallback((answerIndex) => {
     if (isCardLocked || !scenarios[currentCardIndex]) return;
@@ -2230,13 +2281,24 @@ export default function GamePage() {
             <div className={styles.contentContainer}>
               <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">Choose Your Level</h2>
               <div className={styles.levelsGrid}>
-                {[1, 2, 3].map((level) => (
+                {[1, 2, 3].map((level) => {
+                  const isAvailable = availableLevels.includes(level);
+                  // Only disable if not available, don't disable during checking
+                  const isDisabled = !isAvailable && availableLevels.length > 0;
+                  
+                  return (
                   <div 
                     key={level}
                     className={styles.levelCard}
-                    onClick={() => selectLevel(level)}
+                    onClick={() => !isDisabled && selectLevel(level)}
                     data-aos="zoom-in"
                     data-aos-delay={100 + (level * 100)}
+                    style={{
+                      opacity: isDisabled ? 0.5 : 1,
+                      cursor: isDisabled ? 'not-allowed' : 'pointer',
+                      pointerEvents: isDisabled ? 'none' : 'auto',
+                      position: 'relative'
+                    }}
                   >
                     <div className={styles.levelCardInner}>
                       <div className={styles.levelCardFront}>
@@ -2263,8 +2325,34 @@ export default function GamePage() {
                         </p>
                       </div>
                     </div>
+                    {isDisabled && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '20px',
+                        zIndex: 10
+                      }}>
+                        <div style={{
+                          color: 'white',
+                          fontSize: '18px',
+                          fontWeight: 'bold',
+                          textAlign: 'center',
+                          padding: '20px'
+                        }}>
+                          Not Available
+                        </div>
+                      </div>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
               <button 
                 className={`${styles.btn} ${styles.btnSecondary}`}

@@ -57,6 +57,7 @@ export default function PackagesPage() {
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [processingPurchase, setProcessingPurchase] = useState(null);
+  const [processingFreeTrial, setProcessingFreeTrial] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('organizations_schools'); // 'organizations_schools', 'families', 'custom'
   const [hasB2BPackages, setHasB2BPackages] = useState(false); // Track if B2B/B2E packages exist
   const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); // Track if user has used free trial
@@ -404,10 +405,18 @@ export default function PackagesPage() {
 
   // Handle free trial request
   const handleGetFreeTrial = async () => {
+    // Prevent multiple clicks
+    if (processingFreeTrial || processingPurchase) {
+      return;
+    }
+
     if (!user) {
       router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
+
+    // Set processing state immediately
+    setProcessingFreeTrial(true);
 
     try {
       // Get auth token
@@ -460,6 +469,7 @@ export default function PackagesPage() {
         message: error.response?.data?.error || 'Failed to create free trial',
         severity: 'error',
       });
+      setProcessingFreeTrial(false);
     }
   };
 
@@ -516,10 +526,18 @@ export default function PackagesPage() {
   };
 
   const handleBuyNow = async (pkg, isCustomPackage = false) => {
+    // Prevent multiple clicks - if any purchase is already processing, return early
+    if (processingPurchase) {
+      return;
+    }
+
     if (!user) {
       router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
+
+    // Set processing state immediately to prevent multiple clicks
+    setProcessingPurchase(pkg._id);
 
     // Validate product before purchase (if productId is in URL)
     if (productId) {
@@ -620,8 +638,6 @@ export default function PackagesPage() {
     }
 
     try {
-      setProcessingPurchase(pkg._id);
-      
       // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
@@ -1047,7 +1063,7 @@ export default function PackagesPage() {
                               variant="contained"
                               fullWidth
                               onClick={() => handleBuyNow(pkg, true)}
-                              disabled={isPurchased || processingPurchase === pkg._id}
+                              disabled={isPurchased || processingPurchase !== null}
                               sx={{
                                 background: isPurchased 
                                   ? 'linear-gradient(90deg, #4CAF50 0%, #45A049 100%)'
@@ -1326,6 +1342,7 @@ export default function PackagesPage() {
                         variant="contained"
                         fullWidth
                         onClick={() => handleGetFreeTrial()}
+                        disabled={processingFreeTrial || processingPurchase !== null}
                         sx={{
                           backgroundColor: 'white !important',
                           // background: 'linear-gradient(90deg, #00897B 0%, #4FC3F7 100%) !important',
@@ -1340,7 +1357,7 @@ export default function PackagesPage() {
                           },
                         }}
                       >
-                        Get Free Trial
+                        {processingFreeTrial ? 'Processing...' : 'Get Free Trial'}
                       </Button>
                     </CardContent>
                   </Card>
@@ -1585,7 +1602,7 @@ export default function PackagesPage() {
                             variant="outlined"
                             fullWidth
                             onClick={() => handleBuyNow(pkg)}
-                            disabled={processingPurchase === pkg._id}
+                            disabled={processingPurchase !== null}
                             sx={{
                               borderColor: '#FFD700',
                               color: highlighted ? '#FFD700' : '#063C5E',
