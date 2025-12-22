@@ -337,8 +337,9 @@ export default function PackagesPage() {
   const filterPackagesByCategory = (packagesList, category) => {
     let filtered = packagesList;
     
-    // If productId exists and product is loaded, filter packages by product targetAudience first
-    if (productId && product) {
+    // Only filter by product targetAudience if type is NOT B2B or B2E
+    // When type is B2B or B2E, show all B2B and B2E packages regardless of product
+    if (productId && product && type !== 'B2B' && type !== 'B2E' && type !== 'B2B_B2E') {
       const productTargetAudience = product.targetAudience || product.category;
       let allowedTargetAudiences = [];
       
@@ -364,6 +365,7 @@ export default function PackagesPage() {
     
     if (category === 'organizations_schools') {
       // Filter for B2B or B2E (organizations and schools)
+      // Show ALL B2B and B2E packages when type is B2B or B2E
       const categoryFiltered = filtered.filter(pkg => {
         if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
           return false;

@@ -118,31 +118,55 @@ export async function getServerSideProps() {
     return false;
   }).slice(0, 3);
   
-  // B2B/B2E products: For organizations & schools - prioritize targetAudience, then check category
+  // B2B products: For organizations - prioritize targetAudience, then check category
   const b2bProducts = (Array.isArray(products) ? products : []).filter(p => {
     // Primary: Check targetAudience first
-    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
-    if (p.targetAudience === 'private-users') return false;
+    if (p.targetAudience === 'businesses') return true;
+    if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
     
     // Fallback: If no targetAudience, check category
     if (!p.targetAudience) {
-      return p.category === 'schools' || p.category === 'businesses';
+      return p.category === 'businesses';
+    }
+    return false;
+  }).slice(0, 3);
+  
+  // B2E products: For schools - prioritize targetAudience, then check category
+  const b2eProducts = (Array.isArray(products) ? products : []).filter(p => {
+    // Primary: Check targetAudience first
+    if (p.targetAudience === 'schools') return true;
+    if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
+    
+    // Fallback: If no targetAudience, check category
+    if (!p.targetAudience) {
+      return p.category === 'schools';
     }
     return false;
   }).slice(0, 3);
   
   // Remove any duplicates (in case a product matches both criteria)
-  const uniqueB2C = Array.isArray(b2cProducts) ? b2cProducts.filter(p => !b2bProducts.some(bp => bp._id === p._id)) : [];
-  const uniqueB2B = Array.isArray(b2bProducts) ? b2bProducts.filter(p => !b2cProducts.some(cp => cp._id === p._id)) : [];
+  const uniqueB2C = Array.isArray(b2cProducts) ? b2cProducts.filter(p => 
+    !b2bProducts.some(bp => bp._id === p._id) &&
+    !b2eProducts.some(ep => ep._id === p._id)
+  ) : [];
+  const uniqueB2B = Array.isArray(b2bProducts) ? b2bProducts.filter(p => 
+    !b2cProducts.some(cp => cp._id === p._id) &&
+    !b2eProducts.some(ep => ep._id === p._id)
+  ) : [];
+  const uniqueB2E = Array.isArray(b2eProducts) ? b2eProducts.filter(p => 
+    !b2cProducts.some(cp => cp._id === p._id) &&
+    !b2bProducts.some(bp => bp._id === p._id)
+  ) : [];
   
-  const allFeaturedProducts = Array.isArray(uniqueB2C) && Array.isArray(uniqueB2B) 
-    ? [...uniqueB2C, ...uniqueB2B].slice(0, 6) 
+  const allFeaturedProducts = Array.isArray(uniqueB2C) && Array.isArray(uniqueB2B) && Array.isArray(uniqueB2E)
+    ? [...uniqueB2C, ...uniqueB2B, ...uniqueB2E].slice(0, 6) 
     : [];
   
   console.log('📊 Homepage products breakdown:', {
     total: products.length,
     b2c: b2cProducts.length,
     b2b: b2bProducts.length,
+    b2e: b2eProducts.length,
     featured: allFeaturedProducts.length
   });
 
@@ -1232,36 +1256,57 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     return false;
                   });
                   
-                  // B2B/B2E products: For organizations & schools - prioritize targetAudience
+                  // B2B products: For organizations - prioritize targetAudience
                   const b2bProducts = homeProducts.filter(p => {
                     // Primary: Check targetAudience first
-                    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
-                    if (p.targetAudience === 'private-users') return false;
+                    if (p.targetAudience === 'businesses') return true;
+                    if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
                     
                     // Fallback: If no targetAudience, check category
                     if (!p.targetAudience) {
-                      return p.category === 'schools' || p.category === 'businesses';
+                      return p.category === 'businesses';
+                    }
+                    return false;
+                  });
+                  
+                  // B2E products: For schools - prioritize targetAudience
+                  const b2eProducts = homeProducts.filter(p => {
+                    // Primary: Check targetAudience first
+                    if (p.targetAudience === 'schools') return true;
+                    if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
+                    
+                    // Fallback: If no targetAudience, check category
+                    if (!p.targetAudience) {
+                      return p.category === 'schools';
                     }
                     return false;
                   });
                   
                   // Remove duplicates - ensure each product appears only once
                   const uniqueB2C = b2cProducts.filter(p => 
-                    !b2bProducts.some(bp => bp._id === p._id)
+                    !b2bProducts.some(bp => bp._id === p._id) &&
+                    !b2eProducts.some(ep => ep._id === p._id)
                   );
                   const uniqueB2B = b2bProducts.filter(p => 
-                    !b2cProducts.some(cp => cp._id === p._id)
+                    !b2cProducts.some(cp => cp._id === p._id) &&
+                    !b2eProducts.some(ep => ep._id === p._id)
+                  );
+                  const uniqueB2E = b2eProducts.filter(p => 
+                    !b2cProducts.some(cp => cp._id === p._id) &&
+                    !b2bProducts.some(bp => bp._id === p._id)
                   );
                   
                   const uncategorizedProducts = homeProducts.filter(p => 
                     !uniqueB2C.some(cp => cp._id === p._id) && 
-                    !uniqueB2B.some(bp => bp._id === p._id)
+                    !uniqueB2B.some(bp => bp._id === p._id) &&
+                    !uniqueB2E.some(ep => ep._id === p._id)
                   );
                   
                   console.log('🔍 Product filtering results:', {
                     total: homeProducts.length,
                     b2c: b2cProducts.length,
                     b2b: b2bProducts.length,
+                    b2e: b2eProducts.length,
                     uncategorized: uncategorizedProducts.length,
                   });
                   
@@ -1302,8 +1347,33 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         </Box>
                       )}
 
-                      {/* For organizations & schools section - B2B/B2E products */}
+                      {/* For organizations section - B2B products */}
                       {uniqueB2B.length > 0 && (
+                        <Box sx={{ mb: uniqueB2E.length > 0 ? 8 : 4 }}>
+                          <Typography 
+                            variant="h3" 
+                            sx={{ 
+                              mb: 4,
+                              fontSize: { xs: '1.75rem', md: '2.5rem' },
+                              fontWeight: 700,
+                              color: '#063C5E',
+                              textAlign: 'left',
+                            }}
+                          >
+                            For Organizations (B2B)
+                          </Typography>
+                          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
+                            {uniqueB2B.map((product, index) => (
+                              <Grid item xs={12} md={4} key={product._id || index}>
+                                <ProductCard product={product} delay={index * 150} />
+                              </Grid>
+                            ))}
+                          </Grid>
+                        </Box>
+                      )}
+
+                      {/* For schools section - B2E products */}
+                      {uniqueB2E.length > 0 && (
                         <Box sx={{ mb: 4 }}>
                           <Typography 
                             variant="h3" 
@@ -1315,20 +1385,10 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                               textAlign: 'left',
                             }}
                           >
-                            For Organizations and Schools
+                            For Schools (B2E)
                           </Typography>
-                          {/* <Typography 
-                            variant="body1" 
-                            sx={{ 
-                              mb: 4,
-                              textAlign: 'center',
-                              color: 'text.secondary',
-                            }}
-                          >
-                            For Organizations and Schools
-                          </Typography> */}
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {uniqueB2B.map((product, index) => (
+                            {uniqueB2E.map((product, index) => (
                               <Grid item xs={12} md={4} key={product._id || index}>
                                 <ProductCard product={product} delay={index * 150} />
                               </Grid>
@@ -1338,7 +1398,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       )}
                       
                       {/* Fallback: Show uncategorized products if no categorized products found */}
-                      {b2cProducts.length === 0 && b2bProducts.length === 0 && uncategorizedProducts.length > 0 && (
+                      {b2cProducts.length === 0 && b2bProducts.length === 0 && b2eProducts.length === 0 && uncategorizedProducts.length > 0 && (
                         <Box sx={{ mb: 4 }}>
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
                             {uncategorizedProducts.map((product, index) => (
