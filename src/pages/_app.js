@@ -3,6 +3,7 @@ import { Inter, Poppins } from 'next/font/google';
 import ThemeProvider from '@/components/ThemeProvider';
 import AOSProvider from '@/components/AOSProvider';
 import { AuthProvider } from '@/contexts/AuthContext';
+import CookieConsent from '@/components/CookieConsent';
 import '../styles/globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -27,6 +28,7 @@ export default function App({ Component, pageProps }) {
           <AOSProvider>
             <AuthProvider>
               <Component {...pageProps} />
+              <CookieConsent />
             </AuthProvider>
           </AOSProvider>
         </ThemeProvider>

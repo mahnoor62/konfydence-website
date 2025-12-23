@@ -2,6 +2,35 @@ import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mu
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+// Category labels mapping
+const CATEGORY_LABELS = {
+  'for-families': 'For families',
+  'for-companies': 'For companies',
+  'for-schools': 'For schools',
+  'news': 'News',
+  'how-to': 'How-to',
+  'kids-program': 'Kids program',
+  'charity-model': 'Charity model',
+  'auditors': 'Auditors',
+  'nis2': 'NIS2',
+  'comasi': 'CoMaSi',
+  'b2b-sales': 'B2B sales',
+};
+
+const CATEGORY_COLORS = {
+  'for-families': '#FF725E',
+  'for-companies': '#0B7897',
+  'for-schools': '#00A4E8',
+  'news': '#063C5E',
+  'how-to': '#5FA8BA',
+  'kids-program': '#FF9800',
+  'charity-model': '#9C27B0',
+  'auditors': '#795548',
+  'nis2': '#2196F3',
+  'comasi': '#4CAF50',
+  'b2b-sales': '#F44336',
+};
+
 export default function BlogCard({ post, delay = 0 }) {
   const router = useRouter();
   const fallbackImage = '/images/placeholders/blog-default.svg';
@@ -56,7 +85,17 @@ export default function BlogCard({ post, delay = 0 }) {
       />
       <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {post.category && <Chip label={post.category} size="small" color="secondary" />}
+          {post.category && (
+            <Chip 
+              label={CATEGORY_LABELS[post.category] || post.category} 
+              size="small" 
+              sx={{
+                backgroundColor: CATEGORY_COLORS[post.category] || '#0B7897',
+                color: 'white',
+                fontWeight: 500,
+              }}
+            />
+          )}
           {Array.isArray(post.tags) && post.tags.slice(0, 2).map((tag) => (
             <Chip key={tag} label={tag} size="small" variant="outlined" />
           ))}

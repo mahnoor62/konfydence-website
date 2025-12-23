@@ -32,6 +32,12 @@ const CATEGORY_CHIPS = [
   { label: 'For schools', value: 'for-schools' },
   { label: 'News', value: 'news' },
   { label: 'How-to', value: 'how-to' },
+  { label: 'Kids program', value: 'kids-program' },
+  { label: 'Charity model', value: 'charity-model' },
+  { label: 'Auditors', value: 'auditors' },
+  { label: 'NIS2', value: 'nis2' },
+  { label: 'CoMaSi', value: 'comasi' },
+  { label: 'B2B sales', value: 'b2b-sales' },
 ];
 
 const CATEGORY_COLORS = {
@@ -40,6 +46,12 @@ const CATEGORY_COLORS = {
   'for-schools': '#00A4E8',
   'news': '#063C5E',
   'how-to': '#5FA8BA',
+  'kids-program': '#FF9800',
+  'charity-model': '#9C27B0',
+  'auditors': '#795548',
+  'nis2': '#2196F3',
+  'comasi': '#4CAF50',
+  'b2b-sales': '#F44336',
 };
 
 export default function BlogPageContent() {
@@ -152,7 +164,20 @@ export default function BlogPageContent() {
           </Box>
 
           {/* Category/Tag Chips */}
-          <Box sx={{ mb: 4, display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
+          <Box 
+            sx={{ 
+              mb: 4, 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: 1.5, 
+              justifyContent: 'center',
+              alignItems: 'center',
+              px: { xs: 2, sm: 0 },
+              maxWidth: { xs: '100%', sm: '700px', md: '750px' },
+              mx: 'auto',
+              width: '100%',
+            }}
+          >
             <Chip
               label="All"
               onClick={() => handleCategoryChange('all')}
@@ -161,6 +186,7 @@ export default function BlogPageContent() {
                 color: selectedCategory === 'all' ? 'white' : '#052A42',
                 fontWeight: selectedCategory === 'all' ? 600 : 400,
                 cursor: 'pointer',
+                flexShrink: 0,
                 '&:hover': {
                   backgroundColor: selectedCategory === 'all' ? '#063C5E' : '#E8F4F8',
                 },
@@ -179,6 +205,8 @@ export default function BlogPageContent() {
                   color: selectedCategory === chip.value ? 'white' : '#052A42',
                   fontWeight: selectedCategory === chip.value ? 600 : 400,
                   cursor: 'pointer',
+                  flexShrink: 0,
+                  whiteSpace: 'nowrap',
                   '&:hover': {
                     backgroundColor: selectedCategory === chip.value
                       ? CATEGORY_COLORS[chip.value] || '#063C5E'

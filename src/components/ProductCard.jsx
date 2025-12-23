@@ -2,6 +2,21 @@ import { Card, CardContent, CardMedia, Typography, Button, Box, Chip } from '@mu
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
+// Utility function to strip HTML tags for preview
+const stripHtmlTags = (html) => {
+  if (!html) return '';
+  // Remove HTML tags and decode HTML entities
+  return html
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .replace(/&nbsp;/g, ' ') // Replace &nbsp; with space
+    .replace(/&amp;/g, '&') // Replace &amp; with &
+    .replace(/&lt;/g, '<') // Replace &lt; with <
+    .replace(/&gt;/g, '>') // Replace &gt; with >
+    .replace(/&quot;/g, '"') // Replace &quot; with "
+    .replace(/&#39;/g, "'") // Replace &#39; with '
+    .trim();
+};
+
 export default function ProductCard({ product, delay = 0 }) {
   const router = useRouter();
   const fallbackImage = '/images/placeholders/product-default.svg';
@@ -168,7 +183,7 @@ export default function ProductCard({ product, delay = 0 }) {
             lineHeight: 1.6,
           }}
         >
-          {product.description}
+          {stripHtmlTags(product.description)}
         </Typography>
         <Box
           sx={{

@@ -325,9 +325,41 @@ export default function ProductDetailPage({ product, error }) {
               </Typography>
 
               {/* Product Description */}
-              <Typography variant="body1" color="text.secondary" sx={{ mb: 4, lineHeight: 1.7 }}>
-                {product.description}
-              </Typography>
+              <Box
+                sx={{
+                  mb: 4,
+                  lineHeight: 1.7,
+                  color: 'text.secondary',
+                  fontSize: '1rem',
+                  '& p': {
+                    marginBottom: '1em',
+                  },
+                  '& p:last-child': {
+                    marginBottom: 0,
+                  },
+                  '& ul, & ol': {
+                    paddingLeft: '1.5em',
+                    marginBottom: '1em',
+                  },
+                  '& h1, & h2, & h3, & h4, & h5, & h6': {
+                    marginTop: '1em',
+                    marginBottom: '0.5em',
+                    fontWeight: 600,
+                    color: '#052A42',
+                  },
+                  '& strong': {
+                    fontWeight: 600,
+                  },
+                  '& a': {
+                    color: '#0B7897',
+                    textDecoration: 'underline',
+                    '&:hover': {
+                      color: '#063C5E',
+                    },
+                  },
+                }}
+                dangerouslySetInnerHTML={{ __html: product.description || '' }}
+              />
 
               {/* Attached Cards Section */}
               {(() => {

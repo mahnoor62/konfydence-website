@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
               {success ? (
                 <Alert severity="success" sx={{ mb: 3 }}>
-                  If an account exists with this email, a password reset link has been sent. Please check your inbox.
+                  Password reset link has been sent. Please check your inbox.
                 </Alert>
               ) : (
                 <>

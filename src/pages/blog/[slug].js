@@ -5,6 +5,35 @@ import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
 import ClientBackButton from '@/components/PageBackButton';
 
+// Category labels mapping
+const CATEGORY_LABELS = {
+  'for-families': 'For families',
+  'for-companies': 'For companies',
+  'for-schools': 'For schools',
+  'news': 'News',
+  'how-to': 'How-to',
+  'kids-program': 'Kids program',
+  'charity-model': 'Charity model',
+  'auditors': 'Auditors',
+  'nis2': 'NIS2',
+  'comasi': 'CoMaSi',
+  'b2b-sales': 'B2B sales',
+};
+
+const CATEGORY_COLORS = {
+  'for-families': '#FF725E',
+  'for-companies': '#0B7897',
+  'for-schools': '#00A4E8',
+  'news': '#063C5E',
+  'how-to': '#5FA8BA',
+  'kids-program': '#FF9800',
+  'charity-model': '#9C27B0',
+  'auditors': '#795548',
+  'nis2': '#2196F3',
+  'comasi': '#4CAF50',
+  'b2b-sales': '#F44336',
+};
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
@@ -112,7 +141,16 @@ export default function BlogPostPage({ post, error }) {
               alignItems: 'center',
             }}
           >
-            {post.category && <Chip label={post.category} sx={{ textTransform: 'capitalize' }} />}
+            {post.category && (
+              <Chip 
+                label={CATEGORY_LABELS[post.category] || post.category} 
+                sx={{ 
+                  backgroundColor: CATEGORY_COLORS[post.category] || '#0B7897',
+                  color: 'white',
+                  fontWeight: 500,
+                }} 
+              />
+            )}
             {Array.isArray(post.tags) && post.tags.map((tag) => (
               <Chip key={tag} label={tag} variant="outlined" size="small" />
             ))}
