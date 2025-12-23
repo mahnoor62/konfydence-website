@@ -165,6 +165,21 @@ export default function BlogPostPage({ post, error }) {
               day: 'numeric',
             })}
           </Typography>
+          {post.excerpt && (
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 4,
+                color: 'text.secondary',
+                fontWeight: 400,
+                fontSize: { xs: '1.1rem', md: '1.25rem' },
+                lineHeight: 1.6,
+                fontStyle: 'italic',
+              }}
+            >
+              {post.excerpt}
+            </Typography>
+          )}
           <Box
             sx={{
               mb:5,
