@@ -139,7 +139,7 @@ export default function EducationPage() {
               Empower Students Against Digital Deception
             </Typography>
             <Typography variant="h6" textAlign="center" sx={{ opacity: 0.9 }}>
-              The Youth Pack brings media literacy to life – aligned with KMK Digital Strategy
+              Teaching children how digital manipulation works — before it works on them
             </Typography>
           </Container>
         </Box>
@@ -233,7 +233,7 @@ export default function EducationPage() {
                     color: '#063C5E',
                   }}
                 >
-                  What your school gets with the Youth Pack
+                  What students learn with the Youth Pack
                 </Typography>
                 <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
                   <Box
@@ -253,7 +253,7 @@ export default function EducationPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      • Classroom-ready lesson plans (3–5 sessions)
+                      • How scams exploit trust, fear, and authority
                     </Typography>
                   </Box>
                   <Box
@@ -273,7 +273,7 @@ export default function EducationPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      • Printable activity sheets and worksheets
+                      • How to pause before clicking or sharing
                     </Typography>
                   </Box>
                   <Box
@@ -293,7 +293,7 @@ export default function EducationPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      • Teacher guide with step-by-step instructions
+                      • How to discuss digital risks openly
                     </Typography>
                   </Box>
                   <Box
@@ -312,12 +312,109 @@ export default function EducationPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      • Access to digital scam scenarios for students
+                      • How to support peers and family members
                     </Typography>
                   </Box>
                 </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    mt: 3,
+                    fontSize: { xs: '1rem', md: '1.1rem' },
+                    color: '#063C5E',
+                    lineHeight: 1.8,
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Konfydence is built by cybersecurity and education experts to turn real-world digital risks into age-appropriate learning experiences.
+                </Typography>
               </Grid>
             </Grid>
+          </Box>
+
+          {/* Youth Pack at a glance */}
+          <Box sx={{ mb: 8 }}>
+            <Card
+              sx={{
+                maxWidth: 700,
+                mx: 'auto',
+                p: 4,
+                backgroundColor: '#E9F4FF',
+                borderRadius: 3,
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+              }}
+            >
+              <CardContent>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    mb: 3,
+                    fontSize: { xs: '1.5rem', md: '1.75rem' },
+                    fontWeight: 700,
+                    color: '#063C5E',
+                    textAlign: 'center',
+                  }}
+                >
+                  Youth Pack at a glance
+                </Typography>
+                <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
+                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
+                      🎯 <strong>Target age:</strong> from 11
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
+                      ⏱ <strong>Duration:</strong> 3–5 classroom sessions
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
+                      🌍 <strong>Languages:</strong> German & English
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
+                      📊 Includes discussion guides & reflection tools
+                    </Typography>
+                  </Box>
+                  <Box component="li" sx={{ display: 'flex', alignItems: 'start' }}>
+                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
+                      🛡 <strong>Focus:</strong> scams, manipulation, digital trust
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Box>
+
+          {/* Konfydence for Kids Section */}
+          <Box sx={{ mb: 8, textAlign: 'center' }}>
+            <Typography
+              variant="h4"
+              sx={{
+                mb: 2,
+                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontWeight: 700,
+                color: '#063C5E',
+              }}
+            >
+              Konfydence for Kids
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                maxWidth: 800,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                color: '#063C5E',
+                lineHeight: 1.8,
+              }}
+            >
+              Konfydence for Kids reinvests learning into impact.
+              <br />
+              Every Youth Pack contributes directly to organizations that help children grow safer, more confident, and more resilient in digital spaces.
+            </Typography>
           </Box>
 
           {/* Form Section */}

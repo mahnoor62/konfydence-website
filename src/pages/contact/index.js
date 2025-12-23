@@ -13,7 +13,6 @@ import {
   FormControlLabel,
   Link as MuiLink,
 } from '@mui/material';
-import { EmailOutlined, PhoneOutlined } from '@mui/icons-material';
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -33,7 +32,7 @@ export default function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    company: '',
+    organization: '',
     topic: 'other',
     message: '',
     honeypot: '', // Spam protection
@@ -48,7 +47,14 @@ export default function ContactPage() {
     if (router.isReady) {
       const topic = router.query.topic;
       if (topic) {
-        setFormData((prev) => ({ ...prev, topic }));
+        // Map old topic values to new ones
+        const topicMap = {
+          'b2b_demo': 'comasy',
+          'b2e_demo': 'education-youth-pack',
+          'b2e': 'education-youth-pack',
+        };
+        const mappedTopic = topicMap[topic] || topic;
+        setFormData((prev) => ({ ...prev, topic: mappedTopic }));
       }
     }
   }, [router.isReady, router.query]);
@@ -132,25 +138,15 @@ export default function ContactPage() {
     try {
       // Prepare payload based on topic
       let payload;
-      if (formData.topic === 'b2b_demo') {
-        payload = {
-          name: formData.name,
-          company: formData.company || '',
-          email: formData.email,
-          message: formData.message,
-          topic: 'b2b_demo',
-          lead_type: 'b2b',
-        };
-      } else {
-        payload = {
-          name: formData.name,
-          email: formData.email,
-          topic: formData.topic,
-          message: formData.message,
-        };
-        if (formData.company) {
-          payload.company = formData.company;
-        }
+      payload = {
+        name: formData.name,
+        email: formData.email,
+        topic: formData.topic,
+        message: formData.message,
+      };
+      if (formData.organization) {
+        payload.organization = formData.organization;
+        payload.company = formData.organization; // Keep for backward compatibility
       }
 
       const url = `${API_URL}/contact`;
@@ -180,8 +176,6 @@ export default function ContactPage() {
       setLoading(false);
     }
   };
-
-  const isB2BDemo = formData.topic === 'b2b_demo';
 
   return (
     <>
@@ -231,7 +225,18 @@ export default function ContactPage() {
                   fontSize: { xs: '2.4rem', md: '3.2rem' },
                 }}
               >
-                {isB2BDemo ? 'Request Company Demo' : 'Get in Touch'}
+                Get in Touch
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: 'rgba(255,255,255,0.95)',
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  fontWeight: 500,
+                  mb: 2,
+                }}
+              >
+                Have questions about HACKs, training, or partnerships?
               </Typography>
               <Typography
                 variant="body1"
@@ -241,9 +246,7 @@ export default function ContactPage() {
                   lineHeight: 1.6,
                 }}
               >
-                {isB2BDemo
-                  ? 'Tell us about your organization and we\'ll schedule a live Konfydence demo within 24 hours on business days.'
-                  : 'Feel free to reach out with any questions or inquiries. Our team typically responds within one business day.'}
+                We usually respond within one business day.
               </Typography>
             </Box>
           </Container>
@@ -292,60 +295,6 @@ export default function ContactPage() {
               </Box>
             ) : (
               <>
-                <Typography
-                  variant="h4"
-                  textAlign="center"
-                  sx={{ fontWeight: 700, mb: 1, color: '#052A42', fontSize: { xs: '1.75rem', md: '2.1rem' } }}
-                >
-                  {isB2BDemo ? 'Request Company Demo' : 'Get in Touch'}
-                </Typography>
-                <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-                  {isB2BDemo
-                    ? ''
-                    : 'Feel free to reach out with any questions or inquiries.'}
-                </Typography>
-
-                {/* Direct Contact Info Block */}
-                <Box
-                  sx={{
-                    mb: 4,
-                    p: 3,
-                    backgroundColor: '#F5F8FB',
-                    borderRadius: 2,
-                    border: '1px solid #E0E7ED',
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                    <EmailOutlined sx={{ color: '#0B7897', fontSize: '1.2rem' }} />
-                    <MuiLink
-                      href="mailto:contact@konfydence.com"
-                      sx={{
-                        color: '#063C5E',
-                        textDecoration: 'none',
-                        fontWeight: 500,
-                        '&:hover': { textDecoration: 'underline' },
-                      }}
-                    >
-                      contact@konfydence.com
-                    </MuiLink>
-                  </Box>
-                </Box>
-
-                {/* B2B Context Copy Above Form */}
-                {isB2BDemo && (
-                  <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{
-                      mb: 3,
-                      fontSize: { xs: '0.95rem', md: '1rem' },
-                      lineHeight: 1.6,
-                      textAlign: 'left',
-                    }}
-                  >
-                    Tell us about your organization and we&apos;ll schedule a live Konfydence demo within 24 hours on business days.
-                  </Typography>
-                )}
 
                 <Box component="form" onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
@@ -365,9 +314,9 @@ export default function ContactPage() {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label="Company"
-                        name="company"
-                        value={formData.company}
+                        label="Organization / School / Company"
+                        name="organization"
+                        value={formData.organization}
                         onChange={handleChange}
                       />
                     </Grid>
@@ -416,9 +365,12 @@ export default function ContactPage() {
                           },
                         }}
                       >
-                        <MenuItem value="b2b_demo">B2B Demo Request</MenuItem>
-                        <MenuItem value="b2c_question">B2C Question</MenuItem>
-                        <MenuItem value="education">Education Inquiry</MenuItem>
+                        <MenuItem value="scam-survival-kit">Scam Survival Kit (Families)</MenuItem>
+                        <MenuItem value="education-youth-pack">Education / Youth Pack</MenuItem>
+                        <MenuItem value="comasy">CoMaSy (Companies & Compliance)</MenuItem>
+                        <MenuItem value="nis2-audit">NIS2 / Audit Readiness</MenuItem>
+                        <MenuItem value="partnerships">Partnerships / Ambassadors</MenuItem>
+                        <MenuItem value="media-press">Media / Press</MenuItem>
                         <MenuItem value="other">Other</MenuItem>
                       </TextField>
                     </Grid>
@@ -434,7 +386,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         error={!!errors.message}
-                        helperText={errors.message}
+                        helperText={errors.message || "Tell us what kind of HACKs you're dealing with."}
                       />
                     </Grid>
 
@@ -488,26 +440,83 @@ export default function ContactPage() {
                       >
                         {loading ? 'Sending...' : 'Send Message'}
                       </Button>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{
-                          display: 'block',
-                          textAlign: 'center',
-                          mt: 1.5,
-                          fontSize: '0.85rem',
-                        }}
-                      >
-                        {isB2BDemo
-                          ? 'After you submit, we\'ll email you to propose a demo time and share a brief agenda.'
-                          : 'We typically reply within 24 hours on business days.'}
-                      </Typography>
                     </Grid>
                   </Grid>
+                </Box>
+
+                {/* Footer reassurance */}
+                <Box sx={{ mt: 4, textAlign: 'center' }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      mb: 2,
+                      fontSize: '0.95rem',
+                      lineHeight: 1.7,
+                      maxWidth: 600,
+                      mx: 'auto',
+                    }}
+                  >
+                    Whether you&apos;re a family, school, company, or auditor — we&apos;re happy to help you reduce human risk.
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: '0.8rem',
+                      fontStyle: 'italic',
+                      opacity: 0.7,
+                      mt: 3,
+                    }}
+                  >
+                    Looking for a demo? Visit{' '}
+                    <MuiLink
+                      href="/comasy"
+                      sx={{
+                        color: '#0B7897',
+                        textDecoration: 'none',
+                        fontWeight: 500,
+                        opacity: 0.9,
+                        '&:hover': { textDecoration: 'underline', opacity: 1 },
+                      }}
+                    >
+                      CoMaSy
+                    </MuiLink>
+                    {' '}or{' '}
+                    <MuiLink
+                      href="/education"
+                      sx={{
+                        color: '#0B7897',
+                        textDecoration: 'none',
+                        fontWeight: 500,
+                        opacity: 0.9,
+                        '&:hover': { textDecoration: 'underline', opacity: 1 },
+                      }}
+                    >
+                      Education
+                    </MuiLink>
+                    {' '}to request a guided session.
+                  </Typography>
                 </Box>
               </>
             )}
           </Box>
+
+          {/* Response time info - outside form box, inside container */}
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              display: 'block',
+              textAlign: 'center',
+              mt: 3,
+              mb: 2,
+              fontSize: '0.9rem',
+              opacity: 0.7,
+            }}
+          >
+            We typically reply within 24 hours on business days.
+          </Typography>
         </Container>
       </Box>
       <Footer />

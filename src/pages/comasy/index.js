@@ -150,6 +150,21 @@ export default function CoMaSyPage() {
         </Box>
 
         <Container maxWidth="lg" sx={{ py: 8 }}>
+          {/* Description below hero */}
+          <Box sx={{ mb: 6, textAlign: 'center' }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                fontSize: { xs: '1rem', md: '1.2rem' },
+                color: '#063C5E',
+                maxWidth: '900px',
+                mx: 'auto',
+                lineHeight: 1.8,
+              }}
+            >
+              CoMaSy is a simulation-based compliance system that uses real-world scenarios to train employees and generate audit-ready evidence of human risk awareness.
+            </Typography>
+          </Box>
           <Grid container spacing={6}>
             <Grid item xs={12} md={6}>
               <Box
@@ -162,16 +177,16 @@ export default function CoMaSyPage() {
                 <Box
                   sx={{
                     width: '100%',
-                    maxWidth: { xs: '100%', md: '500px' },
-                    height: { xs: '300px', md: '400px' },
+                    maxWidth: { xs: '100%', md: '380px' },
+                    height: { xs: '280px', md: '320px' },
                     backgroundColor: '#063C5E',
                     borderRadius: 3,
                     position: 'relative',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                     display: 'flex',
                     flexDirection: 'column',
-                    p: 3,
-                    gap: 2,
+                    p: 2.5,
+                    gap: 1.5,
                     animation: 'floatCard 4s ease-in-out infinite',
                     transformOrigin: 'center',
                     filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
@@ -261,7 +276,7 @@ export default function CoMaSyPage() {
               </Typography>
               <Box component="ul" sx={{ listStyle: 'none', pl: 0, mb: 4 }}>
                 <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                  <Typography variant="body1">✓ NIS2 & DSGVO compliant training modules</Typography>
+                  <Typography variant="body1">✓ Aligned with NIS2 and GDPR awareness requirements</Typography>
                 </Box>
                 <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
                   <Typography variant="body1">✓ Behavior-based metrics and reporting</Typography>
@@ -272,19 +287,6 @@ export default function CoMaSyPage() {
                 <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
                   <Typography variant="body1">✓ Engaging simulation-based learning</Typography>
                 </Box>
-              </Box>
-
-              <Box sx={{ mb: 4 }}>
-                <Typography variant="h6" gutterBottom>Pricing</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>KMU:</strong> €1,500/year
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Mid-size:</strong> €4/employee
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  <strong>Enterprise:</strong> Custom pricing
-                </Typography>
               </Box>
             </Grid>
           </Grid>
@@ -336,7 +338,7 @@ export default function CoMaSyPage() {
                         </Box>
                         <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
                           <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • NIS2 & DSGVO compliant modules
+                            • Designed to support NIS2 and GDPR compliance efforts
                           </Typography>
                         </Box>
                         <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
@@ -443,7 +445,7 @@ export default function CoMaSyPage() {
                     lineHeight: 1.6,
                   }}
                 >
-                  &ldquo;Konfydence raised scam-awareness across our staff by 78% in just four weeks.&rdquo;
+                  &ldquo;Konfydence significantly raised scam-awareness across our staff.&rdquo;
                 </Typography>
                 <Typography
                   variant="body1"
@@ -454,7 +456,7 @@ export default function CoMaSyPage() {
                     fontSize: { xs: '0.95rem', md: '1.1rem' },
                   }}
                 >
-                  — Compliance Officer, German Bank
+                  — Compliance Officer, Financial Services
                 </Typography>
               </CardContent>
             </Card>
@@ -483,7 +485,7 @@ export default function CoMaSyPage() {
                 transition: 'all 0.3s ease',
               }}
             >
-              Request Company Demo
+              Request Compliance Demo
             </Button>
           </Box>
 
@@ -555,6 +557,113 @@ export default function CoMaSyPage() {
                   </Button>
                 </Grid>
               </Grid>
+            </Box>
+          </Box>
+
+          {/* Built for Audit & Compliance Teams Section */}
+          <Box sx={{ mt: 10, mb: 6 }}>
+            <Typography 
+              variant="h4" 
+              textAlign="center" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontWeight: 700,
+                color: '#063C5E',
+                mb: 3,
+              }}
+            >
+              Built for Audit & Compliance Teams
+            </Typography>
+            <Box 
+              component="ul" 
+              sx={{ 
+                listStyle: 'none', 
+                pl: 0, 
+                maxWidth: 700,
+                mx: 'auto',
+              }}
+            >
+              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  ✓ Documented participation and outcomes
+                </Typography>
+              </Box>
+              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  ✓ Behavior-based scoring (not just completion)
+                </Typography>
+              </Box>
+              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  ✓ Evidence notes per session
+                </Typography>
+              </Box>
+              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  ✓ Exportable reports for audits and regulators
+                </Typography>
+              </Box>
+              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
+                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
+                  ✓ Supports NIS2 Articles 21 & 23 (human risk & awareness)
+                </Typography>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* Pricing Section */}
+          <Box sx={{ mt: 8, mb: 6 }}>
+            <Typography 
+              variant="h4" 
+              textAlign="center" 
+              gutterBottom
+              sx={{
+                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontWeight: 700,
+                color: '#063C5E',
+                mb: 2,
+              }}
+            >
+              Pricing
+            </Typography>
+            <Typography 
+              variant="body1" 
+              textAlign="center" 
+              color="text.secondary"
+              sx={{ 
+                mb: 3,
+                maxWidth: 800,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.1rem' },
+              }}
+            >
+              CoMaSy pricing depends on organization size, use cases, and audit requirements.
+            </Typography>
+            <Box sx={{ maxWidth: 600, mx: 'auto', mb: 3 }}>
+              <Typography variant="h6" sx={{ fontWeight: 600, color: '#063C5E', mb: 2 }}>
+                Typical engagement models:
+              </Typography>
+              <Box component="ul" sx={{ listStyle: 'none', pl: 0 }}>
+                <Box component="li" sx={{ mb: 1.5 }}>
+                  <Typography variant="body1">
+                    <strong>SMEs:</strong> from €1,300 / year
+                  </Typography>
+                </Box>
+                <Box component="li" sx={{ mb: 1.5 }}>
+                  <Typography variant="body1">
+                    <strong>Mid-size:</strong> per-seat pricing
+                  </Typography>
+                </Box>
+                <Box component="li" sx={{ mb: 2 }}>
+                  <Typography variant="body1">
+                    <strong>Enterprise:</strong> custom scope and onboarding
+                  </Typography>
+                </Box>
+              </Box>
+              <Typography variant="body1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                Request a demo for a tailored offer.
+              </Typography>
             </Box>
           </Box>
         </Container>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
   Container,
@@ -39,6 +39,8 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -64,6 +66,9 @@ export default function DashboardPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedLevelTab, setSelectedLevelTab] = useState(0);
+  const [tabsScrollLeft, setTabsScrollLeft] = useState(0);
+  const [tabsScrollRight, setTabsScrollRight] = useState(false);
+  const tabsRef = useRef(null);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -94,6 +99,25 @@ export default function DashboardPage() {
       fetchDashboardData();
     }
   }, [authUser, router]);
+
+  const checkTabsScroll = () => {
+    if (tabsRef.current) {
+      const element = tabsRef.current;
+      setTabsScrollLeft(element.scrollLeft);
+      setTabsScrollRight(
+        element.scrollLeft < element.scrollWidth - element.clientWidth - 1
+      );
+    }
+  };
+
+  useEffect(() => {
+    checkTabsScroll();
+    const handleResize = () => {
+      setTimeout(checkTabsScroll, 100);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [hasProgress, hasTransactions]);
 
   const fetchDashboardData = async () => {
     try {
@@ -655,28 +679,111 @@ export default function DashboardPage() {
               <Grid item xs={12}>
                 <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
                   <CardContent sx={{ p: 0 }}>
-                    <Tabs
-                      value={selectedTab}
-                      onChange={(e, newValue) => setSelectedTab(newValue)}
+                    <Box
                       sx={{
+                        position: 'relative',
                         borderBottom: 1,
                         borderColor: 'divider',
-                        px: 3,
-                        '& .MuiTab-root': {
-                          textTransform: 'none',
-                          fontWeight: 600,
-                          fontSize: '1rem',
-                          minHeight: 64,
-                        },
                       }}
                     >
-                      {hasProgress && (
-                        <Tab label="Progress Tracking" />
+                      {/* Left Arrow - Show on small screens when scrollable */}
+                      {tabsScrollLeft > 0 && (
+                        <IconButton
+                          onClick={() => {
+                            if (tabsRef.current) {
+                              tabsRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+                            }
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            left: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 2,
+                            backgroundColor: 'white',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            display: { xs: 'flex', md: 'none' },
+                            '&:hover': {
+                              backgroundColor: '#F5F8FB',
+                            },
+                          }}
+                        >
+                          <ChevronLeftIcon />
+                        </IconButton>
                       )}
-                      {hasTransactions && (
-                        <Tab label="Purchase History" />
+                      
+                      {/* Right Arrow - Show on small screens when scrollable */}
+                      {tabsScrollRight && (
+                        <IconButton
+                          onClick={() => {
+                            if (tabsRef.current) {
+                              tabsRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+                            }
+                          }}
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: '50%',
+                            transform: 'translateY(-50%)',
+                            zIndex: 2,
+                            backgroundColor: 'white',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            display: { xs: 'flex', md: 'none' },
+                            '&:hover': {
+                              backgroundColor: '#F5F8FB',
+                            },
+                          }}
+                        >
+                          <ChevronRightIcon />
+                        </IconButton>
                       )}
-                    </Tabs>
+
+                      <Box
+                        ref={tabsRef}
+                        onScroll={(e) => {
+                          const element = e.target;
+                          setTabsScrollLeft(element.scrollLeft);
+                          setTabsScrollRight(
+                            element.scrollLeft < element.scrollWidth - element.clientWidth - 1
+                          );
+                        }}
+                        sx={{
+                          overflowX: 'auto',
+                          overflowY: 'hidden',
+                          scrollbarWidth: 'none',
+                          msOverflowStyle: 'none',
+                          '&::-webkit-scrollbar': {
+                            display: 'none',
+                          },
+                          '& .MuiTabs-scroller': {
+                            overflowX: 'auto',
+                          },
+                        }}
+                      >
+                        <Tabs
+                          value={selectedTab}
+                          onChange={(e, newValue) => setSelectedTab(newValue)}
+                          variant="scrollable"
+                          scrollButtons={false}
+                          sx={{
+                            px: 3,
+                            '& .MuiTab-root': {
+                              textTransform: 'none',
+                              fontWeight: 600,
+                              fontSize: '1rem',
+                              minHeight: 64,
+                            },
+                          }}
+                        >
+                          {hasProgress && (
+                            <Tab label="Progress Tracking" />
+                          )}
+                          {hasTransactions && (
+                            <Tab label="Purchase History" />
+                          )}
+                        </Tabs>
+                      </Box>
+                    </Box>
 
                     {/* Progress Tracking Tab */}
                     {hasProgress && selectedTab === 0 && (

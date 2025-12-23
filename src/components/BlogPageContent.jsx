@@ -1,8 +1,9 @@
 'use client';
 
-import { Container, Typography, Grid, Box, Button, Stack, Chip } from '@mui/material';
+import { Container, Typography, Grid, Box, Button, Stack, Chip, Link as MuiLink } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
@@ -25,33 +26,19 @@ console.log('🔗 Blog Page API URL:', API_URL);
 
 const BLOGS_PER_PAGE = 12;
 
-// Fixed category chips as requested
+// Reduced category chips as requested
 const CATEGORY_CHIPS = [
-  { label: 'For families', value: 'for-families' },
-  { label: 'For companies', value: 'for-companies' },
-  { label: 'For schools', value: 'for-schools' },
-  { label: 'News', value: 'news' },
+  { label: 'Families', value: 'families' },
+  { label: 'Organizations', value: 'organizations' },
+  { label: 'Schools', value: 'schools' },
   { label: 'How-to', value: 'how-to' },
-  { label: 'Kids program', value: 'kids-program' },
-  { label: 'Charity model', value: 'charity-model' },
-  { label: 'Auditors', value: 'auditors' },
-  { label: 'NIS2', value: 'nis2' },
-  { label: 'CoMaSi', value: 'comasi' },
-  { label: 'B2B sales', value: 'b2b-sales' },
 ];
 
 const CATEGORY_COLORS = {
-  'for-families': '#FF725E',
-  'for-companies': '#0B7897',
-  'for-schools': '#00A4E8',
-  'news': '#063C5E',
+  'families': '#FF725E',
+  'organizations': '#0B7897',
+  'schools': '#00A4E8',
   'how-to': '#5FA8BA',
-  'kids-program': '#FF9800',
-  'charity-model': '#9C27B0',
-  'auditors': '#795548',
-  'nis2': '#2196F3',
-  'comasi': '#4CAF50',
-  'b2b-sales': '#F44336',
 };
 
 export default function BlogPageContent() {
@@ -141,7 +128,7 @@ export default function BlogPageContent() {
               component="h1"
               sx={{
                 fontWeight: 700,
-                mb: 2,
+                mb: 3,
                 fontSize: { xs: '2rem', md: '3rem' },
                 color: '#052A42',
               }}
@@ -153,14 +140,76 @@ export default function BlogPageContent() {
               color="text.secondary"
               sx={{
                 mb: 4,
-                maxWidth: 800,
+                maxWidth: 900,
                 mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' },
-                lineHeight: 1.7,
+                fontSize: { xs: '1rem', md: '1.2rem' },
+                lineHeight: 1.8,
+                fontWeight: 500,
               }}
             >
-              Read the latest articles on scams, social engineering, and practical ways to build safer digital habits for families, teams, and schools.
+              Practical insights into how scams manipulate human behavior — and how families, schools, and organizations can build real digital resilience.
             </Typography>
+
+            {/* CTA Links */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                gap: 2,
+                justifyContent: 'center',
+                alignItems: 'center',
+                mb: 4,
+                flexWrap: 'wrap',
+              }}
+            >
+              <MuiLink
+                component={Link}
+                href="/products"
+                sx={{
+                  color: '#0B7897',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    color: '#063C5E',
+                  },
+                }}
+              >
+                Want to train this with your family or team? → Explore Konfydence
+              </MuiLink>
+              <MuiLink
+                href="#"
+                sx={{
+                  color: '#0B7897',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    color: '#063C5E',
+                  },
+                }}
+              >
+                Get one real-world scam scenario per week → Join the Konfydence list
+              </MuiLink>
+              <MuiLink
+                component={Link}
+                href="/comasy"
+                sx={{
+                  color: '#0B7897',
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    color: '#063C5E',
+                  },
+                }}
+              >
+                Reading for work or school? → See CoMaSy
+              </MuiLink>
+            </Box>
           </Box>
 
           {/* Category/Tag Chips */}

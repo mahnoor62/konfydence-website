@@ -204,9 +204,9 @@ export default function ProductsPageContent() {
 
           {/* Product Category Filter */}
           <Box sx={{ mb: 3 }}>
-            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
-              Product Category
-            </Typography>
+            {/* <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+              Product Categorys
+            </Typography> */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Chip
                 label="All"
@@ -251,9 +251,9 @@ export default function ProductsPageContent() {
 
           {/* Use Case / Type Filter */}
           <Box sx={{ mb: 4 }}>
-            <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
+            {/* <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
             Product Type
-            </Typography>
+            </Typography> */}
             <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
               <Chip
                 label="All"
@@ -412,40 +412,8 @@ export default function ProductsPageContent() {
                       </Box>
                     )}
 
-                    {/* B2B Products Section - For Organizations */}
-                    {uniqueB2B.length > 0 && (
-                      <Box sx={{ mb: uniqueB2E.length > 0 ? 8 : 4 }}>
-                        <Typography 
-                          variant="h3" 
-                          sx={{ 
-                            mb: 2,
-                            fontSize: { xs: '1.75rem', md: '2.5rem' },
-                            fontWeight: 700,
-                            color: '#063C5E',
-                            textAlign: 'center',
-                          }}
-                        >
-                          For Organizations (B2B)
-                        </Typography>
-                        <Grid
-                          data-aos="zoom-in"
-                          data-aos-duration="800"
-                          data-aos-delay="100"
-                          container
-                          spacing={4}
-                          sx={{ alignItems: 'stretch', mb: 4 }}
-                        >
-                          {uniqueB2B.map((product, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={product._id}>
-                              <ProductCard product={product} delay={index * 100} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* B2E Products Section - For Schools */}
-                    {uniqueB2E.length > 0 && (
+                    {/* B2B and B2E Products Section - Combined heading when both exist */}
+                    {(uniqueB2B.length > 0 || uniqueB2E.length > 0) && (
                       <Box sx={{ mb: 4 }}>
                         <Typography 
                           variant="h3" 
@@ -457,7 +425,11 @@ export default function ProductsPageContent() {
                             textAlign: 'center',
                           }}
                         >
-                          For Schools (B2E)
+                          {uniqueB2B.length > 0 && uniqueB2E.length > 0
+                            ? 'For Organizations and Schools'
+                            : uniqueB2B.length > 0
+                            ? 'For Organizations (B2B)'
+                            : 'For Schools (B2E)'}
                         </Typography>
                         <Grid
                           data-aos="zoom-in"
@@ -467,9 +439,16 @@ export default function ProductsPageContent() {
                           spacing={4}
                           sx={{ alignItems: 'stretch', mb: 4 }}
                         >
-                          {uniqueB2E.map((product, index) => (
+                          {/* B2B Products */}
+                          {uniqueB2B.map((product, index) => (
                             <Grid item xs={12} sm={6} md={4} key={product._id}>
                               <ProductCard product={product} delay={index * 100} />
+                            </Grid>
+                          ))}
+                          {/* B2E Products */}
+                          {uniqueB2E.map((product, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={product._id}>
+                              <ProductCard product={product} delay={(uniqueB2B.length + index) * 100} />
                             </Grid>
                           ))}
                         </Grid>

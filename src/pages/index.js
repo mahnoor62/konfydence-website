@@ -118,55 +118,31 @@ export async function getServerSideProps() {
     return false;
   }).slice(0, 3);
   
-  // B2B products: For organizations - prioritize targetAudience, then check category
+  // B2B/B2E products: For organizations & schools - prioritize targetAudience, then check category
   const b2bProducts = (Array.isArray(products) ? products : []).filter(p => {
     // Primary: Check targetAudience first
-    if (p.targetAudience === 'businesses') return true;
-    if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
+    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
+    if (p.targetAudience === 'private-users') return false;
     
     // Fallback: If no targetAudience, check category
     if (!p.targetAudience) {
-      return p.category === 'businesses';
-    }
-    return false;
-  }).slice(0, 3);
-  
-  // B2E products: For schools - prioritize targetAudience, then check category
-  const b2eProducts = (Array.isArray(products) ? products : []).filter(p => {
-    // Primary: Check targetAudience first
-    if (p.targetAudience === 'schools') return true;
-    if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
-    
-    // Fallback: If no targetAudience, check category
-    if (!p.targetAudience) {
-      return p.category === 'schools';
+      return p.category === 'schools' || p.category === 'businesses';
     }
     return false;
   }).slice(0, 3);
   
   // Remove any duplicates (in case a product matches both criteria)
-  const uniqueB2C = Array.isArray(b2cProducts) ? b2cProducts.filter(p => 
-    !b2bProducts.some(bp => bp._id === p._id) &&
-    !b2eProducts.some(ep => ep._id === p._id)
-  ) : [];
-  const uniqueB2B = Array.isArray(b2bProducts) ? b2bProducts.filter(p => 
-    !b2cProducts.some(cp => cp._id === p._id) &&
-    !b2eProducts.some(ep => ep._id === p._id)
-  ) : [];
-  const uniqueB2E = Array.isArray(b2eProducts) ? b2eProducts.filter(p => 
-    !b2cProducts.some(cp => cp._id === p._id) &&
-    !b2bProducts.some(bp => bp._id === p._id)
-  ) : [];
+  const uniqueB2C = Array.isArray(b2cProducts) ? b2cProducts.filter(p => !b2bProducts.some(bp => bp._id === p._id)) : [];
+  const uniqueB2B = Array.isArray(b2bProducts) ? b2bProducts.filter(p => !b2cProducts.some(cp => cp._id === p._id)) : [];
   
-  const allFeaturedProducts = Array.isArray(uniqueB2C) && Array.isArray(uniqueB2B) && Array.isArray(uniqueB2E)
-    ? [...uniqueB2C, ...uniqueB2B, ...uniqueB2E].slice(0, 6) 
+  const allFeaturedProducts = Array.isArray(uniqueB2C) && Array.isArray(uniqueB2B) 
+    ? [...uniqueB2C, ...uniqueB2B].slice(0, 6) 
     : [];
   
   console.log('📊 Homepage products breakdown:', {
     total: products.length,
     b2c: b2cProducts.length,
     b2b: b2bProducts.length,
-    b2e: b2eProducts.length,
     featured: allFeaturedProducts.length
   });
 
@@ -355,64 +331,6 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         px: 2,
                       }}
                     >
-                      {/* B2C Image */}
-                      <Box
-                        sx={{
-                          mb: 4,
-                          display: 'flex',
-                          justifyContent: 'center',
-                          alignItems: 'center',
-                          position: 'relative',
-                          animation: 'floatCard 4s ease-in-out infinite',
-                          transformOrigin: 'center',
-                          filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                          '@keyframes floatCard': {
-                            '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                            '50%': {
-                              transform: 'translateY(-15px) rotate(-1deg)',
-                              filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                            },
-                            '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                          },
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src="/images/hero-left.jpg"
-                          alt="Family with Konfydence cards"
-                          sx={{
-                            width: '100%',
-                            maxWidth: '280px',
-                            height: 'auto',
-                            borderRadius: 3,
-                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                            objectFit: 'contain',
-                            position: 'relative',
-                            overflow: 'hidden',
-                            '&::after': {
-                              content: '""',
-                              position: 'absolute',
-                              inset: 0,
-                              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(11,120,151,0.2))',
-                            },
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: '-50%',
-                              left: '-50%',
-                              width: '200%',
-                              height: '200%',
-                              background: 'radial-gradient(circle, rgba(255,255,255,0.45), transparent 60%)',
-                              animation: 'pulseGlow 6s ease-in-out infinite',
-                            },
-                            '@keyframes pulseGlow': {
-                              '0%': { transform: 'translate(-20%, -20%) scale(1)' },
-                              '50%': { transform: 'translate(10%, 10%) scale(1.1)', opacity: 0.7 },
-                              '100%': { transform: 'translate(-20%, -20%) scale(1)' },
-                            },
-                          }}
-                        />
-                      </Box>
                       <Typography
                         variant="h1"
                         sx={{
@@ -436,7 +354,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        Interactive training kits and digital learning for every generation.
+                        The game that empowers families, students, and teams to spot scams before they happen.
                       </Typography>
                       <Box
                         sx={{
@@ -519,6 +437,31 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       >
                         Compliance that engages. Awareness that lasts.
                       </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: '1rem',
+                          mb: 4,
+                          opacity: 0.95,
+                          color: 'white',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Konfydence supports trains and documents real-world decision-making and awareness activities aligned with frameworks such as NIS2 and ISO 27001.
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: '1rem',
+                          mb: 4,
+                          opacity: 0.95,
+                          color: 'white',
+                          textAlign: 'center',
+                        }}
+                      >
+                        <b>CoMaSy - Compliance Mastery System - aligned with behavior-based NIS2.</b>
+                        Transform compliance training into engaging, behavior-changing simulations
+                      </Typography>
                       <Box
                         sx={{
                           display: 'flex',
@@ -580,6 +523,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 display: 'flex',
                 alignItems: 'center',
                 height: '100%',
+          
                 py: { xs: 4, md: 0 },
               }}
             >
@@ -592,13 +536,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     maxWidth: { xs: '100%', md: '90%' },
                     mx: 'auto',
                     px: { xs: 2, md: 4 },
+                    pt: { xs: 0, md: 4 },
                   }}
                 >
                   {/* B2C Image */}
                   <Box
                     sx={{
-                      mb: 4,
-                      display: 'flex',
+                      mb: 0,
+                      display: { xs: 'none', md: 'none' },
                       justifyContent: 'center',
                       alignItems: 'center',
                       position: 'relative',
@@ -655,11 +600,12 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   <Typography
                     variant="h1"
                     sx={{
+              
                       fontSize: { xs: '2rem', md: '2.75rem', lg: '3rem' },
                       lineHeight: 1.2,
                       fontWeight: 700,
                       color: 'white',
-                      mb: 3,
+                      mb: 12,
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
@@ -739,6 +685,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 display: 'flex',
                 alignItems: 'center',
                 height: '100%',
+          
                 py: { xs: 4, md: 0 },
               }}
             >
@@ -751,6 +698,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     maxWidth: { xs: '100%', md: '90%' },
                     mx: 'auto',
                     px: { xs: 2, md: 4 },
+                    pt: { xs: 0, md: 4 },
                   }}
                 >
                   <Typography
@@ -765,6 +713,31 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     }}
                   >
                     Compliance that engages. Awareness that lasts.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.15rem' },
+                      mb: 4,
+                      opacity: 0.95,
+                      color: 'white',
+                      textAlign: { xs: 'center', md: 'left' },
+                    }}
+                  >
+                    Konfydence supports trains and documents real-world decision-making and awareness activities aligned with frameworks such as NIS2 and ISO 27001.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.15rem' },
+                      mb: 4,
+                      opacity: 0.95,
+                      color: 'white',
+                      textAlign: { xs: 'center', md: 'left' },
+                    }}
+                  >
+                    <b>CoMaSy - Compliance Mastery System - aligned with behavior-based NIS2.</b>
+                    Transform compliance training into engaging, behavior-changing simulations
                   </Typography>
                   <Box
                     sx={{
@@ -820,7 +793,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             data-aos-delay="200"
             maxWidth="lg"
             sx={{
-              mt:-20,
+              mt:-15,
               display: { xs: 'none', md: 'block' },
               // position: 'absolute',
               // bottom: { xs: -300, md: -100 },
@@ -835,8 +808,11 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             <Grid item sm={6} xs={12} md={5}>
               <Box
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 2.5 },
                   height: '100%',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
                   backgroundColor: '#7FC7D9',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -860,20 +836,23 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   },
                 }}
               >
-                <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 2, lineHeight: 1.5, fontSize: { xs: '1rem', md: '1.25rem' } }}>
-                Cybercrime causes over €200 billion in damages every year in Germany alone.* Most attacks still start with a single human click.
-                and update the footnote to
+                <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 1.5, lineHeight: 1.4, fontSize: { xs: '0.95rem', md: '1.1rem' } }}>
+                Ilo Cybercrime causes over €200 billion in damages every year in Germany alone.* Most attacks still start with a single human click. and update the footnote to
+              
                 </Typography>
-                <Typography variant="body1" sx={{ color: 'white', opacity: 0.95, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                <Typography variant="body2" sx={{ color: 'white', opacity: 0.95, fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 'auto' }}>
                 *Based on figures reported by Bitkom for the German economy.
                 </Typography>
               </Box>
             </Grid>
-            <Grid item sm={6} xs={12} md={5}>
+            <Grid item sm={6} xs={12} md={5} sx={{ display: 'flex' }}>
               <Box
                 sx={{
-                  p: 3,
+                  p: { xs: 2, md: 2.5 },
                   height: '100%',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
                   backgroundColor: '#5FA8BA',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
@@ -897,17 +876,29 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   },
                 }}
               >
-                <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 2, fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  How Konfydence Fixes it
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' } }}>
+                Most cyberattacks don&apos;t break systems — they exploit people.
                 </Typography>
-                <Stack spacing={1.5}>
+                {/* <Typography variant="body2" sx={{ color: 'white', mb: 1.5, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
+                  Most cyberattacks don&apos;t break systems — they exploit people.
+                </Typography> */}
+                <Typography variant="body2" sx={{ color: 'white', mb: 1.5, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
+                  Scammers use the same psychological levers again and again:
+                </Typography>
+                <Typography variant="body1" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.8rem', md: '0.9rem' } }}>
+                  HACK — Urgency, Authority, Trust, Fear.
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'white', mb: 2, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
+                  One moment of pressure is often all it takes.
+                </Typography>
+                {/* <Stack spacing={1}>
                   {['Fun and engaging', 'Accessible for all ages', 'Proven learning method'].map((item) => (
-                    <Typography key={item} variant="body1" sx={{ color: 'white', display: 'flex', alignItems: 'flex-start', gap: 1, fontSize: { xs: '0.875rem', md: '1rem' } }}>
+                    <Typography key={item} variant="body2" sx={{ color: 'white', display: 'flex', alignItems: 'flex-start', gap: 0.5, fontSize: { xs: '0.75rem', md: '0.85rem' } }}>
                       <Box component="span" sx={{ color: 'white', fontWeight: 600, mr: 0.5 }}>✓</Box>
                       {item}
                     </Typography>
                   ))}
-                </Stack>
+                </Stack> */}
               </Box>
             </Grid>
               <Grid item sm={6} xs={12} md={1}></Grid>
@@ -916,7 +907,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
         </Box>
 
         {/* B2C Product Hero - Scam Survival Kit */}
-        <Box sx={{ my: { xs: 8, md: 20 }, position: 'relative', overflow: 'visible' }}>
+        <Box sx={{ my: { xs: 8, md: 20  }, mt: { xs: 12, md: 30 }, position: 'relative', overflow: 'visible' }}>
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -938,15 +929,15 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     Scam Survival Kit
                   </Typography>
                   <Typography
-                    variant="h5"
+                    variant="body1"
                     sx={{
                       mb: 4,
                       color: 'black',
                       lineHeight: 1.6,
-                      fontSize: { xs: '1.1rem', md: '1.5rem' },
+                      // fontSize: { xs: '1.1rem', md: '1.5rem' },
                     }}
                   >
-                    The interactive card game that teaches your family to spot scams before they happen.
+                   The interactive card game that teaches your family to spot scams before they happen. Change to: The interactive card game that helps families spot HACKS before they get HACKED.
                   </Typography>
                   <Stack spacing={2} sx={{ mb: 4 }}>
                     {[
@@ -1013,7 +1004,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Get Your Kit
+                  Request Company
                   </Button>
                 </Box>
               </Grid>
@@ -1099,22 +1090,23 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 Simple, streamlined process from demo to analytics
               </Typography>
             </Box>
-            <Box sx={{ position: 'relative' }}>
-              <Grid container spacing={4} sx={{ mt: 2 }}>
+            <Box sx={{ position: 'relative', mt: 4, display: 'flex', justifyContent: 'center' }}>
+              <Grid container spacing={4} sx={{ maxWidth: 1000, width: '100%', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                 {[
-                  { step: '1', title: 'Demo', description: 'See how it works with a personalized demonstration' },
-                  { step: '2', title: 'Custom Package', description: 'We tailor the solution to your organization\'s needs' },
-                  { step: '3', title: 'Training', description: 'Roll out engaging training that your team actually enjoys' },
-                  { step: '4', title: 'Analytics', description: 'Track progress and measure impact with detailed insights' },
+                  { step: '1', title: 'For Compliance & Risk Teams', description: 'Real-world behavioral training with evidence, analytics, and audit documentation.' },
+                  { step: '2', title: 'Suggestion', description: 'Add a block like: Documentable Training Evidence' },
+                  { step: '3', title: 'Track sessions', description: 'Collect evidence notes Export for internal audits and compliance reviews' },
                 ].map((item, index) => (
-                  <Grid item xs={12} sm={6} md={3} key={item.step} sx={{ position: 'relative' }}>
+                  <Grid item xs={12} sm={6} md={4} key={item.step} sx={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
                     <Box
                       data-aos="fade-up"
                       data-aos-duration="800"
                       data-aos-delay={index * 150}
                       sx={{
                         textAlign: 'center',
-                        p: 4,
+                        p: { xs: 3, md: 4 },
+                        width: { xs: '100%', sm: '350px', md: '100%' },
+                        maxWidth: { xs: '100%', sm: '350px', md: '100%' },
                         height: '100%',
                         backgroundColor: '#F5F8FB',
                         borderRadius: 3,
@@ -1130,16 +1122,16 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     >
                       <Box
                         sx={{
-                          width: 60,
-                          height: 60,
+                          width: 50,
+                          height: 50,
                           borderRadius: '50%',
                           backgroundColor: '#00A4E8',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           mx: 'auto',
-                          mb: 3,
-                          fontSize: { xs: '1.5rem', md: '2rem' },
+                          mb: 2,
+                          fontSize: { xs: '1.5rem', md: '1.75rem' },
                           fontWeight: 700,
                           color: 'white',
                         }}
@@ -1147,12 +1139,12 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         {item.step}
                       </Box>
                       <Typography
-                        variant="h5"
+                        variant="h6"
                         sx={{
                           mb: 2,
                           fontWeight: 700,
                           color: '#063C5E',
-                          fontSize: { xs: '1.25rem', md: '1.5rem' },
+                          fontSize: { xs: '1rem', md: '1.1rem' },
                         }}
                       >
                         {item.title}
@@ -1161,20 +1153,20 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         variant="body1"
                         sx={{
                           color: 'text.secondary',
-                          fontSize: { xs: '0.95rem', md: '1rem' },
+                          fontSize: { xs: '0.9rem', md: '0.95rem' },
                           lineHeight: 1.6,
                         }}
                       >
                         {item.description}
                       </Typography>
                     </Box>
-                    {index < 3 && (
+                    {index < 2 && (
                       <Box
                         sx={{
                           display: { xs: 'none', md: 'flex' },
                           position: 'absolute',
                           top: '50%',
-                          right: '-16px',
+                          right: '-20px',
                           transform: 'translateY(-50%)',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -1183,15 +1175,15 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       >
                         <Box
                           sx={{
-                            width: 32,
-                            height: 32,
+                            width: 36,
+                            height: 36,
                             borderRadius: '50%',
                             backgroundColor: '#00A4E8',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             color: 'white',
-                            fontSize: '1.2rem',
+                            fontSize: '1.3rem',
                             fontWeight: 700,
                           }}
                         >
@@ -1215,7 +1207,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 variant="h2" 
                 textAlign="center" 
                 sx={{ 
-                  mb: 8,
+                  mb: 6,
                   mt:8,
                   fontSize: { xs: '2rem', md: '3rem' },
                   fontWeight: 700,
@@ -1225,6 +1217,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 }}
               >
                 Latest Products
+              </Typography>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  mb: 4,
+                  fontSize: { xs: '1.75rem', md: '2.5rem' },
+                  fontWeight: 700,
+                  color: '#063C5E',
+                  textAlign: 'left',
+                }}
+              >
+                Family:
               </Typography>
             </Box>
             {homeProducts.length === 0 ? (
@@ -1256,100 +1260,72 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     return false;
                   });
                   
-                  // B2B products: For organizations - prioritize targetAudience
+                  // B2B/B2E products: For organizations & schools - prioritize targetAudience
                   const b2bProducts = homeProducts.filter(p => {
                     // Primary: Check targetAudience first
-                    if (p.targetAudience === 'businesses') return true;
-                    if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
+                    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
+                    if (p.targetAudience === 'private-users') return false;
                     
                     // Fallback: If no targetAudience, check category
                     if (!p.targetAudience) {
-                      return p.category === 'businesses';
-                    }
-                    return false;
-                  });
-                  
-                  // B2E products: For schools - prioritize targetAudience
-                  const b2eProducts = homeProducts.filter(p => {
-                    // Primary: Check targetAudience first
-                    if (p.targetAudience === 'schools') return true;
-                    if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
-                    
-                    // Fallback: If no targetAudience, check category
-                    if (!p.targetAudience) {
-                      return p.category === 'schools';
+                      return p.category === 'schools' || p.category === 'businesses';
                     }
                     return false;
                   });
                   
                   // Remove duplicates - ensure each product appears only once
                   const uniqueB2C = b2cProducts.filter(p => 
-                    !b2bProducts.some(bp => bp._id === p._id) &&
-                    !b2eProducts.some(ep => ep._id === p._id)
+                    !b2bProducts.some(bp => bp._id === p._id)
                   );
                   const uniqueB2B = b2bProducts.filter(p => 
-                    !b2cProducts.some(cp => cp._id === p._id) &&
-                    !b2eProducts.some(ep => ep._id === p._id)
-                  );
-                  const uniqueB2E = b2eProducts.filter(p => 
-                    !b2cProducts.some(cp => cp._id === p._id) &&
-                    !b2bProducts.some(bp => bp._id === p._id)
+                    !b2cProducts.some(cp => cp._id === p._id)
                   );
                   
                   const uncategorizedProducts = homeProducts.filter(p => 
                     !uniqueB2C.some(cp => cp._id === p._id) && 
-                    !uniqueB2B.some(bp => bp._id === p._id) &&
-                    !uniqueB2E.some(ep => ep._id === p._id)
+                    !uniqueB2B.some(bp => bp._id === p._id)
                   );
                   
                   console.log('🔍 Product filtering results:', {
                     total: homeProducts.length,
                     b2c: b2cProducts.length,
                     b2b: b2bProducts.length,
-                    b2e: b2eProducts.length,
                     uncategorized: uncategorizedProducts.length,
                   });
                   
+                  // Separate B2B and B2E products
+                  const b2bOnlyProducts = uniqueB2B.filter(p => 
+                    (p.targetAudience === 'businesses' || p.category === 'businesses') &&
+                    !(p.targetAudience === 'schools' || p.category === 'schools')
+                  );
+                  const b2eOnlyProducts = uniqueB2B.filter(p => 
+                    (p.targetAudience === 'schools' || p.category === 'schools') &&
+                    !(p.targetAudience === 'businesses' || p.category === 'businesses')
+                  );
+                  
                   return (
                     <>
-                      {/* For families section - B2C products */}
+                      {/* Family section - B2C products */}
                       {uniqueB2C.length > 0 && (
-                        <Box sx={{ mb: uniqueB2B.length > 0 ? 8 : 4 }}>
-                          <Typography 
-                            variant="h3" 
-                            sx={{ 
-                              mb: 4,
-                              fontSize: { xs: '1.75rem', md: '2.5rem' },
-                              fontWeight: 700,
-                              color: '#063C5E',
-                              textAlign: 'left',
-                            }}
-                          >
-                           For Families
-                          </Typography>
-                          {/* <Typography 
-                            variant="body1" 
-                            sx={{ 
-                              mb: 4,
-                              textAlign: 'center',
-                              color: 'text.secondary',
-                            }}
-                          >
-                            For Families
-                          </Typography> */}
+                        <Box sx={{ mb: 6 }}>
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
                             {uniqueB2C.map((product, index) => (
-                              <Grid item xs={12} md={4} key={product._id || index}>
-                                <ProductCard product={product} delay={index * 150} />
+                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
+                                <ProductCard 
+                                  product={product} 
+                                  delay={index * 150}
+                                  hidePrice={true}
+                                  buttonText="Get Early Access"
+                                />
                               </Grid>
                             ))}
                           </Grid>
                         </Box>
                       )}
 
-                      {/* For organizations section - B2B products */}
-                      {uniqueB2B.length > 0 && (
-                        <Box sx={{ mb: uniqueB2E.length > 0 ? 8 : 4 }}>
+                      {/* Schools section - B2E products */}
+                      {b2eOnlyProducts.length > 0 && (
+                        <Box sx={{ mb: 6 }}>
                           <Typography 
                             variant="h3" 
                             sx={{ 
@@ -1360,21 +1336,26 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                               textAlign: 'left',
                             }}
                           >
-                            For Organizations (B2B)
+                            Schools
                           </Typography>
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {uniqueB2B.map((product, index) => (
-                              <Grid item xs={12} md={4} key={product._id || index}>
-                                <ProductCard product={product} delay={index * 150} />
+                            {b2eOnlyProducts.map((product, index) => (
+                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
+                                <ProductCard 
+                                  product={product} 
+                                  delay={index * 150}
+                                  hidePrice={true}
+                                  buttonText="Get Early Access"
+                                />
                               </Grid>
                             ))}
                           </Grid>
                         </Box>
                       )}
 
-                      {/* For schools section - B2E products */}
-                      {uniqueB2E.length > 0 && (
-                        <Box sx={{ mb: 4 }}>
+                      {/* Companies section - B2B products */}
+                      {b2bOnlyProducts.length > 0 && (
+                        <Box sx={{ mb: 6 }}>
                           <Typography 
                             variant="h3" 
                             sx={{ 
@@ -1385,12 +1366,17 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                               textAlign: 'left',
                             }}
                           >
-                            For Schools (B2E)
+                            Companies
                           </Typography>
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {uniqueB2E.map((product, index) => (
-                              <Grid item xs={12} md={4} key={product._id || index}>
-                                <ProductCard product={product} delay={index * 150} />
+                            {b2bOnlyProducts.map((product, index) => (
+                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
+                                <ProductCard 
+                                  product={product} 
+                                  delay={index * 150}
+                                  hidePrice={true}
+                                  buttonText="Get Early Access"
+                                />
                               </Grid>
                             ))}
                           </Grid>
@@ -1398,7 +1384,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       )}
                       
                       {/* Fallback: Show uncategorized products if no categorized products found */}
-                      {b2cProducts.length === 0 && b2bProducts.length === 0 && b2eProducts.length === 0 && uncategorizedProducts.length > 0 && (
+                      {b2cProducts.length === 0 && b2bProducts.length === 0 && uncategorizedProducts.length > 0 && (
                         <Box sx={{ mb: 4 }}>
                           <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
                             {uncategorizedProducts.map((product, index) => (
@@ -1589,9 +1575,11 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       color: 'text.secondary',
                       lineHeight: 1.6,
                       fontSize: { xs: '1rem', md: '1.25rem' },
+
                     }}
                   >
-                    CoMaSy is a didactic simulation system for real-world cyber and fraud awareness.
+                    CoMaSy is a didactic simulation system for real-world cyber and fraud awareness <br /> designed to train human behavior, not just knowledge.
+                    Every session can be documented with notes and supports NIS2 and GDPR-related awareness obligations.
                   </Typography>
 
                   {/* Pitch Bullets */}
@@ -1829,7 +1817,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   zIndex: 1,
                 }}
               >
-                The Youth Pack brings media literacy to life – aligned with KMK Digital Strategy.
+        The Youth Pack brings media literacy to life — aligned with the recognised Digital Strategy and designed for real classroom engagement.
+
               </Typography>
             </Box>
 
@@ -1928,6 +1917,23 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 Request Pilot Info
               </Button>
             </Box>
+            <Typography
+                variant="h6"
+                sx={{
+                  mt:5,
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  color: 'rgba(255, 255, 255, 0.95)',
+                  maxWidth: 800,
+                  mx: 'auto',
+                  position: 'relative',
+                  zIndex: 1,
+                  // whiteSpace: { xs: 'normal', md: 'nowrap' },
+                  textAlign: 'center',
+                }}
+              >
+Empowering individuals, organizations, and compliance teams with interactive scam awareness and behavior documentation.
+
+              </Typography>
           </Container>
         </Box>
 
@@ -2215,7 +2221,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — Parent, Munich
+                    — Parent, Toronto
                   </Typography>
                 </Box>
               </Grid>
@@ -2269,7 +2275,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — Family of Four, Berlin
+                    — Family of Four, London
                   </Typography>
                 </Box>
               </Grid>
@@ -2331,7 +2337,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontStyle: 'italic',
                     }}
                   >
-                    &ldquo;Konfydence raised scam-awareness across our staff by 78% in just four weeks.&rdquo;
+                    &ldquo;Our team reported stronger awareness within weeks.&rdquo;
                   </Typography>
                   <Typography
                     variant="body2"
@@ -2341,7 +2347,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — Compliance Officer, German Bank
+                    — Compliance Officer, New York
                   </Typography>
                 </Box>
               </Grid>
@@ -2395,7 +2401,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — HR Director, FinTech Company
+                    — HR Director, San Francisco
                   </Typography>
                 </Box>
               </Grid>
@@ -2467,7 +2473,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — Teacher, Hamburg
+                    — Teacher, Sydney
                   </Typography>
                 </Box>
               </Grid>
@@ -2521,7 +2527,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       fontSize: { xs: '0.9rem', md: '1rem' },
                     }}
                   >
-                    — Principal, Vienna
+                    — Principal, Vancouver
                   </Typography>
                 </Box>
               </Grid>
@@ -2658,4 +2664,5 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
     </>
   );
 }
+
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import {
   Container,
@@ -44,6 +44,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -63,6 +65,9 @@ export default function OrganizationDashboardPage() {
   const [error, setError] = useState(null);
   const [selectedTab, setSelectedTab] = useState(0);
   const [packageTabs, setPackageTabs] = useState({}); // Store tab state for each package
+  const [tabsScrollLeft, setTabsScrollLeft] = useState(0);
+  const [tabsScrollRight, setTabsScrollRight] = useState(false);
+  const tabsRef = useRef(null);
   const [selectedOrg, setSelectedOrg] = useState(null);
   const [orgDialogOpen, setOrgDialogOpen] = useState(false);
   const [orgForm, setOrgForm] = useState({
@@ -142,6 +147,25 @@ export default function OrganizationDashboardPage() {
     // Tab 5+: Profile (content 6) - only reached if both Packages and Custom Package Requests are visible
     return 6;
   };
+
+  const checkTabsScroll = () => {
+    if (tabsRef.current) {
+      const element = tabsRef.current;
+      setTabsScrollLeft(element.scrollLeft);
+      setTabsScrollRight(
+        element.scrollLeft < element.scrollWidth - element.clientWidth - 1
+      );
+    }
+  };
+
+  useEffect(() => {
+    checkTabsScroll();
+    const handleResize = () => {
+      setTimeout(checkTabsScroll, 100);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [organizations, memberRequests, packages, customPackageRequests]);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -2250,51 +2274,136 @@ console.log("customPackageRequests", customPackageRequests)
             {/* Create button hidden per requirement */}
           </Box>
 
-          <Tabs
-            value={selectedTab}
-            onChange={(e, newValue) => {
-              setSelectedTab(newValue);
-              const contentIndex = getContentIndex(newValue);
-
-              // Refresh packages when switching to packages tab
-              if (contentIndex === 4) {
-                fetchPackages();
-                fetchAvailableCustomPackages(); // Also fetch available custom packages for purchase
-                // Also fetch requests to include completed custom packages
-                fetchCustomPackageRequests();
-              }
-              // Fetch custom package requests when switching to that tab
-              if (contentIndex === 5) {
-                fetchCustomPackageRequests();
-                // Also refresh packages to show newly created custom packages
-                fetchPackages();
-              }
+          <Box
+            sx={{
+              position: 'relative',
+              mb: 3,
+              borderBottom: 1,
+              borderColor: 'divider',
             }}
-            sx={{ mb: 3 }}
           >
-            <Tab label={user.role === 'b2e_user' ? 'My Institutes' : 'My Organizations'} />
-            <Tab label={user.role === 'b2e_user' ? 'Students' : 'Members'} />
-            {/* Student Activities tab commented out */}
-            {/* <Tab label={user.role === 'b2e_user' ? 'Student Activities' : 'Member Activities'} /> */}
-            <Tab
-              label={
-                memberRequests.length > 0
-                  ? `Member Requests (${memberRequests.length})`
-                  : 'Member Requests'
-              }
-            />
-            <Tab label={packages.length > 0 ? `Packages (${packages.length})` : 'Packages'} />
-            {customPackageRequests.length > 0 && (
-              <Tab
-                label={
-                  customPackageRequests.length > 0
-                    ? `Custom Package Requests (${customPackageRequests.length})`
-                    : 'Custom Package Requests'
-                }
-              />
+            {/* Left Arrow - Show on small screens when scrollable */}
+            {tabsScrollLeft > 0 && (
+              <IconButton
+                onClick={() => {
+                  if (tabsRef.current) {
+                    tabsRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+                  }
+                }}
+                sx={{
+                  position: 'absolute',
+                  left: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 2,
+                  backgroundColor: 'white',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  display: { xs: 'flex', md: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#F5F8FB',
+                  },
+                }}
+              >
+                <ChevronLeftIcon />
+              </IconButton>
             )}
-            <Tab label="Profile" />
-          </Tabs>
+            
+            {/* Right Arrow - Show on small screens when scrollable */}
+            {tabsScrollRight && (
+              <IconButton
+                onClick={() => {
+                  if (tabsRef.current) {
+                    tabsRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+                  }
+                }}
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  zIndex: 2,
+                  backgroundColor: 'white',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  display: { xs: 'flex', md: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#F5F8FB',
+                  },
+                }}
+              >
+                <ChevronRightIcon />
+              </IconButton>
+            )}
+
+            <Box
+              ref={tabsRef}
+              onScroll={(e) => {
+                const element = e.target;
+                setTabsScrollLeft(element.scrollLeft);
+                setTabsScrollRight(
+                  element.scrollLeft < element.scrollWidth - element.clientWidth - 1
+                );
+              }}
+              sx={{
+                overflowX: 'auto',
+                overflowY: 'hidden',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+                '&::-webkit-scrollbar': {
+                  display: 'none',
+                },
+                '& .MuiTabs-scroller': {
+                  overflowX: 'auto',
+                },
+              }}
+            >
+              <Tabs
+                value={selectedTab}
+                onChange={(e, newValue) => {
+                  setSelectedTab(newValue);
+                  const contentIndex = getContentIndex(newValue);
+
+                  // Refresh packages when switching to packages tab
+                  if (contentIndex === 4) {
+                    fetchPackages();
+                    fetchAvailableCustomPackages(); // Also fetch available custom packages for purchase
+                    // Also fetch requests to include completed custom packages
+                    fetchCustomPackageRequests();
+                  }
+                  // Fetch custom package requests when switching to that tab
+                  if (contentIndex === 5) {
+                    fetchCustomPackageRequests();
+                    // Also refresh packages to show newly created custom packages
+                    fetchPackages();
+                  }
+                }}
+                variant="scrollable"
+                scrollButtons={false}
+              >
+                <Tab label={user.role === 'b2e_user' ? 'My Institutes' : 'My Organizations'} />
+                <Tab label={user.role === 'b2e_user' ? 'Students' : 'Members'} />
+                {/* Student Activities tab commented out */}
+                {/* <Tab label={user.role === 'b2e_user' ? 'Student Activities' : 'Member Activities'} /> */}
+                <Tab
+                  label={
+                    memberRequests.length > 0
+                      ? `Member Requests (${memberRequests.length})`
+                      : 'Member Requests'
+                  }
+                />
+                <Tab label={packages.length > 0 ? `Packages (${packages.length})` : 'Packages'} />
+                {customPackageRequests.length > 0 && (
+                  <Tab
+                    label={
+                      customPackageRequests.length > 0
+                        ? `Custom Package Requests (${customPackageRequests.length})`
+                        : 'Custom Package Requests'
+                    }
+                  />
+                )}
+                <Tab label="Profile" />
+              </Tabs>
+            </Box>
+          </Box>
 
           {getContentIndex(selectedTab) === 0 && (
             <>
@@ -3873,27 +3982,25 @@ console.log("customPackageRequests", customPackageRequests)
                                                     )}
                                                   </Box>
                                                   
-                                                  {/* View Details Button */}
-                                                  <Button
+                                                  {/* View Details Icon Button */}
+                                                  <IconButton
                                                     size="small"
-                                                    variant="outlined"
                                                     onClick={(e) => {
                                                       e.stopPropagation();
                                                       setSelectedProduct(product);
                                                       setProductDetailsDialogOpen(true);
                                                     }}
                                                     sx={{
-                                                      borderColor: '#0B7897',
                                                       color: '#0B7897',
+                                                      flexShrink: 0,
                                                       '&:hover': {
-                                                        borderColor: '#063C5E',
                                                         bgcolor: '#063C5E',
                                                         color: '#fff'
                                                       }
                                                     }}
                                                   >
-                                                    View Details
-                                                  </Button>
+                                                    <VisibilityIcon fontSize="small" />
+                                                  </IconButton>
                                                 </Card>
                                               ))}
                                             </Box>
@@ -4536,9 +4643,29 @@ console.log("customPackageRequests", customPackageRequests)
                   <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
                     Description
                   </Typography>
-                  <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-                    {selectedProduct.description}
-                  </Typography>
+                  <Box
+                    sx={{
+                      '& p': {
+                        mb: 2,
+                        lineHeight: 1.6,
+                        '&:last-child': {
+                          mb: 0,
+                        },
+                      },
+                      '& strong': {
+                        fontWeight: 700,
+                        color: '#063C5E',
+                      },
+                      '& ul, & ol': {
+                        pl: 3,
+                        mb: 2,
+                      },
+                      '& li': {
+                        mb: 1,
+                      },
+                    }}
+                    dangerouslySetInnerHTML={{ __html: selectedProduct.description }}
+                  />
                 </Box>
               )}
 

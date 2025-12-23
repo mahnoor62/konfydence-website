@@ -107,32 +107,21 @@ export default function AboutPage({ settings }) {
           <Container data-aos="zoom-in" data-aos-duration="900" maxWidth="lg" sx={{ mt: { xs: 8, md: 10 } }}>
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={7}>
-                <Typography variant="overline" sx={{ letterSpacing: 2, fontWeight: 600 }}>
-                  OUR WHY
-                </Typography>
                 <Typography variant="h2" sx={{ fontWeight: 700, mt: 2, mb: 3, lineHeight: 1.2 }}>
-                  We help every person feel confident against digital scams.
+                  We help people recognize HACKs before they get HACKED.
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{ opacity: 0.95, mb: 2, maxWidth: 600, color: 'rgba(255,255,255,0.95)', fontWeight: 500 }}
+                >
+                  Most cybercrime doesn&apos;t start with code — it starts with a HACK on human behavior.
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{ opacity: 0.9, mb: 4, maxWidth: 520, color: 'rgba(255,255,255,0.95)' }}
                 >
-                  Konfydence blends tactile learning, cinematic storytelling, and practical simulations to
-                  transform complex security concepts into memorable moments for families, schools, and teams.
+                  Konfydence trains people to spot manipulation before it works.
                 </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Button variant="contained" size="large" sx={{ borderRadius: 2, px: 4 }} href="/products">
-                    Explore Products
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    size="large"
-                    sx={{ borderColor: 'white', color: 'white', borderRadius: 2, px: 4 }}
-                    href="/contact?topic=b2b_demo"
-                  >
-                    Meet Our Team
-                  </Button>
-                </Stack>
               </Grid>
               <Grid item xs={12} md={5}>
                 <Box
@@ -195,11 +184,158 @@ export default function AboutPage({ settings }) {
         </Box>
 
         <Container data-aos="zoom-in" data-aos-duration="900" maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
-          <Grid container spacing={4} sx={{ mb: 8 }}>
+          {/* Our Why Section */}
+          <Box sx={{ mb: 10, textAlign: 'center' }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, color: '#052A42' }}>
+              Our Why
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 600, mb: 4, color: '#063C5E', maxWidth: 800, mx: 'auto' }}>
+              Scammers don&apos;t hack computers. They HACK people.
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#0B7897' }}>
+              They exploit:
+            </Typography>
+            <Grid container spacing={3} sx={{ mb: 4, maxWidth: 700, mx: 'auto' }}>
+              {[
+                { label: 'Hurry', sublabel: '(Urgency)' },
+                { label: 'Authority', sublabel: '' },
+                { label: 'Trust', sublabel: '' },
+                { label: 'Kindness', sublabel: '(emotional pressure)' },
+              ].map((item) => (
+                <Grid item xs={6} sm={3} key={item.label}>
+                  <Card sx={{ 
+                    borderRadius: 2, 
+                    p: 2, 
+                    textAlign: 'center', 
+                    backgroundColor: '#E9F4FF',
+                    height: '100%',
+                    minHeight: { xs: '100px', sm: '120px' },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                  }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: item.sublabel ? 0.5 : 0 }}>
+                      {item.label}
+                    </Typography>
+                    {item.sublabel && (
+                      <Typography variant="caption" color="text.secondary">
+                        {item.sublabel}
+                      </Typography>
+                    )}
+                    {!item.sublabel && (
+                      <Typography variant="caption" sx={{ opacity: 0 }}>
+                        &nbsp;
+                      </Typography>
+                    )}
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+            <Typography variant="body1" sx={{ maxWidth: 800, mx: 'auto', fontSize: '1.1rem', lineHeight: 1.8, color: '#063C5E' }}>
+              Konfydence exists to make these patterns visible — so people can pause, think, and act safely.
+            </Typography>
+          </Box>
+
+          {/* What Konfydence Does */}
+          <Box sx={{ mb: 10 }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 3, color: '#052A42', textAlign: 'center' }}>
+              What Konfydence Does
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 4, color: '#063C5E', textAlign: 'center', maxWidth: 800, mx: 'auto' }}>
+              Konfydence turns real-world HACKs into:
+            </Typography>
+            <Grid container spacing={3} sx={{ mb: 4, maxWidth: 900, mx: 'auto' }}>
+              {[
+                'Interactive card-based simulations',
+                'Guided discussions',
+                'Measurable behavior signals',
+              ].map((item) => (
+                <Grid item xs={12} md={4} key={item}>
+                  <Card sx={{ borderRadius: 3, p: 3, textAlign: 'center', height: '100%', backgroundColor: '#F5F8FB' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#063C5E' }}>
+                      {item}
+                    </Typography>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ textAlign: 'center', maxWidth: 700, mx: 'auto' }}>
+              <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 600, color: '#063C5E', mb: 1 }}>
+                Not awareness.
+              </Typography>
+              <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 600, color: '#063C5E', mb: 1 }}>
+                Not lectures.
+              </Typography>
+              <Typography variant="h6" sx={{ fontSize: '1.3rem', fontWeight: 700, color: '#0B7897' }}>
+                Decision training.
+              </Typography>
+            </Box>
+          </Box>
+
+          {/* One System. Multiple Audiences */}
+          <Box sx={{ mb: 10 }}>
+            <Typography variant="h3" sx={{ fontWeight: 700, mb: 4, color: '#052A42', textAlign: 'center' }}>
+              One System. Multiple Audiences.
+            </Typography>
+            <Grid container spacing={4} sx={{ maxWidth: 1000, mx: 'auto' }}>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: 3, p: 4, height: '100%', backgroundColor: '#E9F4FF' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#063C5E' }}>
+                    Families
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                    Learn to recognize HACKs together — across generations.
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: 3, p: 4, height: '100%', backgroundColor: '#E9F4FF' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#063C5E' }}>
+                    Schools
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                    Build early digital confidence through play and discussion.
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card sx={{ borderRadius: 3, p: 4, height: '100%', backgroundColor: '#E9F4FF' }}>
+                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#063C5E' }}>
+                    Companies & Auditors
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 1.8 }}>
+                    Document human-risk awareness with evidence, not checkboxes.
+                  </Typography>
+                </Card>
+              </Grid>
+            </Grid>
+          </Box>
+
+          {/* Konfydence for Kids */}
+          <Box sx={{ mb: 10, backgroundColor: '#F5F8FB', borderRadius: 4, p: { xs: 4, md: 6 } }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#052A42', textAlign: 'center' }}>
+              Konfydence for Kids
+            </Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: '#063C5E', textAlign: 'center', fontStyle: 'italic' }}>
+              (charity model — now explicit)
+            </Typography>
+            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: '#0B7897', textAlign: 'center' }}>
+              HACKs start early. So does protection.
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, textAlign: 'center', maxWidth: 800, mx: 'auto', lineHeight: 1.8, color: '#063C5E' }}>
+              For every Youth Pack used, €1 is donated to organizations that strengthen children&apos;s digital resilience.
+            </Typography>
+            <Typography variant="body1" sx={{ textAlign: 'center', maxWidth: 800, mx: 'auto', lineHeight: 1.8, fontWeight: 600, color: '#063C5E' }}>
+              Learning that protects others — not just yourself.
+            </Typography>
+          </Box>
+
+          {/* Proof & Reach */}
+          <Grid container spacing={4} sx={{ mb: 10 }}>
             {[
-              { label: 'Learners trained', value: '45k+' },
-              { label: 'Countries active', value: '12+' },
-              { label: 'Simulated attacks stopped', value: '3.2M' },
+              { label: 'people trained to recognize HACK patterns', value: '45,000+' },
+              { label: 'countries active', value: '12+' },
+              { label: 'simulated HACK scenarios discussed', value: 'Millions of' },
             ].map((stat) => (
               <Grid item xs={12} md={4} key={stat.label}>
                 <Card sx={{ borderRadius: 3, boxShadow: '0 15px 40px rgba(6,60,94,0.08)' }}>
@@ -216,84 +352,25 @@ export default function AboutPage({ settings }) {
             ))}
           </Grid>
 
-          <Grid container spacing={6} alignItems="center" sx={{ mb: 10 }}>
-            <Grid item xs={12} md={6} data-aos="fade-right" data-aos-duration="900">
-              <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#052A42' }}>
-                Our mission
-              </Typography>
-              <Typography variant="body1" paragraph color="text.secondary">
-                We design multi-sensory experiences that bring cyber safety to life. From table-top simulations to
-                cinematic story cards and facilitated workshops, our approach helps people feel calm, curious, and
-                prepared when faced with fraud.
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Every Konfydence product is built with educators, psychologists, and security operators to ensure
-                learning sticks—long after the workshop ends.
-              </Typography>
-            </Grid>
-            <Grid
-              item
-              xs={12}
-              md={6}
-              data-aos="fade-left"
-              data-aos-duration="900"
-              data-aos-delay="150"
-            >
-              <Card
-                sx={{
-                  borderRadius: 4,
-                  p: 4,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(233,244,255,0.8))',
-                  boxShadow: '0 35px 90px rgba(6,60,94,0.18)',
-                  border: '1px solid rgba(11,120,151,0.12)',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(120deg, rgba(11,120,151,0.15), transparent)',
-                    opacity: 0.8,
-                    pointerEvents: 'none',
-                  },
-                }}
-              >
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#0B7897', mb: 1 }}>
-                  Pillars of Konfydence
-                </Typography>
-                <Divider sx={{ mb: 3 }} />
-                <Stack spacing={2}>
-                  {[
-                    'Playful practice over fear-based training',
-                    'Evidence-backed behavioral science',
-                    'Inclusive for every generation and job role',
-                    'Delivered as a seamless hybrid experience',
-                  ].map((item, index) => (
-                    <Box
-                      key={item}
-                      ref={(el) => {
-                        pillarRefs.current[index] = el;
-                      }}
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1,
-                        opacity: 0,
-                        transform: 'translateY(20px)',
-                        transition: 'opacity 0.6s ease, transform 0.6s ease',
-                        transitionDelay: `${index * 0.1}s`,
-                      }}
-                    >
-                      <Chip label="✓" color="primary" size="small" />
-                      <Typography variant="body2" color="text.secondary">
-                        {item}
-                      </Typography>
-                    </Box>
-                  ))}
-                </Stack>
-              </Card>
-            </Grid>
-          </Grid>
+          {/* Recognition */}
+          <Box sx={{ mb: 10, textAlign: 'center' }}>
+            <Typography variant="h4" sx={{ fontWeight: 700, mb: 2, color: '#052A42' }}>
+              Recognition
+            </Typography>
+            <Typography variant="body1" sx={{ maxWidth: 800, mx: 'auto', fontSize: '1.1rem', lineHeight: 1.8, color: '#063C5E', fontStyle: 'italic' }}>
+              Recognized by educators, compliance teams, and digital-safety advocates who care about human-first security.
+            </Typography>
+          </Box>
+
+          {/* Key Message */}
+          <Box sx={{ mb: 10, textAlign: 'center', backgroundColor: '#E9F4FF', borderRadius: 4, p: { xs: 4, md: 6 } }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: '#052A42', maxWidth: 900, mx: 'auto', lineHeight: 1.6 }}>
+              Konfydence doesn&apos;t teach people about scams.
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 700, color: '#0B7897', maxWidth: 900, mx: 'auto', lineHeight: 1.6 }}>
+              It teaches them how HACKs work — and how to stop them.
+            </Typography>
+          </Box>
 
           {settings?.founderQuote && (
             <Card
@@ -364,7 +441,7 @@ export default function AboutPage({ settings }) {
             </Grid>
           </Box>
 
-          {/* Dual CTA Block */}
+          {/* CTA Block */}
           <Box
             sx={{
               textAlign: 'center',
@@ -377,37 +454,11 @@ export default function AboutPage({ settings }) {
             data-aos="fade-up"
             data-aos-duration="900"
           >
-            <Typography
-              variant="h3"
-              component="h2"
-              sx={{
-                fontWeight: 700,
-                mb: 2,
-                color: '#052A42',
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-              }}
-            >
-              Get started with Konfydence
-            </Typography>
-            <Typography
-              variant="body1"
-              color="text.secondary"
-              sx={{
-                mb: 4,
-                maxWidth: 700,
-                mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' },
-                lineHeight: 1.7,
-              }}
-            >
-              Whether you&apos;re protecting your family, your students, or your organization, Konfydence helps you build
-              real-world scam awareness.
-            </Typography>
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
+              spacing={3}
               justifyContent="center"
-              sx={{ maxWidth: 600, mx: 'auto' }}
+              sx={{ maxWidth: 700, mx: 'auto' }}
             >
               <Button
                 component={Link}
@@ -418,38 +469,38 @@ export default function AboutPage({ settings }) {
                   borderRadius: 2,
                   px: 4,
                   py: 1.5,
-                  backgroundColor: '#00A4E8',
+                  backgroundColor: '#4CAF50',
+                  fontSize: { xs: '1rem', md: '1.1rem' },
                   '&:hover': {
-                    backgroundColor: '#0088C7',
+                    backgroundColor: '#45a049',
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(0, 164, 232, 0.4)',
+                    boxShadow: '0 8px 24px rgba(76, 175, 80, 0.4)',
                   },
                   transition: 'all 0.3s ease',
                 }}
               >
-                Buy Scam Survival Kit
+                Start with the Scam Survival Kit
               </Button>
               <Button
                 component={Link}
-                href="/contact?topic=b2b_demo"
-                variant="outlined"
+                href="/contact?topic=b2e_demo"
+                variant="contained"
                 size="large"
                 sx={{
                   borderRadius: 2,
                   px: 4,
                   py: 1.5,
-                  borderColor: '#0B7897',
-                  color: '#0B7897',
+                  backgroundColor: '#2196F3',
+                  fontSize: { xs: '1rem', md: '1.1rem' },
                   '&:hover': {
-                    borderColor: '#063C5E',
-                    backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                    backgroundColor: '#1976D2',
                     transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 24px rgba(11, 120, 151, 0.2)',
+                    boxShadow: '0 8px 24px rgba(33, 150, 243, 0.4)',
                   },
                   transition: 'all 0.3s ease',
                 }}
               >
-                Request Company Demo
+                Request a Company or School Demo
               </Button>
             </Stack>
           </Box>
