@@ -32,6 +32,7 @@ const CATEGORY_CHIPS = [
   { label: 'For Organizations', value: 'for-companies' },
   { label: 'For Schools', value: 'for-schools' },
   { label: 'How-to', value: 'how-to' },
+  { label: 'Auditors', value: 'auditors' },
   // { label: 'B2B', value: 'b2b-sales' },
 ];
 
