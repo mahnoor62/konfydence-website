@@ -28,17 +28,19 @@ const BLOGS_PER_PAGE = 12;
 
 // Reduced category chips as requested
 const CATEGORY_CHIPS = [
-  { label: 'Families', value: 'families' },
-  { label: 'Organizations', value: 'organizations' },
-  { label: 'Schools', value: 'schools' },
+  { label: 'For Families', value: 'for-families' },
+  { label: 'For Organizations', value: 'for-companies' },
+  { label: 'For Schools', value: 'for-schools' },
   { label: 'How-to', value: 'how-to' },
+  // { label: 'B2B', value: 'b2b-sales' },
 ];
 
 const CATEGORY_COLORS = {
-  'families': '#FF725E',
-  'organizations': '#0B7897',
-  'schools': '#00A4E8',
+  'for-families': '#FF725E',
+  'for-companies': '#0B7897',
+  'for-schools': '#00A4E8',
   'how-to': '#5FA8BA',
+  'b2b-sales': '#F44336',
 };
 
 export default function BlogPageContent() {
@@ -50,8 +52,16 @@ export default function BlogPageContent() {
   const [total, setTotal] = useState(0);
   const [pages, setPages] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState(categoryParam);
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [error, setError] = useState(null);
+
+  // Sync selectedCategory with URL parameter when router is ready
+  useEffect(() => {
+    if (router.isReady) {
+      const urlCategory = router.query.category || 'all';
+      setSelectedCategory(urlCategory);
+    }
+  }, [router.isReady, router.query.category]);
 
   const fetchPosts = useCallback(async (pageNum, category) => {
     try {
