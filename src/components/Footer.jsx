@@ -30,6 +30,7 @@ const footerLinks = {
     { label: 'Blog', href: '/blog' },
     { label: 'Education', href: '/education' },
     { label: 'Shop', href: '/shop' },
+    { label: 'FAQ', href: '/faq' },
   ],
   legal: [
     { label: 'Privacy', href: '/privacy' },
