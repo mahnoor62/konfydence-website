@@ -720,21 +720,44 @@ export default function PackagesPage() {
         console.log('No auth token available');
       }
       
+      // Build requestedModifications object - ALWAYS include all fields
+      const requestedModifications = {
+        cardsToAdd: [], // Cards will be selected by admin when creating product
+        cardsToRemove: []
+      };
+      
+      // ALWAYS include seatLimit if user entered a valid number
+      if (requestForm.seatLimit && requestForm.seatLimit.toString().trim() !== '') {
+        const seatLimitNum = parseInt(requestForm.seatLimit.toString().trim(), 10);
+        if (!isNaN(seatLimitNum)) {
+          requestedModifications.seatLimit = seatLimitNum;
+        }
+      }
+      
+      // ALWAYS include additionalNotes (even if empty string)
+      requestedModifications.additionalNotes = requestForm.additionalNotes 
+        ? String(requestForm.additionalNotes).trim() 
+        : '';
+      
+      // ALWAYS include customPricing with notes and currency
+      requestedModifications.customPricing = {
+        notes: requestForm.customPricing 
+          ? String(requestForm.customPricing).trim() 
+          : '',
+        currency: 'EUR'
+      };
+
       const requestData = {
         entityType: requestForm.entityType || undefined,
         organizationName: requestForm.organizationName,
         contactName: requestForm.contactName,
         contactEmail: requestForm.contactEmail,
-        contactPhone: requestForm.contactPhone,
-        requestedModifications: {
-          additionalNotes: requestForm.additionalNotes,
-          seatLimit: requestForm.seatLimit ? parseInt(requestForm.seatLimit) : undefined,
-          customPricing: requestForm.customPricing ? {
-            notes: requestForm.customPricing
-          } : undefined,
-          cardsToAdd: [] // Cards will be selected by admin when creating product
-        }
+        contactPhone: requestForm.contactPhone || '',
+        requestedModifications: requestedModifications
       };
+
+      console.log('📤 Submitting custom package request:', JSON.stringify(requestData, null, 2));
+      console.log('📤 requestedModifications:', JSON.stringify(requestedModifications, null, 2));
 
       await axios.post(`${API_URL}/custom-package-requests`, requestData, {
         headers: authHeaders,

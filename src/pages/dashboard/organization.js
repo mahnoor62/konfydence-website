@@ -263,7 +263,7 @@ export default function OrganizationDashboardPage() {
         // Backend calculates this properly by counting actual members from User table
         // But also includes members/students array as fallback
         const membersCount = org.membersCount || org.userCount || org.members?.length || org.students?.length || 0;
-        
+
         // Debug logging
         console.log('Organization data from backend:', {
           name: org.name,
@@ -312,12 +312,12 @@ export default function OrganizationDashboardPage() {
           Authorization: `Bearer ${token}`,
         },
       });
-      
+
       // Filter out requests where user is null or missing (invalid requests)
-      const validRequests = (response.data.requests || []).filter(request => 
+      const validRequests = (response.data.requests || []).filter(request =>
         request.user && request.user._id && (request.user.name || request.user.email)
       );
-      
+
       setMemberRequests(validRequests);
     } catch (err) {
       console.error('Error fetching member requests:', err);
@@ -504,18 +504,18 @@ export default function OrganizationDashboardPage() {
             const txUserId = tx.userId?._id || tx.userId;
             const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
             const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
-            
+
             // First check: Transaction must belong to logged-in user
             if (userStr !== txUserStr) {
               return false;
             }
-            
+
             // Second check: Filter transactions that belong to this organization/school (if applicable)
             const txOrgId = tx.organizationId?._id || tx.organizationId || tx.orgId;
             const txSchoolId = tx.schoolId?._id || tx.schoolId;
 
             if (activeOrganizationId) {
-              const orgIdStr = typeof activeOrganizationId === 'object' 
+              const orgIdStr = typeof activeOrganizationId === 'object'
                 ? (activeOrganizationId._id || activeOrganizationId.id || activeOrganizationId.toString())
                 : activeOrganizationId.toString();
               const txOrgIdStr = txOrgId ? (typeof txOrgId === 'object' ? (txOrgId._id || txOrgId.toString()) : txOrgId.toString()) : null;
@@ -563,7 +563,7 @@ export default function OrganizationDashboardPage() {
               const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
               return userStr === txUserStr; // Only include transactions that belong to logged-in user
             });
-            
+
             // Merge with existing transactions, avoiding duplicates
             const existingIds = new Set(allTransactions.map(tx => tx._id || tx.id));
             const newTransactions = userTransactions.filter(tx => {
@@ -920,7 +920,7 @@ export default function OrganizationDashboardPage() {
       }
 
       // CRITICAL: Filter to only show approved members (not pending or rejected)
-      const approvedMembers = members.filter(member => 
+      const approvedMembers = members.filter(member =>
         member.memberStatus === 'approved' || member.status === 'approved'
       );
 
@@ -1163,24 +1163,24 @@ export default function OrganizationDashboardPage() {
               const txUserId = tx.userId?._id || tx.userId;
               const userStr = user._id ? (typeof user._id === 'object' ? user._id.toString() : user._id.toString()) : null;
               const txUserStr = txUserId ? (typeof txUserId === 'object' ? txUserId.toString() : txUserId.toString()) : null;
-              
+
               // Transaction must belong to logged-in user
               if (userStr !== txUserStr) {
                 return false;
               }
-              
+
               // Then filter transactions that belong to this organization/school
               const txOrgId = tx.organizationId?._id || tx.organizationId;
               const txSchoolId = tx.schoolId?._id || tx.schoolId;
-              
+
               if (activeOrganizationId) {
-                const orgIdStr = typeof activeOrganizationId === 'object' 
+                const orgIdStr = typeof activeOrganizationId === 'object'
                   ? (activeOrganizationId._id || activeOrganizationId.id || activeOrganizationId.toString())
                   : activeOrganizationId.toString();
                 const txOrgIdStr = txOrgId ? (typeof txOrgId === 'object' ? (txOrgId._id || txOrgId.toString()) : txOrgId.toString()) : null;
                 return txOrgIdStr === orgIdStr || !txOrgId;
               }
-              
+
               if (activeSchoolId) {
                 const schoolIdStr = typeof activeSchoolId === 'object'
                   ? (activeSchoolId._id || activeSchoolId.id || activeSchoolId.toString())
@@ -1188,7 +1188,7 @@ export default function OrganizationDashboardPage() {
                 const txSchoolIdStr = txSchoolId ? (typeof txSchoolId === 'object' ? (txSchoolId._id || txSchoolId.toString()) : txSchoolId.toString()) : null;
                 return txSchoolIdStr === schoolIdStr || !txSchoolId;
               }
-              
+
               return true; // User's transaction with no org/school filter
             })
             .map(tx => {
@@ -1543,18 +1543,18 @@ export default function OrganizationDashboardPage() {
               schoolId: schoolIdStr || 'null',
               totalPackages: response.data.length
             });
-            
+
             const customPackageData = response.data
               .filter(cp => {
                 // Filter by organizationId OR schoolId - check both populated and non-populated formats
                 const cpOrgId = cp.organizationId?._id || cp.organizationId;
                 const cpSchoolId = cp.schoolId?._id || cp.schoolId;
-                
+
                 // Match if organizationId matches OR schoolId matches
                 const matchesOrg = orgIdStr && cpOrgId && cpOrgId.toString() === orgIdStr;
                 const matchesSchool = schoolIdStr && cpSchoolId && cpSchoolId.toString() === schoolIdStr;
                 const matches = matchesOrg || matchesSchool;
-                
+
                 console.log('🔍 Custom package filter check:', {
                   packageId: cp._id,
                   packageName: cp.name,
@@ -1566,7 +1566,7 @@ export default function OrganizationDashboardPage() {
                   matchesSchool: matchesSchool,
                   matches: matches
                 });
-                
+
                 return matches;
               })
               .map(cp => {
@@ -2213,7 +2213,7 @@ export default function OrganizationDashboardPage() {
       setSubmitting(false);
     }
   };
-console.log("customPackageRequests", customPackageRequests)
+  console.log("customPackageRequests", customPackageRequests)
 
   console.log("📦 Current packages state:", packages.length, packages);
   console.log("📦 Available custom packages state:", availableCustomPackages.length, availableCustomPackages);
@@ -2307,7 +2307,7 @@ console.log("customPackageRequests", customPackageRequests)
                 <ChevronLeftIcon />
               </IconButton>
             )}
-            
+
             {/* Right Arrow - Show on small screens when scrollable */}
             {tabsScrollRight && (
               <IconButton
@@ -2407,66 +2407,66 @@ console.log("customPackageRequests", customPackageRequests)
 
           {getContentIndex(selectedTab) === 0 && (
             <>
-            <Grid container spacing={3}>
-              {organizations && organizations.length > 0 ? (
-                organizations.map((org) => (
-                  <Grid item xs={12} md={6} lg={4} key={org.id}>
-                    <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, height: '100%' }}>
-                      <CardContent sx={{ p: 3 }}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                          <Box>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 1 }}>
-                              {org.name}
-                            </Typography>
-                            <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                              {org.segment && (
+              <Grid container spacing={3}>
+                {organizations && organizations.length > 0 ? (
+                  organizations.map((org) => (
+                    <Grid item xs={12} md={6} lg={4} key={org.id}>
+                      <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, height: '100%' }}>
+                        <CardContent sx={{ p: 3 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                            <Box>
+                              <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 1 }}>
+                                {org.name}
+                              </Typography>
+                              <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                                {org.segment && (
+                                  <Chip
+                                    label={org.segment}
+                                    size="small"
+                                    color="primary"
+                                    sx={{ fontWeight: 600 }}
+                                  />
+                                )}
                                 <Chip
-                                  label={org.segment}
+                                  label={org.type}
                                   size="small"
-                                  color="primary"
-                                  sx={{ fontWeight: 600 }}
+                                  variant="outlined"
                                 />
-                              )}
-                              <Chip
-                                label={org.type}
-                                size="small"
-                                variant="outlined"
-                              />
-                            </Stack>
+                              </Stack>
+                            </Box>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEditOrg(org)}
+                              sx={{ color: '#0B7897' }}
+                              disabled={submitting}
+                            >
+                              <EditIcon />
+                            </IconButton>
                           </Box>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleEditOrg(org)}
-                            sx={{ color: '#0B7897' }}
-                            disabled={submitting}
-                          >
-                            <EditIcon />
-                          </IconButton>
-                        </Box>
 
-                        <Divider sx={{ my: 2 }} />
+                          <Divider sx={{ my: 2 }} />
 
-                        <Stack spacing={1}>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              {user.role === 'b2e_user' ? 'Institute Code' : 'Organization Code'}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                              {org.uniqueCode || 'N/A'}
-                            </Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Primary Contact
-                            </Typography>
-                            <Typography variant="body2">
-                              {org.primaryContact?.name || 'N/A'}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary">
-                              {org.primaryContact?.email || ''}
-                            </Typography>
-                          </Box>
-                          {/* {org.description && (
+                          <Stack spacing={1}>
+                            <Box>
+                              <Typography variant="caption" color="text.secondary">
+                                {user.role === 'b2e_user' ? 'Institute Code' : 'Organization Code'}
+                              </Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                {org.uniqueCode || 'N/A'}
+                              </Typography>
+                            </Box>
+                            <Box>
+                              <Typography variant="caption" color="text.secondary">
+                                Primary Contact
+                              </Typography>
+                              <Typography variant="body2">
+                                {org.primaryContact?.name || 'N/A'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                {org.primaryContact?.email || ''}
+                              </Typography>
+                            </Box>
+                            {/* {org.description && (
                         <Box>
                           <Typography variant="caption" color="text.secondary">
                             Description
@@ -2476,211 +2476,211 @@ console.log("customPackageRequests", customPackageRequests)
                           </Typography>
                         </Box>
                       )} */}
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Total Members
-                            </Typography>
-                            <Typography variant="body2">
-                              <strong>
-                                {(org.userCount ?? org.membersCount ?? org.members?.length ?? org.students?.length ?? 0)} {user.role === 'b2e_user' ? 'Students' : 'Members'}
-                              </strong>
-                            </Typography>
-                          </Box>
-                          {(org.customPackagesCount || 0) > 0 && (
                             <Box>
                               <Typography variant="caption" color="text.secondary">
-                                Custom Packages
+                                Total Members
                               </Typography>
                               <Typography variant="body2">
-                                {org.customPackagesCount} packages
+                                <strong>
+                                  {(org.userCount ?? org.membersCount ?? org.members?.length ?? org.students?.length ?? 0)} {user.role === 'b2e_user' ? 'Students' : 'Members'}
+                                </strong>
                               </Typography>
                             </Box>
-                          )}
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Status
-                            </Typography>
-                            <Chip
-                              label={org.status || 'prospect'}
-                              size="small"
-                              color={org.status === 'active' ? 'success' : 'default'}
-                            />
-                          </Box>
-                          {org.type === 'other' && org.customType && (
+                            {(org.customPackagesCount || 0) > 0 && (
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                  Custom Packages
+                                </Typography>
+                                <Typography variant="body2">
+                                  {org.customPackagesCount} packages
+                                </Typography>
+                              </Box>
+                            )}
                             <Box>
-                              <Chip label={org.customType} size="small" variant="outlined" />
+                              <Typography variant="caption" color="text.secondary">
+                                Status
+                              </Typography>
+                              <Chip
+                                label={org.status || 'prospect'}
+                                size="small"
+                                color={org.status === 'active' ? 'success' : 'default'}
+                              />
                             </Box>
-                          )}
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Created At
+                            {org.type === 'other' && org.customType && (
+                              <Box>
+                                <Chip label={org.customType} size="small" variant="outlined" />
+                              </Box>
+                            )}
+                            <Box>
+                              <Typography variant="caption" color="text.secondary">
+                                Created At
+                              </Typography>
+                              <Typography variant="body2">
+                                {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : 'N/A'}
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))
+                ) : loading ? (
+                  <Grid item xs={12}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
+                      <CircularProgress />
+                    </Box>
+                  </Grid>
+                ) : (
+                  <Grid item xs={12}>
+                    <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
+                      <CardContent sx={{ p: 4, textAlign: 'center' }}>
+                        <BusinessIcon sx={{ fontSize: 60, color: '#0B7897', mb: 2 }} />
+                        <Typography variant="h6" sx={{ mb: 1, color: '#063C5E' }}>
+                          {user.role === 'b2e_user'
+                            ? 'No institute found for this account.'
+                            : 'No organizations found.'}
+                        </Typography>
+                        {user.role !== 'b2e_user' && (
+                          <>
+                            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                              Create your first organization to get started.
                             </Typography>
-                            <Typography variant="body2">
-                              {org.createdAt ? new Date(org.createdAt).toLocaleDateString() : 'N/A'}
-                            </Typography>
-                          </Box>
-                        </Stack>
+                            <Button
+                              variant="contained"
+                              startIcon={<AddIcon />}
+                              onClick={handleCreateOrg}
+                              sx={{
+                                backgroundColor: '#0B7897',
+                                '&:hover': { backgroundColor: '#063C5E' }
+                              }}
+                            >
+                              Create Organization
+                            </Button>
+                          </>
+                        )}
                       </CardContent>
                     </Card>
                   </Grid>
-                ))
-              ) : loading ? (
-                <Grid item xs={12}>
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
-                    <CircularProgress />
-                  </Box>
-                </Grid>
-              ) : (
-                <Grid item xs={12}>
-                  <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-                    <CardContent sx={{ p: 4, textAlign: 'center' }}>
-                      <BusinessIcon sx={{ fontSize: 60, color: '#0B7897', mb: 2 }} />
-                      <Typography variant="h6" sx={{ mb: 1, color: '#063C5E' }}>
-                        {user.role === 'b2e_user'
-                          ? 'No institute found for this account.'
-                          : 'No organizations found.'}
-                      </Typography>
-                      {user.role !== 'b2e_user' && (
-                        <>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                            Create your first organization to get started.
+                )}
+              </Grid>
+
+              {/* Transactions Table in First Tab */}
+              {transactions.length > 0 && (
+                <Grid container spacing={3} sx={{ mt: 2 }}>
+                  <Grid item xs={12}>
+                    <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                            Transactions ({transactions.length})
                           </Typography>
                           <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={handleCreateOrg}
-                            sx={{
-                              backgroundColor: '#0B7897',
-                              '&:hover': { backgroundColor: '#063C5E' }
-                            }}
+                            size="small"
+                            onClick={fetchTransactions}
+                            disabled={loadingTransactions}
+                            startIcon={loadingTransactions ? <CircularProgress size={16} /> : null}
                           >
-                            Create Organization
+                            {loadingTransactions ? 'Loading...' : 'Refresh'}
                           </Button>
-                        </>
-                      )}
-                    </CardContent>
-                  </Card>
+                        </Box>
+
+                        {loadingTransactions ? (
+                          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                            <CircularProgress />
+                          </Box>
+                        ) : (
+                          <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 600 }}>
+                            <Table stickyHeader>
+                              <TableHead>
+                                <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                  <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Package</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
+                                  <TableCell sx={{ fontWeight: 600 }}>Payment ID</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {transactions.map((tx) => {
+                                  const packageName = tx.packageId?.name ||
+                                    tx.customPackageId?.name ||
+                                    (typeof tx.packageId === 'object' && tx.packageId?.name) ||
+                                    tx.packageName ||
+                                    'Unknown Package';
+                                  const txType = tx.type || 'purchase';
+                                  const amount = tx.amount || 0;
+                                  const currency = tx.currency || 'EUR';
+                                  const status = tx.status || 'pending';
+                                  const createdAt = tx.createdAt || tx.created_at || new Date();
+                                  const stripePaymentIntentId = tx.stripePaymentIntentId || 'N/A';
+
+                                  return (
+                                    <TableRow key={tx._id || tx.id} hover>
+                                      <TableCell>
+                                        <Typography variant="body2">
+                                          {new Date(createdAt).toLocaleDateString('en-GB', {
+                                            day: 'numeric',
+                                            month: 'short',
+                                            year: 'numeric'
+                                          })}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {new Date(createdAt).toLocaleTimeString('en-GB', {
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                          })}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                          {packageName}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Chip
+                                          label={txType.replace('_', ' ').toUpperCase()}
+                                          size="small"
+                                          sx={{ textTransform: 'capitalize' }}
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                          {currency === 'EUR' ? '€' : currency} {amount.toFixed(2)}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Chip
+                                          label={status}
+                                          size="small"
+                                          color={
+                                            status === 'paid'
+                                              ? 'success'
+                                              : status === 'pending'
+                                                ? 'warning'
+                                                : status === 'failed'
+                                                  ? 'error'
+                                                  : 'default'
+                                          }
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                          {stripePaymentIntentId}
+                                        </Typography>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
+                              </TableBody>
+                            </Table>
+                          </TableContainer>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </Grid>
                 </Grid>
               )}
-            </Grid>
-
-            {/* Transactions Table in First Tab */}
-            {transactions.length > 0 && (
-              <Grid container spacing={3} sx={{ mt: 2 }}>
-              <Grid item xs={12}>
-                <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
-                        Transactions ({transactions.length})
-                      </Typography>
-                      <Button
-                        size="small"
-                        onClick={fetchTransactions}
-                        disabled={loadingTransactions}
-                        startIcon={loadingTransactions ? <CircularProgress size={16} /> : null}
-                      >
-                        {loadingTransactions ? 'Loading...' : 'Refresh'}
-                      </Button>
-                    </Box>
-
-                    {loadingTransactions ? (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-                        <CircularProgress />
-                      </Box>
-                    ) : (
-                      <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 600 }}>
-                        <Table stickyHeader>
-                          <TableHead>
-                            <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
-                                <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Package</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Type</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Amount</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>Payment ID</TableCell>
-                            </TableRow>
-                          </TableHead>
-                          <TableBody>
-                            {transactions.map((tx) => {
-                              const packageName = tx.packageId?.name || 
-                                                 tx.customPackageId?.name || 
-                                                 (typeof tx.packageId === 'object' && tx.packageId?.name) ||
-                                                 tx.packageName || 
-                                                 'Unknown Package';
-                                const txType = tx.type || 'purchase';
-                                const amount = tx.amount || 0;
-                                const currency = tx.currency || 'EUR';
-                                const status = tx.status || 'pending';
-                                const createdAt = tx.createdAt || tx.created_at || new Date();
-                                const stripePaymentIntentId = tx.stripePaymentIntentId || 'N/A';
-
-                              return (
-                                <TableRow key={tx._id || tx.id} hover>
-                                  <TableCell>
-                                    <Typography variant="body2">
-                                      {new Date(createdAt).toLocaleDateString('en-GB', {
-                                        day: 'numeric',
-                                        month: 'short',
-                                        year: 'numeric'
-                                      })}
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                      {new Date(createdAt).toLocaleTimeString('en-GB', {
-                                        hour: '2-digit',
-                                        minute: '2-digit'
-                                      })}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                      {packageName}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      label={txType.replace('_', ' ').toUpperCase()}
-                                      size="small"
-                                      sx={{ textTransform: 'capitalize' }}
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                      {currency === 'EUR' ? '€' : currency} {amount.toFixed(2)}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      label={status}
-                                      size="small"
-                                      color={
-                                        status === 'paid'
-                                          ? 'success'
-                                          : status === 'pending'
-                                            ? 'warning'
-                                            : status === 'failed'
-                                              ? 'error'
-                                              : 'default'
-                                      }
-                                    />
-                                  </TableCell>
-                                    <TableCell>
-                                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
-                                        {stripePaymentIntentId}
-                                      </Typography>
-                                    </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
-                      </TableContainer>
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            </Grid>
-            )}
             </>
           )}
 
@@ -2979,384 +2979,384 @@ console.log("customPackageRequests", customPackageRequests)
                 </Grid>
               ) : (packages.length > 0 || availableCustomPackages.length > 0) ? (
                 <>
-                {packages.length > 0 && packages.map((pkg) => (
-                  <Grid item xs={12} key={pkg._id || pkg.id}>
-                    <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, height: '100%', position: 'relative' }}>
-                      <CardContent sx={{ p: 3 }}>
-                        {/* Price Chip - Top Right Corner */}
-                        {pkg.contractPricing && (
-                          <Chip
-                            label={`${(pkg.contractPricing.currency || 'EUR') === 'EUR' ? '€' : pkg.contractPricing.currency || '€'}${pkg.contractPricing.amount || 0} ${pkg.contractPricing.billingType === 'one_time' ? '(One Time)' : pkg.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
-                            size="small"
-                            sx={{
-                              position: 'absolute',
-                              top: 16,
-                              right: 16,
-                              fontWeight: 600,
-                              backgroundColor: '#0B7897',
-                              color: '#fff',
-                              '&:hover': {
-                                backgroundColor: '#063C5E'
-                              }
-                            }}
-                          />
-                        )}
-
-                        <Box sx={{ mb: 2 }}>
-                          {/* Package Name - Prominent - From Package table or Custom Package */}
-                          <Typography variant="h5" sx={{ fontWeight: 700, color: '#063C5E', mb: 1.5 }}>
-                            {pkg.customPackageId?.name || pkg.packageId?.name || pkg.name || 'Package'}
-                          </Typography>
-
-                          {/* Status and Type Chips - In a row */}
-                          <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                            {/* Status Chip - First */}
+                  {packages.length > 0 && packages.map((pkg) => (
+                    <Grid item xs={12} key={pkg._id || pkg.id}>
+                      <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3, height: '100%', position: 'relative' }}>
+                        <CardContent sx={{ p: 3 }}>
+                          {/* Price Chip - Top Right Corner */}
+                          {pkg.contractPricing && (
                             <Chip
-                              label={pkg.contract?.status || pkg.status || 'pending'}
+                              label={`${(pkg.contractPricing.currency || 'EUR') === 'EUR' ? '€' : pkg.contractPricing.currency || '€'}${pkg.contractPricing.amount || 0} ${pkg.contractPricing.billingType === 'one_time' ? '(One Time)' : pkg.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
                               size="small"
-                              color={
-                                (pkg.contract?.status || pkg.status) === 'active'
-                                  ? 'success'
-                                  : (pkg.contract?.status || pkg.status) === 'expired'
-                                    ? 'error'
-                                    : 'warning'
-                              }
-                              sx={{ fontWeight: 600 }}
+                              sx={{
+                                position: 'absolute',
+                                top: 16,
+                                right: 16,
+                                fontWeight: 600,
+                                backgroundColor: '#0B7897',
+                                color: '#fff',
+                                '&:hover': {
+                                  backgroundColor: '#063C5E'
+                                }
+                              }}
                             />
+                          )}
 
-                            {/* Package Type Chip - Second */}
-                            {(pkg.packageId?.type || pkg.packageId?.packageType || pkg.transaction?.packageType || pkg.packageType) && (
+                          <Box sx={{ mb: 2 }}>
+                            {/* Package Name - Prominent - From Package table or Custom Package */}
+                            <Typography variant="h5" sx={{ fontWeight: 700, color: '#063C5E', mb: 1.5 }}>
+                              {pkg.customPackageId?.name || pkg.packageId?.name || pkg.name || 'Package'}
+                            </Typography>
+
+                            {/* Status and Type Chips - In a row */}
+                            <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                              {/* Status Chip - First */}
                               <Chip
-                                label={(() => {
-                                  const packageType = pkg.packageId?.type ||
-                                    pkg.packageId?.packageType ||
-                                    pkg.transaction?.packageType ||
-                                    pkg.packageType || '';
-                                  // Capitalize first letter and replace underscores with spaces
-                                  return packageType
-                                    .split('_')
-                                    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                                    .join(' ');
-                                })()}
+                                label={pkg.contract?.status || pkg.status || 'pending'}
                                 size="small"
-                                variant="outlined"
-                                sx={{ fontWeight: 500 }}
+                                color={
+                                  (pkg.contract?.status || pkg.status) === 'active'
+                                    ? 'success'
+                                    : (pkg.contract?.status || pkg.status) === 'expired'
+                                      ? 'error'
+                                      : 'warning'
+                                }
+                                sx={{ fontWeight: 600 }}
                               />
-                            )}
 
-                            {/* {pkg.basePackageId && (
+                              {/* Package Type Chip - Second */}
+                              {(pkg.packageId?.type || pkg.packageId?.packageType || pkg.transaction?.packageType || pkg.packageType) && (
+                                <Chip
+                                  label={(() => {
+                                    const packageType = pkg.packageId?.type ||
+                                      pkg.packageId?.packageType ||
+                                      pkg.transaction?.packageType ||
+                                      pkg.packageType || '';
+                                    // Capitalize first letter and replace underscores with spaces
+                                    return packageType
+                                      .split('_')
+                                      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                                      .join(' ');
+                                  })()}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{ fontWeight: 500 }}
+                                />
+                              )}
+
+                              {/* {pkg.basePackageId && (
                               <Chip
                                 label="Custom"
                                 size="small"
                                 variant="outlined"
                               />
                             )} */}
-                          </Stack>
-                        </Box>
+                            </Stack>
+                          </Box>
 
-                        <Divider sx={{ my: 2 }} />
+                          <Divider sx={{ my: 2 }} />
 
-                        {/* Package Tabs */}
-                        <Box sx={{ width: '100%' }}>
-                          <Tabs
-                            value={packageTabs[pkg._id || pkg.id] || 0}
-                            onChange={(e, newValue) => {
-                              setPackageTabs({
-                                ...packageTabs,
-                                [pkg._id || pkg.id]: newValue
-                              });
-                            }}
-                            sx={{
-                              borderBottom: 1,
-                              borderColor: 'divider',
-                              mb: 2
-                            }}
-                          >
-                            <Tab label="Package Information" />
-                            <Tab label="Seats Information" />
-                          </Tabs>
+                          {/* Package Tabs */}
+                          <Box sx={{ width: '100%' }}>
+                            <Tabs
+                              value={packageTabs[pkg._id || pkg.id] || 0}
+                              onChange={(e, newValue) => {
+                                setPackageTabs({
+                                  ...packageTabs,
+                                  [pkg._id || pkg.id]: newValue
+                                });
+                              }}
+                              sx={{
+                                borderBottom: 1,
+                                borderColor: 'divider',
+                                mb: 2
+                              }}
+                            >
+                              <Tab label="Package Information" />
+                              <Tab label="Seats Information" />
+                            </Tabs>
 
-                          {/* Tab Panel 0: Package Information */}
-                          {(packageTabs[pkg._id || pkg.id] ?? 0) === 0 && (
-                            <Stack spacing={2}>
-                              {/* Unique Code - Show prominently at top */}
-                              {(pkg.uniqueCode || pkg.transaction?.uniqueCode) && (
-                                <Box sx={{
-                                  p: 2.5,
-                                  bgcolor: '#F5F8FB',
-                                  borderRadius: 2,
-                                  border: '2px solid #0B7897',
-                                  textAlign: 'center',
-                                  mb: 1,
-                                  position: 'relative'
-                                }}>
-                                  {/* Copy Button - Top Right Corner */}
-                                  <Chip
-                                    icon={<ContentCopyIcon sx={{ fontSize: '16px !important' }} />}
-                                    label="Copy"
-                                    onClick={() => {
-                                      const code = pkg.uniqueCode || pkg.transaction?.uniqueCode;
-                                      navigator.clipboard.writeText(code);
-                                      setSnackbar({
-                                        open: true,
-                                        message: 'Code copied to clipboard!',
-                                        severity: 'success'
-                                      });
-                                    }}
-                                    sx={{
-                                      position: 'absolute',
-                                      top: 8,
-                                      right: 8,
-                                      cursor: 'pointer',
-                                      backgroundColor: '#0B7897',
-                                      color: '#fff',
-                                      fontWeight: 600,
-                                      fontSize: '0.75rem',
-                                      height: '28px',
-                                      '&:hover': {
-                                        backgroundColor: '#063C5E',
-                                      },
-                                      '& .MuiChip-icon': {
+                            {/* Tab Panel 0: Package Information */}
+                            {(packageTabs[pkg._id || pkg.id] ?? 0) === 0 && (
+                              <Stack spacing={2}>
+                                {/* Unique Code - Show prominently at top */}
+                                {(pkg.uniqueCode || pkg.transaction?.uniqueCode) && (
+                                  <Box sx={{
+                                    p: 2.5,
+                                    bgcolor: '#F5F8FB',
+                                    borderRadius: 2,
+                                    border: '2px solid #0B7897',
+                                    textAlign: 'center',
+                                    mb: 1,
+                                    position: 'relative'
+                                  }}>
+                                    {/* Copy Button - Top Right Corner */}
+                                    <Chip
+                                      icon={<ContentCopyIcon sx={{ fontSize: '16px !important' }} />}
+                                      label="Copy"
+                                      onClick={() => {
+                                        const code = pkg.uniqueCode || pkg.transaction?.uniqueCode;
+                                        navigator.clipboard.writeText(code);
+                                        setSnackbar({
+                                          open: true,
+                                          message: 'Code copied to clipboard!',
+                                          severity: 'success'
+                                        });
+                                      }}
+                                      sx={{
+                                        position: 'absolute',
+                                        top: 8,
+                                        right: 8,
+                                        cursor: 'pointer',
+                                        backgroundColor: '#0B7897',
                                         color: '#fff',
-                                        marginLeft: '4px'
-                                      }
-                                    }}
-                                  />
-                                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
-                                    Game Play Unique Code
-                                  </Typography>
-                                  <Typography
-                                    variant="h5"
-                                    sx={{
-                                      fontWeight: 700,
-                                      color: '#063C5E',
-                                      fontFamily: 'monospace',
-                                      letterSpacing: 2,
-                                      fontSize: '1.5rem'
-                                    }}
-                                  >
-                                    {pkg.uniqueCode || pkg.transaction?.uniqueCode}
-                                  </Typography>
-                                </Box>
-                              )}
+                                        fontWeight: 600,
+                                        fontSize: '0.75rem',
+                                        height: '28px',
+                                        '&:hover': {
+                                          backgroundColor: '#063C5E',
+                                        },
+                                        '& .MuiChip-icon': {
+                                          color: '#fff',
+                                          marginLeft: '4px'
+                                        }
+                                      }}
+                                    />
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
+                                      Game Play Unique Code
+                                    </Typography>
+                                    <Typography
+                                      variant="h5"
+                                      sx={{
+                                        fontWeight: 700,
+                                        color: '#063C5E',
+                                        fontFamily: 'monospace',
+                                        letterSpacing: 2,
+                                        fontSize: '1.5rem'
+                                      }}
+                                    >
+                                      {pkg.uniqueCode || pkg.transaction?.uniqueCode}
+                                    </Typography>
+                                  </Box>
+                                )}
 
-                              {/* Expiry Date - Prioritize transaction's calculated expiry date */}
-                              {(pkg.transaction?.contractPeriod?.endDate || pkg.contract?.endDate || pkg.packageExpiryDate || pkg.packageId?.expiryDate) && (
-                                <Box sx={{
-                                  p: 2,
-                                  bgcolor: '#FFF7ED',
-                                  borderRadius: 2,
-                                  border: '1px solid #FED7AA'
-                                }}>
-                                  <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#063C5E', mb: 1 }}>
-                                    Package Expiry Date
-                                  </Typography>
-                                  <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                                    {new Date(
-                                      pkg.transaction?.contractPeriod?.endDate ||
-                                      pkg.contract?.endDate ||
-                                      pkg.packageExpiryDate ||
-                                      pkg.packageId?.expiryDate
-                                    ).toLocaleDateString('en-GB', {
-                                      day: 'numeric',
-                                      month: 'long',
-                                      year: 'numeric'
-                                    })}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    {(() => {
-                                      const endDate = new Date(
+                                {/* Expiry Date - Prioritize transaction's calculated expiry date */}
+                                {(pkg.transaction?.contractPeriod?.endDate || pkg.contract?.endDate || pkg.packageExpiryDate || pkg.packageId?.expiryDate) && (
+                                  <Box sx={{
+                                    p: 2,
+                                    bgcolor: '#FFF7ED',
+                                    borderRadius: 2,
+                                    border: '1px solid #FED7AA'
+                                  }}>
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#063C5E', mb: 1 }}>
+                                      Package Expiry Date
+                                    </Typography>
+                                    <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                      {new Date(
                                         pkg.transaction?.contractPeriod?.endDate ||
                                         pkg.contract?.endDate ||
                                         pkg.packageExpiryDate ||
                                         pkg.packageId?.expiryDate
-                                      );
-                                      const now = new Date();
-                                      const diffTime = endDate - now;
-                                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                                      if (diffDays < 0) return '⚠️ Expired';
-                                      if (diffDays === 0) return '⚠️ Expires today';
-                                      if (diffDays === 1) return '⚠️ Expires tomorrow';
-                                      if (diffDays <= 7) return `⚠️ ${diffDays} days remaining`;
-                                      return `✅ ${diffDays} days remaining`;
-                                    })()}
-                                  </Typography>
-                                </Box>
-                              )}
+                                      ).toLocaleDateString('en-GB', {
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric'
+                                      })}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {(() => {
+                                        const endDate = new Date(
+                                          pkg.transaction?.contractPeriod?.endDate ||
+                                          pkg.contract?.endDate ||
+                                          pkg.packageExpiryDate ||
+                                          pkg.packageId?.expiryDate
+                                        );
+                                        const now = new Date();
+                                        const diffTime = endDate - now;
+                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                        if (diffDays < 0) return '⚠️ Expired';
+                                        if (diffDays === 0) return '⚠️ Expires today';
+                                        if (diffDays === 1) return '⚠️ Expires tomorrow';
+                                        if (diffDays <= 7) return `⚠️ ${diffDays} days remaining`;
+                                        return `✅ ${diffDays} days remaining`;
+                                      })()}
+                                    </Typography>
+                                  </Box>
+                                )}
 
-                              {/* Contract Start Date */}
-                              {pkg.contract?.startDate && (
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Start Date
-                                  </Typography>
-                                  <Typography variant="body2" sx={{ mt: 0.5 }}>
-                                    {new Date(pkg.contract.startDate).toLocaleDateString('en-GB', {
-                                      day: 'numeric',
-                                      month: 'long',
-                                      year: 'numeric'
-                                    })}
-                                  </Typography>
-                                </Box>
-                              )}
+                                {/* Contract Start Date */}
+                                {pkg.contract?.startDate && (
+                                  <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Start Date
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ mt: 0.5 }}>
+                                      {new Date(pkg.contract.startDate).toLocaleDateString('en-GB', {
+                                        day: 'numeric',
+                                        month: 'long',
+                                        year: 'numeric'
+                                      })}
+                                    </Typography>
+                                  </Box>
+                                )}
 
-                              {/* Transaction Status */}
-                              {pkg.isTransaction && pkg.transaction && (
-                                <Box>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Payment Status
-                                  </Typography>
-                                  <Chip
-                                    label={pkg.transaction.status || 'pending'}
-                                    size="small"
-                                    color={
-                                      pkg.transaction.status === 'paid'
-                                        ? 'success'
-                                        : pkg.transaction.status === 'failed'
-                                          ? 'error'
-                                          : 'warning'
-                                    }
-                                    sx={{ mt: 0.5, fontWeight: 600, ml: 3 }}
-                                  />
-                                </Box>
-                              )}
-                            </Stack>
-                          )}
+                                {/* Transaction Status */}
+                                {pkg.isTransaction && pkg.transaction && (
+                                  <Box>
+                                    <Typography variant="caption" color="text.secondary">
+                                      Payment Status
+                                    </Typography>
+                                    <Chip
+                                      label={pkg.transaction.status || 'pending'}
+                                      size="small"
+                                      color={
+                                        pkg.transaction.status === 'paid'
+                                          ? 'success'
+                                          : pkg.transaction.status === 'failed'
+                                            ? 'error'
+                                            : 'warning'
+                                      }
+                                      sx={{ mt: 0.5, fontWeight: 600, ml: 3 }}
+                                    />
+                                  </Box>
+                                )}
+                              </Stack>
+                            )}
 
-                          {/* Tab Panel 1: Seats Information */}
-                          {(packageTabs[pkg._id || pkg.id] ?? 0) === 1 && (
-                            <Box>
-                              {(pkg.seatLimit || pkg.transaction?.maxSeats || pkg.maxSeats) ? (
-                                <>
-                                  {/* Seats Summary */}
-                                  <Grid container spacing={2} sx={{ mb: 3 }}>
-                                    <Grid item xs={4}>
-                                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                          Total Seats
-                                        </Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
-                                          {pkg.transaction?.maxSeats || pkg.seatLimit || 0}
-                                        </Typography>
-                                      </Box>
+                            {/* Tab Panel 1: Seats Information */}
+                            {(packageTabs[pkg._id || pkg.id] ?? 0) === 1 && (
+                              <Box>
+                                {(pkg.seatLimit || pkg.transaction?.maxSeats || pkg.maxSeats) ? (
+                                  <>
+                                    {/* Seats Summary */}
+                                    <Grid container spacing={2} sx={{ mb: 3 }}>
+                                      <Grid item xs={4}>
+                                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
+                                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                            Total Seats
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                            {pkg.transaction?.maxSeats || pkg.seatLimit || 0}
+                                          </Typography>
+                                        </Box>
+                                      </Grid>
+                                      <Grid item xs={4}>
+                                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
+                                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                            Used Seats
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#F59E0B' }}>
+                                            {pkg.transaction?.usedSeats || pkg.usedSeats || 0}
+                                          </Typography>
+                                        </Box>
+                                      </Grid>
+                                      <Grid item xs={4}>
+                                        <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
+                                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                                            Remaining
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#10B981' }}>
+                                            {(pkg.transaction?.maxSeats || pkg.seatLimit || 0) - (pkg.transaction?.usedSeats || pkg.usedSeats || 0)}
+                                          </Typography>
+                                        </Box>
+                                      </Grid>
                                     </Grid>
-                                    <Grid item xs={4}>
-                                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                          Used Seats
-                                        </Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#F59E0B' }}>
-                                          {pkg.transaction?.usedSeats || pkg.usedSeats || 0}
-                                        </Typography>
-                                      </Box>
-                                    </Grid>
-                                    <Grid item xs={4}>
-                                      <Box sx={{ textAlign: 'center', p: 2, bgcolor: '#F9FAFB', borderRadius: 2 }}>
-                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                                          Remaining
-                                        </Typography>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#10B981' }}>
-                                          {(pkg.transaction?.maxSeats || pkg.seatLimit || 0) - (pkg.transaction?.usedSeats || pkg.usedSeats || 0)}
-                                        </Typography>
-                                      </Box>
-                                    </Grid>
-                                  </Grid>
 
-                                  {/* Users Table */}
-                                  {pkg.transaction?.gamePlays && pkg.transaction.gamePlays.length > 0 ? (
-                                    <Box>
-                                      <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                                        Users
-                                      </Typography>
-                                      <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
-                                        <Table>
-                                          <TableHead>
-                                            <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
-                                              <TableCell><strong>User</strong></TableCell>
-                                              <TableCell><strong>Email</strong></TableCell>
-                                              <TableCell><strong>Played At</strong></TableCell>
-                                              <TableCell align="right"><strong>Actions</strong></TableCell>
-                                            </TableRow>
-                                          </TableHead>
-                                          <TableBody>
-                                            {pkg.transaction.gamePlays.map((gamePlay, index) => (
-                                              <TableRow key={index}>
-                                                <TableCell>
-                                                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                    {gamePlay.userId?.name || gamePlay.user?.name || 'Unknown User'}
-                                                  </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                  <Typography variant="body2" color="text.secondary">
-                                                    {gamePlay.userId?.email || gamePlay.user?.email || 'N/A'}
-                                                  </Typography>
-                                                </TableCell>
-                                                <TableCell>
-                                                  <Typography variant="body2" color="text.secondary">
-                                                    {gamePlay.playedAt ? new Date(gamePlay.playedAt).toLocaleString() : 'N/A'}
-                                                  </Typography>
-                                                </TableCell>
-                                                <TableCell align="right">
-                                                  <Button
-                                                    size="small"
-                                                    variant="outlined"
-                                                    startIcon={<VisibilityIcon />}
-                                                    onClick={() => {
-                                                      // Extract user ID properly - could be object or string
-                                                      let userId = null;
-                                                      if (gamePlay.userId) {
-                                                        if (typeof gamePlay.userId === 'object') {
-                                                          userId = gamePlay.userId._id || gamePlay.userId.id || gamePlay.userId;
-                                                        } else {
-                                                          userId = gamePlay.userId;
-                                                        }
-                                                      } else if (gamePlay.user) {
-                                                        if (typeof gamePlay.user === 'object') {
-                                                          userId = gamePlay.user._id || gamePlay.user.id || gamePlay.user;
-                                                        } else {
-                                                          userId = gamePlay.user;
-                                                        }
-                                                      }
-
-                                                      if (userId) {
-                                                        // Convert to string if it's an ObjectId
-                                                        const userIdString = typeof userId === 'object' ? (userId.toString ? userId.toString() : userId._id || userId.id) : userId.toString();
-                                                        // Pass user info for display in dialog
-                                                        handleViewGameProgress(userIdString, {
-                                                          name: gamePlay.userId?.name || gamePlay.user?.name,
-                                                          email: gamePlay.userId?.email || gamePlay.user?.email
-                                                        });
-                                                      }
-                                                    }}
-                                                  >
-                                                    View Progress
-                                                  </Button>
-                                                </TableCell>
+                                    {/* Users Table */}
+                                    {pkg.transaction?.gamePlays && pkg.transaction.gamePlays.length > 0 ? (
+                                      <Box>
+                                        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                                          Users
+                                        </Typography>
+                                        <TableContainer component={Paper} variant="outlined" sx={{ maxHeight: 400 }}>
+                                          <Table>
+                                            <TableHead>
+                                              <TableRow sx={{ backgroundColor: '#F5F8FB' }}>
+                                                <TableCell><strong>User</strong></TableCell>
+                                                <TableCell><strong>Email</strong></TableCell>
+                                                <TableCell><strong>Played At</strong></TableCell>
+                                                <TableCell align="right"><strong>Actions</strong></TableCell>
                                               </TableRow>
-                                            ))}
-                                          </TableBody>
-                                        </Table>
-                                      </TableContainer>
-                                    </Box>
-                                  ) : (
-                                    <Alert severity="info">
-                                      No seats have been used yet.
-                                    </Alert>
-                                  )}
-                                </>
-                              ) : (
-                                <Alert severity="info">
-                                  No seats information available for this package.
-                                </Alert>
-                              )}
-                            </Box>
-                          )}
-                        </Box>
+                                            </TableHead>
+                                            <TableBody>
+                                              {pkg.transaction.gamePlays.map((gamePlay, index) => (
+                                                <TableRow key={index}>
+                                                  <TableCell>
+                                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                      {gamePlay.userId?.name || gamePlay.user?.name || 'Unknown User'}
+                                                    </Typography>
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                      {gamePlay.userId?.email || gamePlay.user?.email || 'N/A'}
+                                                    </Typography>
+                                                  </TableCell>
+                                                  <TableCell>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                      {gamePlay.playedAt ? new Date(gamePlay.playedAt).toLocaleString() : 'N/A'}
+                                                    </Typography>
+                                                  </TableCell>
+                                                  <TableCell align="right">
+                                                    <Button
+                                                      size="small"
+                                                      variant="outlined"
+                                                      startIcon={<VisibilityIcon />}
+                                                      onClick={() => {
+                                                        // Extract user ID properly - could be object or string
+                                                        let userId = null;
+                                                        if (gamePlay.userId) {
+                                                          if (typeof gamePlay.userId === 'object') {
+                                                            userId = gamePlay.userId._id || gamePlay.userId.id || gamePlay.userId;
+                                                          } else {
+                                                            userId = gamePlay.userId;
+                                                          }
+                                                        } else if (gamePlay.user) {
+                                                          if (typeof gamePlay.user === 'object') {
+                                                            userId = gamePlay.user._id || gamePlay.user.id || gamePlay.user;
+                                                          } else {
+                                                            userId = gamePlay.user;
+                                                          }
+                                                        }
 
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
+                                                        if (userId) {
+                                                          // Convert to string if it's an ObjectId
+                                                          const userIdString = typeof userId === 'object' ? (userId.toString ? userId.toString() : userId._id || userId.id) : userId.toString();
+                                                          // Pass user info for display in dialog
+                                                          handleViewGameProgress(userIdString, {
+                                                            name: gamePlay.userId?.name || gamePlay.user?.name,
+                                                            email: gamePlay.userId?.email || gamePlay.user?.email
+                                                          });
+                                                        }
+                                                      }}
+                                                    >
+                                                      View Progress
+                                                    </Button>
+                                                  </TableCell>
+                                                </TableRow>
+                                              ))}
+                                            </TableBody>
+                                          </Table>
+                                        </TableContainer>
+                                      </Box>
+                                    ) : (
+                                      <Alert severity="info">
+                                        No seats have been used yet.
+                                      </Alert>
+                                    )}
+                                  </>
+                                ) : (
+                                  <Alert severity="info">
+                                    No seats information available for this package.
+                                  </Alert>
+                                )}
+                              </Box>
+                            )}
+                          </Box>
+
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
                 </>
               ) : (
                 <Grid item xs={12}>
@@ -3800,241 +3800,241 @@ console.log("customPackageRequests", customPackageRequests)
                       });
                       return !isPurchased; // Only show if NOT purchased
                     }).length > 0 && (
-                      <Box sx={{ mt: 4 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                          Created Custom Packages (Available for Purchase)
-                        </Typography>
-                        <Grid container spacing={2}>
-                          {customPackageRequests
-                            .filter(req => {
-                              if (!req.customPackageId) return false;
-                              // Check if this custom package has been purchased (has transaction)
-                              const cpId = req.customPackageId._id || req.customPackageId.id || req.customPackageId;
-                              const isPurchased = packages.some(pkg => {
-                                const pkgCustomId = pkg.customPackageId?._id || pkg.customPackageId?.id || pkg.customPackageId;
-                                return pkgCustomId && cpId && pkgCustomId.toString() === cpId.toString();
-                              });
-                              return !isPurchased; // Only show if NOT purchased
-                            })
-                            .map((request) => {
-                              const cp = request.customPackageId;
-                              // Debug: Log product data
-                              if (cp && cp.productIds) {
-                                console.log('📦 Custom Package Products:', {
-                                  packageId: cp._id,
-                                  packageName: cp.name,
-                                  productIds: cp.productIds,
-                                  productCount: cp.productIds.length,
-                                  firstProduct: cp.productIds[0]
+                        <Box sx={{ mt: 4 }}>
+                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                            Created Custom Packages (Available for Purchase)
+                          </Typography>
+                          <Grid container spacing={2}>
+                            {customPackageRequests
+                              .filter(req => {
+                                if (!req.customPackageId) return false;
+                                // Check if this custom package has been purchased (has transaction)
+                                const cpId = req.customPackageId._id || req.customPackageId.id || req.customPackageId;
+                                const isPurchased = packages.some(pkg => {
+                                  const pkgCustomId = pkg.customPackageId?._id || pkg.customPackageId?.id || pkg.customPackageId;
+                                  return pkgCustomId && cpId && pkgCustomId.toString() === cpId.toString();
                                 });
-                              }
-                              return (
-                                <Grid item xs={12} md={6} lg={4} key={cp._id || cp.id}>
-                                  <Card sx={{ 
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
-                                    borderRadius: 3, 
-                                    height: '100%',
-                                    border: '2px solid #4CAF50'
-                                  }}>
-                                    <CardContent sx={{ p: 3 }}>
-                                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-                                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
-                                          {cp.name || 'Custom Package'}
-                                        </Typography>
-                                        <Chip
-                                          label={cp.status || 'active'}
-                                          size="small"
-                                          color="success"
-                                          sx={{ fontWeight: 600 }}
-                                        />
-                                      </Box>
-
-                                      {cp.description && (
-                                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                          {cp.description}
-                                        </Typography>
-                                      )}
-
-                                      <Divider sx={{ my: 2 }} />
-
-                                      <Stack spacing={1.5}>
-                                        <Box>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Package Price
+                                return !isPurchased; // Only show if NOT purchased
+                              })
+                              .map((request) => {
+                                const cp = request.customPackageId;
+                                // Debug: Log product data
+                                if (cp && cp.productIds) {
+                                  console.log('📦 Custom Package Products:', {
+                                    packageId: cp._id,
+                                    packageName: cp.name,
+                                    productIds: cp.productIds,
+                                    productCount: cp.productIds.length,
+                                    firstProduct: cp.productIds[0]
+                                  });
+                                }
+                                return (
+                                  <Grid item xs={12} md={6} lg={4} key={cp._id || cp.id}>
+                                    <Card sx={{
+                                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                                      borderRadius: 3,
+                                      height: '100%',
+                                      border: '2px solid #4CAF50'
+                                    }}>
+                                      <CardContent sx={{ p: 3 }}>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                            {cp.name || 'Custom Package'}
                                           </Typography>
-                                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                            {cp.contractPricing?.currency === 'EUR' ? '€' : cp.contractPricing?.currency || '€'}
-                                            {cp.contractPricing?.amount || 0} {' '}
-                                            {cp.contractPricing?.billingType === 'one_time' ? '(One Time)' :
-                                             cp.contractPricing?.billingType === 'subscription' ? '(Subscription)' :
-                                             '(Per Seat)'}
-                                          </Typography>
+                                          <Chip
+                                            label={cp.status || 'active'}
+                                            size="small"
+                                            color="success"
+                                            sx={{ fontWeight: 600 }}
+                                          />
                                         </Box>
 
-                                        <Box>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Seat Limit
+                                        {cp.description && (
+                                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                                            {cp.description}
                                           </Typography>
-                                          <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                            {cp.seatLimit || 'N/A'}
-                                          </Typography>
-                                        </Box>
-
-                                        {cp.contract?.startDate && (
-                                          <Box>
-                                            <Typography variant="caption" color="text.secondary">
-                                              Contract Start Date
-                                            </Typography>
-                                            <Typography variant="body2">
-                                              {new Date(cp.contract.startDate).toLocaleDateString()}
-                                            </Typography>
-                                          </Box>
                                         )}
 
-                                        {cp.contract?.endDate && (
+                                        <Divider sx={{ my: 2 }} />
+
+                                        <Stack spacing={1.5}>
                                           <Box>
                                             <Typography variant="caption" color="text.secondary">
-                                              Contract End Date
+                                              Package Price
                                             </Typography>
-                                            <Typography variant="body2">
-                                              {new Date(cp.contract.endDate).toLocaleDateString()}
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                              {cp.contractPricing?.currency === 'EUR' ? '€' : cp.contractPricing?.currency || '€'}
+                                              {cp.contractPricing?.amount || 0} {' '}
+                                              {cp.contractPricing?.billingType === 'one_time' ? '(One Time)' :
+                                                cp.contractPricing?.billingType === 'subscription' ? '(Subscription)' :
+                                                  '(Per Seat)'}
                                             </Typography>
                                           </Box>
-                                        )}
 
-                                        {cp.productIds && cp.productIds.length > 0 && (
                                           <Box>
-                                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                                              Products ({cp.productIds.length})
+                                            <Typography variant="caption" color="text.secondary">
+                                              Seat Limit
                                             </Typography>
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                              {cp.productIds.map((product, idx) => (
-                                                <Card 
-                                                  key={product._id || idx}
-                                                  sx={{ 
-                                                    border: '1px solid #e0e0e0',
-                                                    borderRadius: 2,
-                                                    p: 1,
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 1.5,
-                                                    cursor: 'pointer',
-                                                    '&:hover': {
-                                                      boxShadow: 2,
-                                                      borderColor: '#0B7897'
-                                                    }
-                                                  }}
-                                                  onClick={() => {
-                                                    setSelectedProduct(product);
-                                                    setProductDetailsDialogOpen(true);
-                                                  }}
-                                                >
-                                                  {/* Product Image */}
-                                                  {product.imageUrl ? (
-                                                    <Box
-                                                      component="img"
-                                                      src={product.imageUrl}
-                                                      alt={product.name || 'Product'}
-                                                      sx={{
-                                                        width: 60,
-                                                        height: 60,
-                                                        objectFit: 'cover',
-                                                        borderRadius: 1,
-                                                        flexShrink: 0
-                                                      }}
-                                                    />
-                                                  ) : (
-                                                    <Box
-                                                      sx={{
-                                                        width: 60,
-                                                        height: 60,
-                                                        bgcolor: '#e0e0e0',
-                                                        borderRadius: 1,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        flexShrink: 0
-                                                      }}
-                                                    >
-                                                      <BusinessIcon sx={{ color: '#999' }} />
-                                                    </Box>
-                                                  )}
-                                                  
-                                                  {/* Product Info */}
-                                                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                                                    <Typography 
-                                                      variant="body2" 
-                                                      sx={{ 
-                                                        fontWeight: 600,
-                                                        color: '#063C5E',
-                                                        mb: 0.5,
-                                                        overflow: 'hidden',
-                                                        textOverflow: 'ellipsis',
-                                                        whiteSpace: 'nowrap'
-                                                      }}
-                                                    >
-                                                      {product.name || 'Product'}
-                                                    </Typography>
-                                                    {product.price !== undefined && (
-                                                      <Typography variant="caption" color="text.secondary">
-                                                        €{product.price || 0}
-                                                      </Typography>
-                                                    )}
-                                                  </Box>
-                                                  
-                                                  {/* View Details Icon Button */}
-                                                  <IconButton
-                                                    size="small"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
+                                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                              {cp.seatLimit || 'N/A'}
+                                            </Typography>
+                                          </Box>
+
+                                          {cp.contract?.startDate && (
+                                            <Box>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Contract Start Date
+                                              </Typography>
+                                              <Typography variant="body2">
+                                                {new Date(cp.contract.startDate).toLocaleDateString()}
+                                              </Typography>
+                                            </Box>
+                                          )}
+
+                                          {cp.contract?.endDate && (
+                                            <Box>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Contract End Date
+                                              </Typography>
+                                              <Typography variant="body2">
+                                                {new Date(cp.contract.endDate).toLocaleDateString()}
+                                              </Typography>
+                                            </Box>
+                                          )}
+
+                                          {cp.productIds && cp.productIds.length > 0 && (
+                                            <Box>
+                                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
+                                                Products ({cp.productIds.length})
+                                              </Typography>
+                                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                {cp.productIds.map((product, idx) => (
+                                                  <Card
+                                                    key={product._id || idx}
+                                                    sx={{
+                                                      border: '1px solid #e0e0e0',
+                                                      borderRadius: 2,
+                                                      p: 1,
+                                                      display: 'flex',
+                                                      alignItems: 'center',
+                                                      gap: 1.5,
+                                                      cursor: 'pointer',
+                                                      '&:hover': {
+                                                        boxShadow: 2,
+                                                        borderColor: '#0B7897'
+                                                      }
+                                                    }}
+                                                    onClick={() => {
                                                       setSelectedProduct(product);
                                                       setProductDetailsDialogOpen(true);
                                                     }}
-                                                    sx={{
-                                                      color: '#0B7897',
-                                                      flexShrink: 0,
-                                                      '&:hover': {
-                                                        bgcolor: '#063C5E',
-                                                        color: '#fff'
-                                                      }
-                                                    }}
                                                   >
-                                                    <VisibilityIcon fontSize="small" />
-                                                  </IconButton>
-                                                </Card>
-                                              ))}
+                                                    {/* Product Image */}
+                                                    {product.imageUrl ? (
+                                                      <Box
+                                                        component="img"
+                                                        src={product.imageUrl}
+                                                        alt={product.name || 'Product'}
+                                                        sx={{
+                                                          width: 60,
+                                                          height: 60,
+                                                          objectFit: 'cover',
+                                                          borderRadius: 1,
+                                                          flexShrink: 0
+                                                        }}
+                                                      />
+                                                    ) : (
+                                                      <Box
+                                                        sx={{
+                                                          width: 60,
+                                                          height: 60,
+                                                          bgcolor: '#e0e0e0',
+                                                          borderRadius: 1,
+                                                          display: 'flex',
+                                                          alignItems: 'center',
+                                                          justifyContent: 'center',
+                                                          flexShrink: 0
+                                                        }}
+                                                      >
+                                                        <BusinessIcon sx={{ color: '#999' }} />
+                                                      </Box>
+                                                    )}
+
+                                                    {/* Product Info */}
+                                                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                                                      <Typography
+                                                        variant="body2"
+                                                        sx={{
+                                                          fontWeight: 600,
+                                                          color: '#063C5E',
+                                                          mb: 0.5,
+                                                          overflow: 'hidden',
+                                                          textOverflow: 'ellipsis',
+                                                          whiteSpace: 'nowrap'
+                                                        }}
+                                                      >
+                                                        {product.name || 'Product'}
+                                                      </Typography>
+                                                      {product.price !== undefined && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                          €{product.price || 0}
+                                                        </Typography>
+                                                      )}
+                                                    </Box>
+
+                                                    {/* View Details Icon Button */}
+                                                    <IconButton
+                                                      size="small"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedProduct(product);
+                                                        setProductDetailsDialogOpen(true);
+                                                      }}
+                                                      sx={{
+                                                        color: '#0B7897',
+                                                        flexShrink: 0,
+                                                        '&:hover': {
+                                                          bgcolor: '#063C5E',
+                                                          color: '#fff'
+                                                        }
+                                                      }}
+                                                    >
+                                                      <VisibilityIcon fontSize="small" />
+                                                    </IconButton>
+                                                  </Card>
+                                                ))}
+                                              </Box>
                                             </Box>
-                                          </Box>
-                                        )}
-                                      </Stack>
+                                          )}
+                                        </Stack>
 
-                                      <Divider sx={{ my: 2 }} />
+                                        <Divider sx={{ my: 2 }} />
 
-                                      {/* Buy Now Button */}
-                                      <Button
-                                        fullWidth
-                                        variant="contained"
-                                        onClick={() => handleBuyCustomPackage(cp)}
-                                        sx={{
-                                          bgcolor: '#0B7897',
-                                          color: '#fff',
-                                          fontWeight: 600,
-                                          py: 1.5,
-                                          '&:hover': {
-                                            bgcolor: '#063C5E'
-                                          }
-                                        }}
-                                      >
-                                        Buy Now
-                                      </Button>
-                                    </CardContent>
-                                  </Card>
-                                </Grid>
-                              );
-                            })}
-                        </Grid>
-                      </Box>
-                    )}
+                                        {/* Buy Now Button */}
+                                        <Button
+                                          fullWidth
+                                          variant="contained"
+                                          onClick={() => handleBuyCustomPackage(cp)}
+                                          sx={{
+                                            bgcolor: '#0B7897',
+                                            color: '#fff',
+                                            fontWeight: 600,
+                                            py: 1.5,
+                                            '&:hover': {
+                                              bgcolor: '#063C5E'
+                                            }
+                                          }}
+                                        >
+                                          Buy Now
+                                        </Button>
+                                      </CardContent>
+                                    </Card>
+                                  </Grid>
+                                );
+                              })}
+                          </Grid>
+                        </Box>
+                      )}
                   </CardContent>
                 </Card>
               </Grid>
