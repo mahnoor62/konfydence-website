@@ -117,7 +117,7 @@ export default function DashboardPage() {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [hasProgress, hasTransactions]);
+  }, []);
 
   const fetchDashboardData = async () => {
     try {

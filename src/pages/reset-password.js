@@ -15,8 +15,6 @@ import {
   Stack,
   LinearProgress,
 } from '@mui/material';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import axios from 'axios';
 
 // Password strength checker
@@ -62,12 +60,16 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, label: '', color: '#e0e0e0', requirements: {} });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!token) {
-      setError('Invalid reset token. Please request a new password reset.');
+    if (router.isReady) {
+      if (!token) {
+        setError('Invalid reset token. Please request a new password reset.');
+      }
+      setLoading(false);
     }
-  }, [token]);
+  }, [router.isReady, token]);
 
   const handlePasswordChange = (e) => {
     const password = e.target.value;
@@ -119,7 +121,6 @@ export default function ResetPasswordPage() {
 
   return (
     <>
-      <Header />
       <Box
         component="main"
         sx={{
@@ -153,7 +154,13 @@ export default function ResetPasswordPage() {
                 Enter your new password below.
               </Typography>
 
-              {success ? (
+              {loading ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    Loading...
+                  </Typography>
+                </Box>
+              ) : success ? (
                 <Alert severity="success" sx={{ mb: 3 }}>
                   Password reset successfully! Redirecting to login page...
                 </Alert>
@@ -273,7 +280,6 @@ export default function ResetPasswordPage() {
           </Card>
         </Container>
       </Box>
-      <Footer />
     </>
   );
 }

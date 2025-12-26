@@ -26,6 +26,7 @@ const navItems = [
   { label: 'Products', href: '/products' },
   { label: 'CoMaSy', href: '/comasy' },
   { label: 'Education', href: '/education' },
+  { label: 'Resource Hub', href: '/resources' },
   { label: 'Shop', href: '/shop' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
@@ -116,9 +117,9 @@ export default function Header() {
           color: scrolled ? 'text.primary' : 'white',
         }}
       >
-        <Container maxWidth="xl">
-          <Toolbar sx={{ py: 1, minHeight: { xs: 64, md: 88 } }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2 }}>
+        <Container maxWidth={false} sx={{ px: { xs: 3, md: 8 } }}>
+          <Toolbar sx={{ py: 1, minHeight: { xs: 64, md: 88 }, px: '0 !important' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: { xs: 1, md: 1.5 } }}>
               <Box
                 component={Link}
                 href="/"
@@ -127,14 +128,14 @@ export default function Header() {
                   color: 'inherit',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 1.2,
-                  flex: { xs: '1 1 auto', md: '0 0 220px' },
+                  gap: 1,
+                  flex: { xs: '1 1 auto', md: '0 0 auto' },
                 }}
               >
                 <Box
                   sx={{
-                    width: 48,
-                    height: 48,
+                    width: { xs: 40, md: 44 },
+                    height: { xs: 40, md: 44 },
                     borderRadius: '50%',
                     background: 'linear-gradient(135deg, #00c4c7, #1c6edb)',
                     display: 'grid',
@@ -142,7 +143,7 @@ export default function Header() {
                     color: 'white',
                     fontWeight: 700,
                     fontFamily: 'var(--font-poppins)',
-                    fontSize: '1.3rem',
+                    fontSize: { xs: '1.1rem', md: '1.2rem' },
                   }}
                 >
                   K
@@ -151,7 +152,7 @@ export default function Header() {
                   <Box
                     component="span"
                     sx={{
-                      fontSize: '1.55rem',
+                      fontSize: { xs: '1.3rem', md: '1.4rem' },
                       fontWeight: 700,
                       fontFamily: 'var(--font-poppins)',
                       letterSpacing: '-0.02em',
@@ -159,7 +160,7 @@ export default function Header() {
                   >
                     Konfydence
                   </Box>
-                  <Box component="span" sx={{ display: 'block', fontSize: '0.82rem', opacity: 0.7 }}>
+                  <Box component="span" sx={{ display: 'block', fontSize: { xs: '0.7rem', md: '0.75rem' }, opacity: 0.7 }}>
                     Safer Digital Decisions
                   </Box>
                 </Box>
@@ -170,7 +171,8 @@ export default function Header() {
                   flex: '1 1 auto',
                   display: { xs: 'none', md: 'flex' },
                   justifyContent: 'center',
-                  gap: 1,
+                  gap: 3,
+                  flexWrap: 'nowrap',
                 }}
               >
                 {navItems.map((item) => {
@@ -185,10 +187,13 @@ export default function Header() {
                         color: isActive ? '#0E4D68' : 'inherit',
                         backgroundColor: isActive ? 'rgba(255,255,255,0.9)' : 'transparent',
                         textTransform: 'none',
-                        fontSize: '0.95rem',
+                        fontSize: '0.875rem',
                         fontWeight: isActive ? 600 : 500,
                         borderRadius: 999,
-                        px: 2.5,
+                        px: 1.5,
+                        py: 0.75,
+                        minWidth: 'auto',
+                        whiteSpace: 'nowrap',
                         transition: 'all 0.2s ease',
                         '&:hover': {
                           backgroundColor: 'rgba(255,255,255,0.2)',
@@ -203,10 +208,10 @@ export default function Header() {
 
               <Box
                 sx={{
-                  // flex: { xs: '0 0 auto', md: '0 0 220px' },
                   display: { xs: 'none', md: 'flex' },
                   justifyContent: 'flex-end',
                   gap: 1,
+                  flexShrink: 0,
                 }}
               >
                 {!authLoading && user ? (
