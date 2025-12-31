@@ -6,6 +6,8 @@ export default function TermsPage() {
   return (
     <>
       <Header />
+
+      
       <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '80vh' }}>
         <Container maxWidth="md" sx={{ py: 6 }}>
           <Typography variant="h2" gutterBottom>

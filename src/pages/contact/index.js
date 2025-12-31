@@ -532,7 +532,6 @@ export default function ContactPage() {
             We typically reply within 24 hours on business days.
           </Typography> */}
         </Container>
-        
       </Box>
       <Footer />
     </>
