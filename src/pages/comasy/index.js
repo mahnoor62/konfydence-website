@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import {
   Container,
   Typography,
@@ -10,16 +11,16 @@ import {
   Card,
   CardContent,
   TextField,
-  Snackbar,
   Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Stack,
   Paper,
 } from '@mui/material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
+import 'aos/dist/aos.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
@@ -30,13 +31,13 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
-console.log('🔗 CoMaSy Page API URL:', API_URL);
 
 export default function CoMaSyPage() {
   const [formData, setFormData] = useState({
     name: '',
     company: '',
     email: '',
+    teamSize: '',
     message: '',
   });
   const [errors, setErrors] = useState({
@@ -46,6 +47,23 @@ export default function CoMaSyPage() {
   });
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    // AOS is already initialized globally via AOSProvider
+    // Just refresh it when component mounts to detect new elements
+    if (typeof window !== 'undefined') {
+      const timer = setTimeout(() => {
+        import('aos').then((AOS) => {
+          // Refresh AOS to detect all elements on the page
+          AOS.default.refresh();
+        });
+      }, 200);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   const validateEmail = (email) => {
     const emailRegex = /.+@.+\..+/;
@@ -85,7 +103,6 @@ export default function CoMaSyPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate form before submission
     if (!validateForm()) {
       setSnackbar({ open: true, message: 'Please fill in all required fields correctly.', severity: 'error' });
       return;
@@ -93,35 +110,26 @@ export default function CoMaSyPage() {
 
     setLoading(true);
     try {
-      const url = `${API_URL}/leads/b2b`;
-      // Send exact payload as required: { name, email, company, message, lead_type: "b2b" }
+      const url = `${API_URL}/contact`;
       const payload = {
         name: formData.name.trim(),
         email: formData.email.trim(),
         company: formData.company.trim(),
-        message: formData.message.trim(),
-        lead_type: 'b2b',
+        topic: 'comasy',
+        teamSize: formData.teamSize.trim() || '',
+        message: formData.message.trim() || '',
       };
-      console.log('📡 API: POST', url, payload);
       await axios.post(url, payload, {
         headers: {
           'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
         },
-        params: { _t: Date.now() },
       });
       
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
-      setFormData({ name: '', company: '', email: '', message: '' });
+      setFormData({ name: '', company: '', email: '', teamSize: '', message: '' });
       setErrors({ name: '', company: '', email: '' });
     } catch (error) {
-      console.error('❌ Error submitting B2B lead:', {
-        url: `${API_URL}/leads/b2b`,
-        error: error.response?.data || error.message,
-        status: error.response?.status,
-      });
+      console.error('Error submitting form:', error);
       setSnackbar({ open: true, message: 'Error submitting form. Please try again.', severity: 'error' });
     } finally {
       setLoading(false);
@@ -130,83 +138,95 @@ export default function CoMaSyPage() {
 
   return (
     <>
+      <Head>
+        <title>Konfydence Comasy</title>
+      </Head>
       <Header />
-      <Box component="main" sx={{  minHeight: '100vh' }}>
+      <Box component="main" sx={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+        {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #0A4D68 0%, #088395 100%)',
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
             color: 'white',
-            py: 20,
+            pt: { xs: 12, md: 16 },
+            pb: { xs: 8, md: 12 },
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Container maxWidth="lg">
-            <Typography variant="h2" textAlign="center" gutterBottom>
-              CoMaSy - Compliance Mastery System
-            </Typography>
-            <Typography variant="h6" textAlign="center" sx={{ opacity: 0.9 }}>
-              Transform compliance training into engaging, behavior-changing simulations
-            </Typography>
-          </Container>
-        </Box>
-
-        <Container maxWidth="lg" sx={{ py: 8 }}>
-          {/* Description below hero */}
-          <Box sx={{ mb: 6, textAlign: 'center' }}>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                fontSize: { xs: '1rem', md: '1.2rem' },
-                color: '#063C5E',
-                maxWidth: '900px',
-                mx: 'auto',
-                lineHeight: 1.8,
-              }}
-            >
-              CoMaSy is a simulation-based compliance system that uses real-world scenarios to train employees and generate audit-ready evidence of human risk awareness.
-            </Typography>
-          </Box>
-          <Grid container spacing={6}>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
+          <Container maxWidth="lg" data-aos="zoom-in" data-aos-duration="800">
+            <Grid container spacing={6} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Typography
+                  variant="h2"
+                  sx={{
+                    // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                    fontWeight: 700,
+                    mb: 3,
+                    lineHeight: 1.2,
+                    color: 'white',
+                  }}
+                >
+                  Compliance Made Simple (CoMaSi)
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    fontWeight: 600,
+                    mb: 3,
+                    opacity: 0.95,
+                    color: 'white',
+                  }}
+                >
+                  Go Beyond Check-Box Training. Build Habits That Stop Scams Under Real Pressure.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 4,
+                    opacity: 0.9,
+                    lineHeight: 1.8,
+                    color: 'white',
+                  }}
+                >
+                  Short, engaging simulations train your team to pause when scammers use hurry, authority, or emotions—proving reduced risk with auditor-ready reports. NIS2-ready and effective.
+                </Typography>
+                <Button
+                  component="a"
+                  href="#demo-form"
+                  variant="contained"
+                  size="large"
+                  sx={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#063C5E',
+                    px: { xs: 4, md: 6 },
+                    py: { xs: 1.5, md: 2 },
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    fontWeight: 600,
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    '&:hover': {
+                      backgroundColor: '#F5F5F5',
+                      transform: 'translateX(5px)',
+                    },
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  Request a Free Demo →
+                </Button>
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <Box
                   sx={{
-                    width: '100%',
-                    maxWidth: { xs: '100%', md: '380px' },
-                    height: { xs: '280px', md: '320px' },
-                    backgroundColor: '#063C5E',
                     borderRadius: 3,
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                     position: 'relative',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    p: 2.5,
-                    gap: 1.5,
                     animation: 'floatCard 4s ease-in-out infinite',
                     transformOrigin: 'center',
                     filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                    overflow: 'hidden',
-                    '&::after': {
-                      content: '""',
-                      position: 'absolute',
-                      inset: 0,
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(11,120,151,0.2))',
-                    },
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: '-50%',
-                      left: '-50%',
-                      width: '200%',
-                      height: '200%',
-                      background: 'radial-gradient(circle, rgba(255,255,255,0.45), transparent 60%)',
-                      animation: 'pulseGlow 6s ease-in-out infinite',
-                    },
                     '@keyframes floatCard': {
                       '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
                       '50%': {
@@ -215,468 +235,1100 @@ export default function CoMaSyPage() {
                       },
                       '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
                     },
-                    '@keyframes pulseGlow': {
-                      '0%': { transform: 'translate(-20%, -20%) scale(1)' },
-                      '50%': { transform: 'translate(10%, 10%) scale(1.1)', opacity: 0.7 },
-                      '100%': { transform: 'translate(-20%, -20%) scale(1)' },
-                    },
                   }}
                 >
-                  {/* Dashboard Preview Mockup */}
-                  <Box
-                    sx={{
-                      flex: 1,
-                      backgroundColor: '#0B7897',
-                      borderRadius: 2,
-                      p: 2,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 1,
+                  <Swiper
+                    modules={[Autoplay, Pagination, Navigation]}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    autoplay={{
+                      delay: 4000,
+                      disableOnInteraction: false,
+                    }}
+                    pagination={{ clickable: true }}
+                    navigation
+                    style={{
+                      '--swiper-pagination-color': '#FFFFFF',
+                      '--swiper-navigation-color': '#FFFFFF',
                     }}
                   >
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Box sx={{ width: '60%', height: '8px', backgroundColor: 'rgba(255,255,255,0.3)', borderRadius: 1 }} />
-                      <Box sx={{ width: '30%', height: '8px', backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 1 }} />
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      {[1, 2, 3, 4].map((i) => (
-                        <Box
-                          key={i}
-                          sx={{
-                            width: { xs: '45%', md: '48%' },
-                            height: '60px',
-                            backgroundColor: 'rgba(255,255,255,0.15)',
-                            borderRadius: 1.5,
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                  {/* Cards Preview */}
-                  <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
-                    {[1, 2, 3].map((i) => (
+                    <SwiperSlide>
                       <Box
-                        key={i}
+                        component="img"
+                        src="/images/comasy1.jpeg"
+                        alt="CoMaSi Platform Training"
                         sx={{
-                          width: '60px',
-                          height: '80px',
-                          backgroundColor: '#00A4E8',
-                          borderRadius: 2,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
                         }}
                       />
-                    ))}
-                  </Box>
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/comasy2.png"
+                        alt="CoMaSi Dashboard"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                        onError={(e) => {
+                          if (e.target.src.includes('.png')) {
+                            e.target.src = '/images/comasy2.jpeg';
+                          }
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/comasy3.png"
+                        alt="CoMaSi Simulations"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                        onError={(e) => {
+                          if (e.target.src.includes('.png')) {
+                            e.target.src = '/images/comasy3.jpeg';
+                          }
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/comasy4.jpeg"
+                        alt="CoMaSi Compliance Reports"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                  </Swiper>
                 </Box>
-              </Box>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={6}>
-              <Typography variant="h4" gutterBottom>
-                Benefits
-              </Typography>
-              <Box component="ul" sx={{ listStyle: 'none', pl: 0, mb: 4 }}>
-                <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                  <Typography variant="body1">✓ Aligned with NIS2 and GDPR awareness requirements</Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                  <Typography variant="body1">✓ Behavior-based metrics and reporting</Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                  <Typography variant="body1">✓ Custom content for finance, HR, and risk teams</Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                  <Typography variant="body1">✓ Engaging simulation-based learning</Typography>
-                </Box>
-              </Box>
-            </Grid>
-          </Grid>
+          </Container>
+        </Box>
 
-          {/* Why Companies Use CoMaSy - Feature Comparison Table */}
-          <Box sx={{ mt: 10, mb: 8 }}>
-            <Typography 
-              variant="h3" 
-              textAlign="center" 
-              gutterBottom
+        {/* Why Most Training Fails Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }} data-aos="zoom-in" data-aos-duration="800">
+          <Container maxWidth="lg">
+            <Typography
+              variant="h3"
               sx={{
-                fontSize: { xs: '1.75rem', md: '2.5rem' },
-                fontWeight: 700,
-                color: '#063C5E',
+                // fontSize: { xs: '1.5rem', md: '1.75rem' },
+                fontWeight: 600,
                 mb: 4,
+                textAlign: 'center',
+                color: '#0B7897',
+                // textTransform: 'uppercase',
+                letterSpacing: 1,
               }}
             >
-              Why Companies Use CoMaSy
+              Why Most Training Fails (Educational Section – Build Pain & Authority)
             </Typography>
-            <TableContainer 
-              component={Paper}
-              sx={{
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                borderRadius: 3,
-              }}
-            >
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#063C5E' }}>
-                    <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' , pl:5}}>
-                      Staff Training
-                    </TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>
-                      Incident Response
-                    </TableCell>
-                    <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: '1.1rem' }}>
-                      Custom Packages
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>
-                      <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Interactive simulation-based learning
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Designed to support NIS2 and GDPR compliance efforts
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Behavior-based metrics and reporting
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Engaging content that increases retention
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Real-time threat scenario simulations
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Rapid response training protocols
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Post-incident analysis and learning
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Team coordination exercises
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Tailored content for finance teams
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Custom scenarios for HR departments
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ mb: 1.5, display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Industry-specific risk team training
-                          </Typography>
-                        </Box>
-                        <Box component="li" sx={{ display: 'flex', alignItems: 'start' }}>
-                          <Typography variant="body1" sx={{ fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                            • Flexible pricing and deployment options
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-
-          {/* Testimonial Block */}
-          <Box sx={{ mb: 8 }}>
-            <Card
-              sx={{
-                maxWidth: 800,
-                mx: 'auto',
-                p: 4,
-                backgroundColor: '#E9F4FF',
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              }}
-            >
-              <CardContent>
-                <Box sx={{ display: 'flex', gap: 0.5, mb: 2, justifyContent: 'center' }}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Box
-                      key={star}
-                      component="span"
-                      sx={{
-                        color: '#FFB800',
-                        fontSize: '1.5rem',
-                      }}
-                    >
-                      ★
-                    </Box>
-                  ))}
-                </Box>
+            <Grid container spacing={6} alignItems="center">
+              <Grid item xs={12} md={6}>
                 <Typography
-                  variant="h5"
+                  variant="h3"
                   sx={{
-                    fontStyle: 'italic',
-                    textAlign: 'center',
+                    // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                    fontWeight: 700,
                     mb: 3,
                     color: '#063C5E',
-                    fontSize: { xs: '1.1rem', md: '1.5rem' },
-                    lineHeight: 1.6,
+                    lineHeight: 1.2,
                   }}
                 >
-                  &ldquo;Konfydence significantly raised scam-awareness across our staff.&rdquo;
+                  Why Yearly Videos and Quizzes Don&apos;t Stop Breaches
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{
-                    textAlign: 'center',
-                    fontWeight: 600,
-                    color: '#063C5E',
-                    fontSize: { xs: '0.95rem', md: '1.1rem' },
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 3,
+                    lineHeight: 1.8,
+                    color: 'text.primary',
                   }}
                 >
-                  — Compliance Officer, Financial Services
+                  Employees pass the test... then click anyway months later. Why? Scams hit during stress—bypassing logic via the limbic hijack. Traditional tools train knowledge, not behavior under pressure.
                 </Typography>
-              </CardContent>
-            </Card>
-          </Box>
-
-          {/* CTA Button */}
-          <Box sx={{ textAlign: 'center', mb: 8 }}>
-            <Button
-              component={Link}
-              href="/contact?topic=b2b_demo"
-              variant="contained"
-              size="large"
-              sx={{
-                backgroundColor: '#00A4E8',
-                color: 'white',
-                fontWeight: 600,
-                px: 6,
-                py: 1.5,
-                borderRadius: 2,
-                fontSize: { xs: '1rem', md: '1.1rem' },
-                '&:hover': {
-                  backgroundColor: '#0088C7',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 8px 24px rgba(0, 164, 232, 0.4)',
-                },
-                transition: 'all 0.3s ease',
-              }}
-            >
-              Request Compliance Demo
-            </Button>
-          </Box>
-
-          <Box sx={{ mt: 8 }}>
-            <Typography variant="h4" textAlign="center" gutterBottom>
-              Request a Demo
-            </Typography>
-            <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
-              Fill out the form below and we&apos;ll get in touch
-            </Typography>
-            <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, mx: 'auto' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Name"
-                    required
-                    value={formData.name}
-                    onChange={(e) => {
-                      setFormData({ ...formData, name: e.target.value });
-                      if (errors.name) setErrors({ ...errors, name: '' });
+                <Box sx={{ mb: 3 }}>
+                  <Link
+                    href="/pdfs/the-limbic-hijack.pdf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      color: '#0B7897',
+                      textDecoration: 'underline',
+                      fontSize: '1rem',
+                      fontWeight: 600,
                     }}
-                    error={!!errors.name}
-                    helperText={errors.name}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Company"
-                    required
-                    value={formData.company}
-                    onChange={(e) => {
-                      setFormData({ ...formData, company: e.target.value });
-                      if (errors.company) setErrors({ ...errors, company: '' });
+                  >
+                    Read the Science: Stop the Limbic Hijack →
+                  </Link>
+                </Box>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 3,
+                    lineHeight: 1.8,
+                    color: 'text.primary',
+                  }}
+                >
+                  <strong>CoMaSi fixes this:</strong> Fun, real-life simulations build the one habit that works—a 5-second pause when H.A.C.K. tricks appear.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 4,
+                    lineHeight: 1.8,
+                    color: 'text.primary',
+                  }}
+                >
+                  Our simulations are designed to be failure-safe. The simulation is a learning moment, not a disciplinary one and reinforces the No-Blame culture.
+                </Typography>
+                
+                {/* H.A.C.K. Quick Reference */}
+                <Paper
+                  sx={{
+                    p: 3,
+                    backgroundColor: '#F6F8FA',
+                    borderRadius: 2,
+                    border: '2px solid #0B7897',
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      color: '#063C5E',
                     }}
-                    error={!!errors.company}
-                    helperText={errors.company}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => {
-                      setFormData({ ...formData, email: e.target.value });
-                      if (errors.email) setErrors({ ...errors, email: '' });
-                    }}
-                    error={!!errors.email}
-                    helperText={errors.email}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Message"
-                    multiline
-                    rows={4}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
-                    {loading ? 'Submitting...' : 'Submit Request'}
-                  </Button>
-                </Grid>
+                  >
+                    H.A.C.K. Quick Reference
+                  </Typography>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                        H – Hurry
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Urgency and time pressure tactics
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                        A – Authority
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Fake credentials and position of power
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                        C – Comfort
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Familiarity and false trust signals
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                        K – Kill-Switch
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                        Panic or excitement that bypasses logic
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Paper>
               </Grid>
-            </Box>
-          </Box>
+              <Grid item xs={12} md={6}>
+                <Box
+                  component="img"
+                  src="/images/5SecondsDefense.jpg"
+                  alt="Five seconds is all it takes. No real request breaks if you wait."
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: 2,
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                    mb: 2,
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                  }}
+                >
+                  Five seconds is all it takes. No real request breaks if you wait.
+                </Typography>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
 
-          {/* Built for Audit & Compliance Teams Section */}
-          <Box sx={{ mt: 10, mb: 6 }}>
-            <Typography 
-              variant="h4" 
-              textAlign="center" 
-              gutterBottom
+        {/* Key Benefits Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#F6F8FA' }} data-aos="zoom-in" data-aos-duration="800">
+          <Container maxWidth="lg">
+            <Typography
+              variant="h2"
               sx={{
-                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 700,
+                mb: 6,
+                textAlign: 'center',
                 color: '#063C5E',
-                mb: 3,
               }}
             >
-              Built for Audit & Compliance Teams
+              Why Teams Love CoMaSi
             </Typography>
-            <Box 
-              component="ul" 
-              sx={{ 
-                listStyle: 'none', 
-                pl: 0, 
-                maxWidth: 700,
-                mx: 'auto',
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: { xs: 200, md: 250 },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#F6F8FA',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/comasy2.png"
+                      alt="Engaging Simulations"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                      onError={(e) => {
+                        // Try jpeg if png fails
+                        if (e.target.src.includes('.png')) {
+                          e.target.src = '/images/comasy2.jpeg';
+                        } else {
+                          e.target.style.display = 'none';
+                        }
+                      }}
+                    />
+                  </Box>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 2,
+                        color: '#063C5E',
+                      }}
+                    >
+                      Engaging Simulations
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'text.secondary',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Short, scenario-based drills employees actually enjoy—no boring lectures.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: { xs: 200, md: 250 },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#F6F8FA',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/comasy3.png"
+                      alt="Proven Behavior Change"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                      onError={(e) => {
+                        // Try jpeg if png fails
+                        if (e.target.src.includes('.png')) {
+                          e.target.src = '/images/comasy3.jpeg';
+                        } else {
+                          e.target.style.display = 'none';
+                        }
+                      }}
+                    />
+                  </Box>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 2,
+                        color: '#063C5E',
+                      }}
+                    >
+                      Proven Behavior Change
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'text.secondary',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Track pause reflexes and reduced click rates—not just completion.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Card
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: { xs: 200, md: 250 },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#F6F8FA',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/comasy4.jpeg"
+                      alt="Auditor-Ready Reports"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </Box>
+                  <CardContent sx={{ p: 3 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 2,
+                        color: '#063C5E',
+                      }}
+                    >
+                      Auditor-Ready Reports
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'text.secondary',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      Clear proof for compliance teams: Improved metrics, incident reduction.
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        {/* Social Proof Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }}>
+          <Container maxWidth="lg">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 6,
+                textAlign: 'center',
+                color: '#063C5E',
               }}
             >
-              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  ✓ Documented participation and outcomes
-                </Typography>
-              </Box>
-              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  ✓ Behavior-based scoring (not just completion)
-                </Typography>
-              </Box>
-              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  ✓ Evidence notes per session
-                </Typography>
-              </Box>
-              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  ✓ Exportable reports for audits and regulators
-                </Typography>
-              </Box>
-              <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' } }}>
-                  ✓ Supports NIS2 Articles 21 & 23 (human risk & awareness)
-                </Typography>
-              </Box>
+              Real Results from Forward-Thinking Teams
+            </Typography>
+            
+            {/* Testimonial Carousel */}
+            <Box sx={{ mb: 6 }}>
+              <Swiper
+                modules={[Autoplay, Pagination, Navigation]}
+                spaceBetween={30}
+                slidesPerView={1}
+                autoplay={{
+                  delay: 5000,
+                  disableOnInteraction: false,
+                }}
+                pagination={{ clickable: true }}
+                navigation
+                breakpoints={{
+                  640: {
+                    slidesPerView: 1,
+                  },
+                  768: {
+                    slidesPerView: 1,
+                  },
+                }}
+              >
+                <SwiperSlide>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      p: 4,
+                      backgroundColor: '#E9F4FF',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2, justifyContent: 'center' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.5rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        mb: 3,
+                        color: '#063C5E',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      &ldquo;Konfydence significantly raised scam-awareness across our staff—engagement like we&apos;ve never seen.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: 'center',
+                        fontWeight: 600,
+                        color: '#063C5E',
+                      }}
+                    >
+                      — Compliance Officer, Financial Services
+                    </Typography>
+                  </Card>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      p: 4,
+                      backgroundColor: '#E9F4FF',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2, justifyContent: 'center' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.5rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        mb: 3,
+                        color: '#063C5E',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      &ldquo;Our team&apos;s pause reflexes improved dramatically. The simulations made compliance training actually engaging.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: 'center',
+                        fontWeight: 600,
+                        color: '#063C5E',
+                      }}
+                    >
+                      — IT Security Manager, Technology Firm
+                    </Typography>
+                  </Card>
+                </SwiperSlide>
+                <SwiperSlide>
+                  <Card
+                    sx={{
+                      height: '100%',
+                      p: 4,
+                      backgroundColor: '#E9F4FF',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2, justifyContent: 'center' }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.5rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        mb: 3,
+                        color: '#063C5E',
+                        lineHeight: 1.7,
+                      }}
+                    >
+                      &ldquo;The behavioral reports provided clear proof for our auditors. Real metrics that show risk reduction, not just completion rates.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        textAlign: 'center',
+                        fontWeight: 600,
+                        color: '#063C5E',
+                      }}
+                    >
+                      — Chief Compliance Officer, Healthcare Organization
+                    </Typography>
+                  </Card>
+                </SwiperSlide>
+              </Swiper>
             </Box>
-          </Box>
 
-          {/* Pricing Section */}
-          <Box sx={{ mt: 8, mb: 6 }}>
-            <Typography 
-              variant="h4" 
-              textAlign="center" 
-              gutterBottom
+            {/* Platform Dashboard Teaser and Behavioral Report */}
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <Paper
+                    data-aos="fade-right"
+                  data-aos-duration="800"
+                  sx={{
+                    p: 3,
+                    height: '100%',
+                    backgroundColor: '#F6F8FA',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#063C5E',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Platform Dashboard Teaser
+                  </Typography>
+                  <Box
+              
+                    sx={{
+                      width: '100%',
+                      flex: 1,
+                      minHeight: { xs: 250, md: 300 },
+                      backgroundColor: '#063C5E',
+                      borderRadius: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: '1.1rem',
+                      mb: 2,
+                    }}
+                  >
+                    Dashboard Preview
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      fontStyle: 'italic',
+                    }}
+                  >
+                    See reduction in rushed clicks and behavior change metrics
+                  </Typography>
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Paper
+                    data-aos="fade-left"
+                  data-aos-duration="800"
+                  sx={{
+                    p: 3,
+                    height: '100%',
+                    backgroundColor: '#ffffff',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    border: '2px solid #0B7897',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      color: '#063C5E',
+                      textAlign: 'center',
+                    }}
+                  >
+                    Konfydence Behavioral Report
+                  </Typography>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      flex: 1,
+                      minHeight: { xs: 250, md: 300 },
+                      backgroundColor: '#F6F8FA',
+                      borderRadius: 2,
+                      p: 3,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      mb: 2,
+                    }}
+                  >
+                    {/* Chart Placeholder */}
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: '60%',
+                        backgroundColor: '#ffffff',
+                        borderRadius: 1,
+                        border: '1px solid #e0e0e0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        mb: 2,
+                        position: 'relative',
+                      }}
+                    >
+                      {/* Simple Bar Chart Representation */}
+                      <Box sx={{ width: '100%', height: '100%', p: 2, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
+                        <Box sx={{ flex: 1, height: '40%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
+                        <Box sx={{ flex: 1, height: '60%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
+                        <Box sx={{ flex: 1, height: '35%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
+                        <Box sx={{ flex: 1, height: '50%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
+                        <Box sx={{ flex: 1, height: '25%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
+                      </Box>
+                    </Box>
+                    
+                    {/* Metrics */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E' }}>
+                          Reduction in Rushed Clicks:
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897' }}>
+                          -65%
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E' }}>
+                          Pause Reflex Improvement:
+                        </Typography>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897' }}>
+                          +78%
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: 'text.secondary',
+                      textAlign: 'center',
+                      fontStyle: 'italic',
+                      fontSize: '0.85rem',
+                    }}
+                  >
+                    Real behavioral metrics that demonstrate risk reduction
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        {/* Demo Request Form */}
+        <Box
+            data-aos="zoom-in"
+                  data-aos-duration="800"
+          id="demo-form"
+          sx={{
+            py: { xs: 8, md: 12 },
+            backgroundColor: '#F6F8FA',
+            position: 'relative',
+          }}
+        >
+          <Container maxWidth="md">
+            <Typography
+              variant="h2"
               sx={{
-                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 700,
-                color: '#063C5E',
                 mb: 2,
+                textAlign: 'center',
+                color: '#063C5E',
               }}
             >
-              Pricing
+              See CoMaSi in Action – Free Pilot Available
             </Typography>
-            <Typography 
-              variant="body1" 
-              textAlign="center" 
-              color="text.secondary"
-              sx={{ 
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                mb: 5,
+                textAlign: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              Book a 15-min demo. We&apos;ll show tailored simulations and reports for your team.
+            </Typography>
+            
+            {/* Success/Error Message */}
+            {snackbar.open && (
+              <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+                <Alert 
+                  severity={snackbar.severity}
+                  onClose={() => setSnackbar({ ...snackbar, open: false })}
+                  sx={{
+                    maxWidth: 600,
+                    width: '100%',
+                    borderRadius: 2,
+                    fontSize: '1rem',
+                    '& .MuiAlert-message': {
+                      width: '100%',
+                    },
+                  }}
+                >
+                  {snackbar.message}
+                </Alert>
+              </Box>
+            )}
+            
+            <Paper
+              sx={{
+                p: { xs: 3, md: 5 },
+                borderRadius: 3,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+                position: 'relative',
+                '&::before': {
+                  content: '"||"',
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  fontSize: '3rem',
+                  color: '#0B7897',
+                  opacity: 0.1,
+                  fontWeight: 700,
+                  pointerEvents: 'none',
+                },
+              }}
+            >
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: '' });
+                      }}
+                      error={!!errors.name}
+                      helperText={errors.name}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Company"
+                      required
+                      value={formData.company}
+                      onChange={(e) => {
+                        setFormData({ ...formData, company: e.target.value });
+                        if (errors.company) setErrors({ ...errors, company: '' });
+                      }}
+                      error={!!errors.company}
+                      helperText={errors.company}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (errors.email) setErrors({ ...errors, email: '' });
+                      }}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Team Size"
+                      value={formData.teamSize}
+                      onChange={(e) => setFormData({ ...formData, teamSize: e.target.value })}
+                      placeholder="e.g., 50-100 employees"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Message"
+                      multiline
+                      rows={4}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      placeholder="Tell us about your compliance needs..."
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      disabled={loading}
+                      startIcon={
+                        <Box
+                          component="span"
+                          sx={{
+                            fontSize: '1.5rem',
+                            fontWeight: 700,
+                            lineHeight: 1,
+                          }}
+                        >
+                          ||
+                        </Box>
+                      }
+                      sx={{
+                        backgroundColor: '#0B7897',
+                        color: 'white',
+                        py: 1.5,
+                        fontSize: '1.125rem',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#063C5E',
+                          transform: 'translateY(-2px)',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                        },
+                        transition: 'all 0.3s ease',
+                      }}
+                    >
+                      Submit Request
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+              <Typography
+                variant="body2"
+                sx={{
+                  mt: 3,
+                  textAlign: 'center',
+                  color: 'text.secondary',
+                  fontStyle: 'italic',
+                }}
+              >
+                Custom per-seat pricing discussed in demo (volume discounts, onboarding options).
+              </Typography>
+            </Paper>
+          </Container>
+        </Box>
+
+        {/* Final Motivational Section */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 12 },
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+            color: 'white',
+          }}
+        >
+          <Container maxWidth="lg"     data-aos="zoom-in"
+                  data-aos-duration="800">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
                 mb: 3,
+                textAlign: 'center',
+                lineHeight: 1.2,
+              }}
+            >
+              Stop Training for the Quiz. Start Training for the Pause.
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                mb: 5,
+                textAlign: 'center',
                 maxWidth: 800,
                 mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' },
+                lineHeight: 1.8,
+                color: 'white',
               }}
             >
-              CoMaSy pricing depends on organization size, use cases, and audit requirements.
+              One moment of rush costs millions. Five seconds of pause prevents it. Join teams already proving real risk reduction.
             </Typography>
-            <Box sx={{ maxWidth: 600, mx: 'auto', mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: '#063C5E', mb: 2 }}>
-                Typical engagement models:
-              </Typography>
-              <Box component="ul" sx={{ listStyle: 'none', pl: 0 }}>
-                <Box component="li" sx={{ mb: 1.5 }}>
-                  <Typography variant="body1">
-                    <strong>SMEs:</strong> from €1,300 / year
-                  </Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 1.5 }}>
-                  <Typography variant="body1">
-                    <strong>Mid-size:</strong> per-seat pricing
-                  </Typography>
-                </Box>
-                <Box component="li" sx={{ mb: 2 }}>
-                  <Typography variant="body1">
-                    <strong>Enterprise:</strong> custom scope and onboarding
-                  </Typography>
-                </Box>
-              </Box>
-              <Typography variant="body1" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                Request a demo for a tailored offer.
-              </Typography>
-            </Box>
-          </Box>
-        </Container>
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={3}
+              justifyContent="center"
+              alignItems="center"
+            >
+              <Button
+                component="a"
+                href="#demo-form"
+                variant="contained"
+                size="large"
+                sx={{
+                  backgroundColor: '#FFFFFF',
+                  color: '#063C5E',
+                  px: { xs: 4, md: 5 },
+                  py: { xs: 1.5, md: 2 },
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Request Demo
+              </Button>
+              <Button
+                component={Link}
+                href="/pdfs/the-limbic-hijack.pdf"
+                target="_blank"
+                variant="outlined"
+                size="medium"
+                sx={{
+                  borderColor: '#FFFFFF',
+                  color: '#FFFFFF',
+                  px: { xs: 3, md: 3.5 },
+                  py: { xs: 1, md: 1.25 },
+                  fontSize: { xs: '0.875rem', md: '0.9375rem' },
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: '#F5F5F5',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Explore the Science (Limbic Hijack)
+              </Button>
+            </Stack>
+          </Container>
+        </Box>
       </Box>
       <Footer />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
     </>
   );
 }
-

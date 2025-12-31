@@ -1,8 +1,9 @@
 'use client';
 
-import { Container, Typography, Grid, Box, Chip } from '@mui/material';
+import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab } from '@mui/material';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
+import NextLink from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
@@ -75,6 +76,9 @@ export default function ProductsPageContent() {
   const [selectedType, setSelectedType] = useState(typeParam);
   const [selectedCategory, setSelectedCategory] = useState(categoryParam);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState(0); // 0: Families, 1: Schools/Uni, 2: Businesses
+  const [cardPage, setCardPage] = useState(1);
+  const CARDS_PER_PAGE = 6; // 2 rows of 3 cards = 6 cards per page
 
   const fetchProducts = useCallback(async (page, type, category) => {
     try {
@@ -135,6 +139,25 @@ export default function ProductsPageContent() {
     }
   }, [currentPage, selectedType, selectedCategory, fetchProducts, router.isReady]);
 
+  // Reset card page when tab changes
+  useEffect(() => {
+    setCardPage(1);
+  }, [activeTab]);
+
+  // Initialize AOS animations
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      import('aos').then((AOS) => {
+        AOS.default.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true,
+          offset: 100,
+        });
+      });
+    }
+  }, []);
+
   const handleTypeChange = (type) => {
     setSelectedType(type);
     const params = new URLSearchParams();
@@ -167,131 +190,207 @@ export default function ProductsPageContent() {
   return (
     <>
       <Header />
-      <Box component="main" sx={{ pt: { xs: 8, md: 10 }, minHeight: '80vh', backgroundColor: '#E9F4FF' }}>
-        <Container
-          maxWidth="lg"
-          sx={{ py: 12 }}
-          data-aos="zoom-in"
-          data-aos-duration="800"
+      <Box component="main">
+        {/* Hero Section */}
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+            color: 'white',
+            position: 'relative',
+            width: '100%',
+            py: { xs: 12, md: 18 },
+            minHeight: { xs: '90vh', md: '80vh' },
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
-          {/* Page Title and Intro Text */}
-          <Box sx={{ mb: 6 }}>
-            <Typography
-              variant="h1"
-              component="h1"
-              textAlign="center"
-              sx={{
-                mb: 2,
-                fontSize: { xs: '2rem', md: '3rem' },
-                fontWeight: 700,
-                color: '#063C5E',
-              }}
-            >
-              All Konfydence Products
-            </Typography>
-            <Typography 
-              variant="body1" 
-              textAlign="center" 
-              color="text.secondary" 
-              sx={{ 
-                mb: 4,
-                fontSize: { xs: '1rem', md: '1.1rem' },
-              }}
-            >
-              Browse all scam-awareness products for families, companies, and schools in one place.
-            </Typography>
-          </Box>
-
-          {/* Product Category Filter */}
-          <Box sx={{ mb: 3 }}>
-            {/* <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
-              Product Categorys
-            </Typography> */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Chip
-                label="All"
-                onClick={() => handleCategoryChange('all')}
+          <Container
+            maxWidth="lg"
+            sx={{ position: 'relative', zIndex: 2 }}
+            data-aos="zoom-in"
+            data-aos-duration="800"
+          >
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography
+                variant="h1"
+                component="h1"
                 sx={{
-                  backgroundColor: selectedCategory === 'all' ? '#0B7897' : 'white',
-                  color: selectedCategory === 'all' ? 'white' : '#052A42',
-                  fontWeight: selectedCategory === 'all' ? 600 : 400,
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: selectedCategory === 'all' ? '#063C5E' : '#E8F4F8',
-                  },
-                  transition: 'all 0.3s ease',
+                  mb: 3,
+                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontWeight: 700,
+                  color: 'white',
+                  lineHeight: 1.2,
                 }}
-              />
-              {PRODUCT_CATEGORIES.map((category) => {
-                const categoryValue = category.toLowerCase().replace(/\s+/g, '-');
-                return (
-                  <Chip
-                    key={category}
-                    label={category}
-                    onClick={() => handleCategoryChange(categoryValue)}
-                    sx={{
-                      backgroundColor: selectedCategory === categoryValue 
-                        ? CATEGORY_COLORS[category] || '#0B7897' 
-                        : 'white',
-                      color: selectedCategory === categoryValue ? 'white' : '#052A42',
-                      fontWeight: selectedCategory === categoryValue ? 600 : 400,
+              >
+                Discover Konfydence Tools for Every Stage of Life
+              </Typography>
+              
+              <Typography 
+                variant="body1" 
+                sx={{ 
+                  mb: 3,
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  maxWidth: '900px',
+                  mx: 'auto',
+                  lineHeight: 1.7,
+                }}
+              >
+                Fun, science-backed simulations that train the one habit that stops scams: a quick pause under pressure. From family game nights to classroom activities and enterprise compliance—build real resilience. Engineered for resilience. Every Konfydence card is designed and manufactured in Germany to meet the highest standards of quality and durability.
+              </Typography>
+
+              <Box sx={{ mb: 4 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    color: 'rgba(255, 255, 255, 0.85)',
+                  }}
+                >
+                  Learn the science behind it →{' '}
+                  <Box
+                    component="a"
+                    href="/pdfs/the-limbic-hijack.pdf" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 600,
+                      textDecoration: 'underline',
                       cursor: 'pointer',
                       '&:hover': {
-                        backgroundColor: selectedCategory === categoryValue
-                          ? CATEGORY_COLORS[category] || '#063C5E'
-                          : '#E8F4F8',
+                        opacity: 0.8,
                       },
-                      transition: 'all 0.3s ease',
                     }}
-                  />
-                );
-              })}
-            </Box>
-          </Box>
+                  >
+                    Understand the Limbic Hijack
+                  </Box>
+                </Typography>
+              </Box>
 
-          {/* Use Case / Type Filter */}
-          <Box sx={{ mb: 4 }}>
-            {/* <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 600, color: '#063C5E', textAlign: 'center' }}>
-            Product Type
-            </Typography> */}
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, justifyContent: 'center' }}>
-              <Chip
-                label="All"
-                onClick={() => handleTypeChange('all')}
+            {/* CTA Buttons */}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={2}
+              justifyContent="center"
+              alignItems="center"
+              sx={{ mt: 4 }}
+            >
+              <Button
+                size="large"
+                href="/sskit-family"
+                component={NextLink}
                 sx={{
-                  backgroundColor: selectedType === 'all' ? '#0B7897' : 'white',
-                  color: selectedType === 'all' ? 'white' : '#052A42',
-                  fontWeight: selectedType === 'all' ? 600 : 400,
-                  cursor: 'pointer',
-                  '&:hover': {
-                    backgroundColor: selectedType === 'all' ? '#063C5E' : '#E8F4F8',
-                  },
+                  backgroundColor: '#FFFFFF',
+                  color: '#0B7897',
+                  border: '1px solid transparent',
+                  px: { xs: 4, md: 5 },
+                  py: 1.5,
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: 2,
                   transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    color: '#0B7897',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
                 }}
-              />
-              {USE_CASE_TYPES.map((type) => (
-                <Chip
-                  key={type}
-                  label={type}
-                  onClick={() => handleTypeChange(type.toLowerCase())}
-                  sx={{
-                    backgroundColor: selectedType === type.toLowerCase() 
-                      ? TYPE_COLORS[type] || '#0B7897' 
-                      : 'white',
-                    color: selectedType === type.toLowerCase() ? 'white' : '#052A42',
-                    fontWeight: selectedType === type.toLowerCase() ? 600 : 400,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      backgroundColor: selectedType === type.toLowerCase()
-                        ? TYPE_COLORS[type] || '#063C5E'
-                        : '#E8F4F8',
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
-                />
-              ))}
+              >
+                Families → Shop Kits
+              </Button>
+              
+              <Button
+                size="large"
+                href="/free-resources"
+                component={NextLink}
+                sx={{
+                  backgroundColor: '#FFFFFF',
+                  color: '#0B7897',
+                  border: '1px solid transparent',
+                  px: { xs: 4, md: 5 },
+                  py: 1.5,
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    color: '#0B7897',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
+                }}
+              >
+                Schools/Uni → Free Resources
+              </Button>
+              
+              <Button
+                size="large"
+                href="/contact"
+                component={NextLink}
+                sx={{
+                  backgroundColor: '#FFFFFF',
+                  color: '#0B7897',
+                  border: '1px solid transparent',
+                  px: { xs: 4, md: 5 },
+                  py: 1.5,
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderRadius: 2,
+                  transition: 'all 0.3s ease',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    color: '#0B7897',
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  },
+                }}
+              >
+                Business → Request Demo
+              </Button>
+            </Stack>
             </Box>
-          </Box>
+          </Container>
+        </Box>
+
+        {/* Products Section */}
+        <Box sx={{ backgroundColor: '#E9F4FF', py: 8 }}>
+          <Container
+            maxWidth="lg"
+          >
+            {/* Tabs */}
+            <Box sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}>
+              <Tabs
+                value={activeTab}
+                onChange={(e, newValue) => setActiveTab(newValue)}
+                centered
+                sx={{
+                  '& .MuiTab-root': {
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    minHeight: 60,
+                    color: '#063C5E',
+                    '&.Mui-selected': {
+                      color: '#0B7897',
+                    },
+                  },
+                  '& .MuiTabs-indicator': {
+                    backgroundColor: '#0B7897',
+                    height: 3,
+                  },
+                }}
+              >
+                <Tab label="For Families" />
+                <Tab label="For Schools & Universities" />
+                <Tab label="For Businesses & Organizations" />
+              </Tabs>
+            </Box>
 
           {error ? (
             <ErrorDisplay error={error} title="Failed to Load Products" />
@@ -307,15 +406,12 @@ export default function ProductsPageContent() {
             </Box>
           ) : (
             <>
-              {/* Split products into B2C and B2B/B2E */}
+              {/* Filter products based on active tab */}
               {(() => {
                 // B2C products: For families - prioritize targetAudience
                 const b2cProducts = products.filter(p => {
-                  // Primary: Check targetAudience first
                   if (p.targetAudience === 'private-users') return true;
                   if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
-                  
-                  // Fallback: If no targetAudience, check category
                   if (!p.targetAudience) {
                     return p.category === 'private-users' ||
                            p.category === 'membership' ||
@@ -328,33 +424,27 @@ export default function ProductsPageContent() {
                   return false;
                 });
                 
-                // B2B products: For organizations - prioritize targetAudience
-                const b2bProducts = products.filter(p => {
-                  // Primary: Check targetAudience first
-                  if (p.targetAudience === 'businesses') return true;
-                  if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
-                  
-                  // Fallback: If no targetAudience, check category
-                  if (!p.targetAudience) {
-                    return p.category === 'businesses';
-                  }
-                  return false;
-                });
-                
                 // B2E products: For schools - prioritize targetAudience
                 const b2eProducts = products.filter(p => {
-                  // Primary: Check targetAudience first
                   if (p.targetAudience === 'schools') return true;
                   if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
-                  
-                  // Fallback: If no targetAudience, check category
                   if (!p.targetAudience) {
                     return p.category === 'schools';
                   }
                   return false;
                 });
                 
-                // Remove duplicates - ensure each product appears only once
+                // B2B products: For organizations - prioritize targetAudience
+                const b2bProducts = products.filter(p => {
+                  if (p.targetAudience === 'businesses') return true;
+                  if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
+                  if (!p.targetAudience) {
+                    return p.category === 'businesses';
+                  }
+                  return false;
+                });
+                
+                // Remove duplicates
                 const uniqueB2C = b2cProducts.filter(p => 
                   !b2bProducts.some(bp => bp._id === p._id) &&
                   !b2eProducts.some(ep => ep._id === p._id)
@@ -368,110 +458,382 @@ export default function ProductsPageContent() {
                   !b2bProducts.some(bp => bp._id === p._id)
                 );
                 
+                // Filter based on active tab
+                let displayedProducts = [];
+                let sectionContent = null;
+                
+                if (activeTab === 0) {
+                  // For Families
+                  displayedProducts = uniqueB2C;
+                  sectionContent = {
+                    headline: 'Build Lifelong Confidence at Home',
+                    subheadline: 'Offline-first card game + optional digital challenges for ongoing practice. Perfect for dinner tables, car rides, or family discussions—no nagging required.',
+                  };
+                } else if (activeTab === 1) {
+                  // For Schools & Universities
+                  displayedProducts = uniqueB2E;
+                  sectionContent = {
+                    headline: 'Turn Students into Digital Leaders',
+                    subheadline: 'Engaging activities that fit classrooms, clubs, or orientation weeks. Easy for teachers, proven to build pause habits early.',
+                  };
+                } else if (activeTab === 2) {
+                  // For Businesses & Organizations
+                  displayedProducts = uniqueB2B;
+                  sectionContent = {
+                    headline: 'Compliance That Proves Real Risk Reduction',
+                    subheadline: 'Beyond quizzes—fun simulations with auditor-ready reports on pause behavior under pressure. NIS2-ready and ISO-aligned.',
+                  };
+                }
+                
                 return (
                   <>
-                    {/* B2C Products Section */}
-                    {uniqueB2C.length > 0 && (
-                      <Box sx={{ mb: uniqueB2B.length > 0 ? 8 : 4 }}>
-                        <Typography 
-                          variant="h3" 
-                          sx={{ 
-                            mb: 2,
-                            fontSize: { xs: '1.75rem', md: '2.5rem' },
-                            fontWeight: 700,
-                            color: '#063C5E',
-                            textAlign: 'center',
-                          }}
-                        >
-                         For Families
-                        </Typography>
-                        {/* <Typography 
-                          variant="body1" 
-                          sx={{ 
-                            mb: 4,
-                            textAlign: 'center',
-                            color: 'text.secondary',
-                          }}
-                        >
-                          For Families
-                        </Typography> */}
-                        <Grid
-                          data-aos="zoom-in"
-                          data-aos-duration="800"
-                          data-aos-delay="100"
-                          container
-                          spacing={4}
-                          sx={{ alignItems: 'stretch', mb: 4 }}
-                        >
-                          {uniqueB2C.map((product, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={product._id}>
-                              <ProductCard product={product} delay={index * 100} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* B2B and B2E Products Section - Combined heading when both exist */}
-                    {(uniqueB2B.length > 0 || uniqueB2E.length > 0) && (
-                      <Box sx={{ mb: 4 }}>
-                        <Typography 
-                          variant="h3" 
-                          sx={{ 
-                            mb: 2,
-                            fontSize: { xs: '1.75rem', md: '2.5rem' },
-                            fontWeight: 700,
-                            color: '#063C5E',
-                            textAlign: 'center',
-                          }}
-                        >
-                          {uniqueB2B.length > 0 && uniqueB2E.length > 0
-                            ? 'For Organizations and Schools'
-                            : uniqueB2B.length > 0
-                            ? 'For Organizations (B2B)'
-                            : 'For Schools (B2E)'}
-                        </Typography>
-                        <Grid
-                          data-aos="zoom-in"
-                          data-aos-duration="800"
-                          data-aos-delay="100"
-                          container
-                          spacing={4}
-                          sx={{ alignItems: 'stretch', mb: 4 }}
-                        >
-                          {/* B2B Products */}
-                          {uniqueB2B.map((product, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={product._id}>
-                              <ProductCard product={product} delay={index * 100} />
-                            </Grid>
-                          ))}
-                          {/* B2E Products */}
-                          {uniqueB2E.map((product, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={product._id}>
-                              <ProductCard product={product} delay={(uniqueB2B.length + index) * 100} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    {/* Show count if any sections exist */}
-                    {(uniqueB2C.length > 0 || uniqueB2B.length > 0 || uniqueB2E.length > 0) && (
+                    {/* Section Headline and Subheadline */}
+                    <Box sx={{ mb: 5, textAlign: 'center' }}>
                       <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        textAlign="center"
-                        sx={{ mb: 3 }}
+                        variant="h2"
+                        sx={{
+                          mb: 2,
+                          fontSize: { xs: '1.75rem', md: '2.5rem' },
+                          fontWeight: 700,
+                          color: '#063C5E',
+                        }}
                       >
-                        Showing {showingFrom}&ndash;{showingTo} of {meta.total} products
-                        {(selectedType !== 'all' || selectedCategory !== 'all') && (
-                          <>
-                            {' '}
-                            {selectedType !== 'all' && `(${selectedType})`}
-                            {selectedCategory !== 'all' && ` - ${selectedCategory}`}
-                          </>
-                        )}
+                        {sectionContent?.headline}
                       </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.125rem' },
+                          color: 'text.secondary',
+                          maxWidth: '800px',
+                          mx: 'auto',
+                          lineHeight: 1.7,
+                          mb: 4,
+                        }}
+                      >
+                        {sectionContent?.subheadline}
+                      </Typography>
+                    </Box>
+
+                    {/* Section-Specific Content */}
+                    {activeTab === 0 && (
+                      <Box sx={{ mb: 5 }}>
+                        <Grid container spacing={4} sx={{ mb: 4 }}>
+                          {/* Tactical Card Game Kit */}
+                          <Grid item xs={12} md={4}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Tactical Card Game Kit
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                80 premium cards with real-life scenarios. Spot H.A.C.K. tricks (Hurry, Authority, Comfort, Kill-Switch) and practice the 5-second pause. Includes no-blame Family Tech Contract.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Introductory Pricing (Limited Time Special): €49 (Retail: €59)
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/sskit-family"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Buy Physical Kit Now →
+                              </Button>
+                            </Box>
+                          </Grid>
+
+                          {/* Digital Extension */}
+                          <Grid item xs={12} md={4}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Digital Extension (App Access)
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Monthly new scenarios, progress tracking, and solo/family challenges on your phone.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Introductory Pricing (early bird): $29/year (Later: $39/year)
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/sskit-family"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Subscribe to Digital →
+                              </Button>
+                            </Box>
+                          </Grid>
+
+                          {/* Best Value Bundle */}
+                          <Grid item xs={12} md={4}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.1)', borderRadius: 2, border: '2px solid #0B7897', display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Best Value Bundle
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Physical Kit + 1-Year Digital Access.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Introductory Pricing: $69 (Later: $89) – Save more during launch!
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/sskit-family"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Get Bundle Now →
+                              </Button>
+                            </Box>
+                          </Grid>
+                        </Grid>
+
+                        {/* Additional Notes */}
+                        <Box sx={{ mt: 4, textAlign: 'center' }}>
+                          <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontStyle: 'italic' }}>
+                            Made in Germany – Premium quality cards built to last.
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontStyle: 'italic' }}>
+                            Konfydence for Kids: €1 per sale donated to initiatives that strengthen digital resilience for children and young people.
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+                            A simple, no-blame agreement to start open conversations about online safety. Builds trust, sets boundaries, and reinforces the pause habit.
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+
+                    {activeTab === 1 && (
+                      <Box sx={{ mb: 5 }}>
+                        <Grid container spacing={4} sx={{ mb: 4 }}>
+                          {/* Free Lesson Pack */}
+                          <Grid item xs={12} md={6}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Free Lesson Pack
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Downloadable activities, workshop guides, and card game adaptations. Teach H.A.C.K. framework and pause drills—no cost to start.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Pricing: Free
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/resources/education"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Download Free Pack →
+                              </Button>
+                            </Box>
+                          </Grid>
+
+                          {/* Full Student Program */}
+                          <Grid item xs={12} md={6}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Full Student Program (CoMaSi Education Edition)
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Unlimited access for students/staff: simulations, habit tracking, facilitator reports. Per-seat annual subscription with optional onboarding support. NIS2-aligned for EU institutions.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Pricing: Custom per-seat licensing – request a free pilot to see fit.
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/contact"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Request Free Pilot / Resources →
+                              </Button>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {activeTab === 2 && (
+                      <Box sx={{ mb: 5 }}>
+                        <Grid container spacing={4} sx={{ mb: 4 }}>
+                          {/* Compliance Made Simple */}
+                          <Grid item xs={12} md={6}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Compliance Made Simple (CoMaSi)
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Unlimited simulations, team dashboards, progress reports, and custom scenarios. Annual per-seat subscription with optional onboarding fee for setup/training.
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Pricing: Custom per-seat licensing tailored to your team size – includes volume discounts.
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/contact"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                Book Free Demo / Pilot →
+                              </Button>
+                            </Box>
+                          </Grid>
+
+                          {/* Add-On: Custom Simulations */}
+                          <Grid item xs={12} md={6}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                                Add-On: Custom Simulations
+                              </Typography>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                                Industry-specific pressure drills (e.g., executive impersonation, supply chain tricks).
+                              </Typography>
+                              <Box sx={{ mb: 2 }}>
+                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Pricing: Included or bundled – discussed in demo.
+                                </Typography>
+                              </Box>
+                              <Button
+                                variant="contained"
+                                href="/contact"
+                                component={NextLink}
+                                sx={{
+                                  backgroundColor: '#0B7897',
+                                  color: 'white',
+                                  '&:hover': {
+                                    backgroundColor: '#063C5E',
+                                  },
+                                }}
+                              >
+                                See Examples in Demo →
+                              </Button>
+                            </Box>
+                          </Grid>
+                        </Grid>
+                      </Box>
+                    )}
+
+                    {/* Products Grid with Pagination */}
+                    {displayedProducts.length === 0 ? (
+                      <Box textAlign="center" py={6}>
+                        <Typography variant="h6" color="text.secondary">
+                          No products found in this category.
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        {(() => {
+                          // Calculate pagination for cards
+                          const totalCardPages = Math.ceil(displayedProducts.length / CARDS_PER_PAGE);
+                          const startIndex = (cardPage - 1) * CARDS_PER_PAGE;
+                          const endIndex = startIndex + CARDS_PER_PAGE;
+                          const paginatedProducts = displayedProducts.slice(startIndex, endIndex);
+
+                          return (
+                            <>
+                              <Grid
+                                data-aos="zoom-in"
+                                data-aos-duration="800"
+                                data-aos-delay="100"
+                                container
+                                spacing={4}
+                                sx={{ alignItems: 'stretch', mb: 4 }}
+                              >
+                                {paginatedProducts.map((product, index) => (
+                                  <Grid item xs={12} sm={6} md={4} key={product._id}>
+                                    <ProductCard product={product} delay={index * 100} />
+                                  </Grid>
+                                ))}
+                              </Grid>
+
+                              {/* Card Pagination */}
+                              {totalCardPages > 1 && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                                  <Stack direction="row" spacing={1} alignItems="center">
+                                    <Button
+                                      onClick={() => setCardPage(p => Math.max(1, p - 1))}
+                                      disabled={cardPage === 1}
+                                      sx={{ minWidth: 100 }}
+                                    >
+                                      Previous
+                                    </Button>
+                                    <Typography variant="body2" sx={{ px: 2 }}>
+                                      Page {cardPage} of {totalCardPages}
+                                    </Typography>
+                                    <Button
+                                      onClick={() => setCardPage(p => Math.min(totalCardPages, p + 1))}
+                                      disabled={cardPage === totalCardPages}
+                                      sx={{ minWidth: 100 }}
+                                    >
+                                      Next
+                                    </Button>
+                                  </Stack>
+                                </Box>
+                              )}
+
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                textAlign="center"
+                                sx={{ mb: 3 }}
+                              >
+                                Showing {startIndex + 1}–{Math.min(endIndex, displayedProducts.length)} of {displayedProducts.length} {displayedProducts.length === 1 ? 'product' : 'products'}
+                              </Typography>
+                            </>
+                          );
+                        })()}
+                      </>
                     )}
                   </>
                 );
@@ -492,7 +854,525 @@ export default function ProductsPageContent() {
               />
             </Box>
           )}
-        </Container>
+          </Container>
+        </Box>
+
+        {/* Bottom Motivational Close Section */}
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+            color: 'white',
+            py: { xs: 8, md: 12 },
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+          data-aos="fade-up"
+          data-aos-duration="800"
+        >
+          <Container maxWidth="lg">
+            <Box sx={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
+              <Typography
+                variant="h2"
+                component="h2"
+                sx={{
+                  mb: 3,
+                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontWeight: 700,
+                  color: 'white',
+                  lineHeight: 1.2,
+                }}
+              >
+                One Habit Changes Everything
+              </Typography>
+              
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 5,
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  maxWidth: '700px',
+                  mx: 'auto',
+                  lineHeight: 1.7,
+                }}
+              >
+                Scammers need rush. You need pause. Start building it today—with tools designed for real life.
+              </Typography>
+
+              {/* CTA Buttons */}
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ mb: 4 }}
+              >
+                <Button
+                  size="large"
+                  href="/sskit-family"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#0B7897',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    border: '1px solid transparent',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#F5F5F5',
+                      color: '#0B7897',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  Home → Shop Family Kits
+                </Button>
+                
+                <Button
+                  size="large"
+                  href="/free-resources"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#0B7897',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    border: '1px solid transparent',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#F5F5F5',
+                      color: '#0B7897',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  School/Uni → Free Resources
+                </Button>
+                
+                <Button
+                  size="large"
+                  href="/contact"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#FFFFFF',
+                    color: '#0B7897',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    border: '1px solid transparent',
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#F5F5F5',
+                      color: '#0B7897',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  Work → Request Demo
+                </Button>
+              </Stack>
+
+              {/* Trust Note */}
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.85rem', md: '0.95rem' },
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontStyle: 'italic',
+                }}
+              >
+                Join thousands already training smarter. Backed by behavioral science.
+              </Typography>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Gallery Section */}
+        <Box
+          sx={{
+            py: { xs: 6, md: 8 },
+            backgroundColor: '#ffffff',
+          }}
+          data-aos="fade-up"
+          data-aos-duration="800"
+        >
+          <Container maxWidth="lg">
+            <Grid container spacing={3}>
+              {['p1', 'p2', 'p3', 'p4', 'p5', 'p6'].map((imageName) => (
+                <Grid item xs={12} md={4} key={imageName}>
+                  <Box
+                    sx={{
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      height: { xs: 300, md: 350 },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e0e0e0',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                        transition: 'transform 0.3s ease',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src={`/images/${imageName}.jpeg`}
+                      alt={`Gallery image ${imageName}`}
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                      onError={(e) => {
+                        // Fallback to placeholder if image doesn't exist
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+            
+            {/* Gallery Note */}
+            <Box sx={{ mt: 4, textAlign: 'center' }}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: { xs: '0.85rem', md: '0.95rem' },
+                  color: 'text.secondary',
+                  fontStyle: 'italic',
+                }}
+              >
+                Emulation detection - Everything you need to know - Build38
+              </Typography>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Bottom Section - Start Building the Pause Habit */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 12 },
+            backgroundColor: '#ffffff',
+          }}
+          data-aos="fade-up"
+          data-aos-duration="800"
+        >
+          <Container maxWidth="lg">
+            <Box sx={{ textAlign: 'center', mb: 5 }}>
+              <Typography
+                variant="h2"
+                component="h2"
+                sx={{
+                  mb: 3,
+                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontWeight: 700,
+                  color: '#063C5E',
+                  lineHeight: 1.2,
+                }}
+              >
+                Start Building the Pause Habit Today
+              </Typography>
+              
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 5,
+                  fontSize: { xs: '1rem', md: '1.25rem' },
+                  color: 'text.secondary',
+                  maxWidth: '700px',
+                  mx: 'auto',
+                  lineHeight: 1.7,
+                }}
+              >
+                One simple habit stops most scams: Pause for five seconds when pressure hits. Choose the right tool for your world.
+              </Typography>
+
+              {/* Pause Bars Visual */}
+              <Box sx={{ mb: 6, maxWidth: '600px', mx: 'auto' }}>
+                <Box
+                  component="img"
+                  src="/images/5SecondsDefense.jpg"
+                  alt="Five seconds pause habit visual"
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: 2,
+                  }}
+                />
+              </Box>
+
+              {/* CTA Buttons */}
+              <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                spacing={2}
+                justifyContent="center"
+                alignItems="center"
+                sx={{ mb: 6 }}
+              >
+                <Button
+                  size="large"
+                  href="/sskit-family"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#0B7897',
+                    color: 'white',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#063C5E',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  Get Family Kit
+                </Button>
+                
+                <Button
+                  size="large"
+                  href="/free-resources"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#0B7897',
+                    color: 'white',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#063C5E',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  Free School Resources
+                </Button>
+                
+                <Button
+                  size="large"
+                  href="/comasy#demo-form"
+                  component={NextLink}
+                  sx={{
+                    backgroundColor: '#0B7897',
+                    color: 'white',
+                    px: { xs: 4, md: 5 },
+                    py: 1.5,
+                    fontSize: { xs: '0.95rem', md: '1rem' },
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    borderRadius: 2,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: '#063C5E',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                    },
+                  }}
+                >
+                  Business Demo
+                </Button>
+              </Stack>
+
+              {/* Trust Note and Testimonials */}
+              <Typography
+                variant="body1"
+                sx={{
+                  mb: 4,
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  fontWeight: 600,
+                  color: '#063C5E',
+                }}
+              >
+                Join thousands already training smarter
+              </Typography>
+
+              {/* Testimonials */}
+              <Grid container spacing={4} sx={{ mt: 2 }}>
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      p: 4,
+                      height: '100%',
+                      backgroundColor: 'white',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.2rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        mb: 3,
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        lineHeight: 1.7,
+                        flexGrow: 1,
+                        fontStyle: 'italic',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      &ldquo;My daughter and I played through the scenarios together — she now spots scam attempts instantly.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: '#063C5E',
+                        fontSize: { xs: '0.9rem', md: '1rem' },
+                      }}
+                    >
+                      — Parent, Toronto
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      p: 4,
+                      height: '100%',
+                      backgroundColor: 'white',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.2rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        mb: 3,
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        lineHeight: 1.7,
+                        flexGrow: 1,
+                        fontStyle: 'italic',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      &ldquo;Finally a game that teaches digital safety in a fun, practical way.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: '#063C5E',
+                        fontSize: { xs: '0.9rem', md: '1rem' },
+                      }}
+                    >
+                      — Family of Four, London
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                  <Box
+                    sx={{
+                      p: 4,
+                      height: '100%',
+                      backgroundColor: 'white',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 0.5, mb: 2 }}>
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <Box
+                          key={star}
+                          component="span"
+                          sx={{
+                            color: '#FFB800',
+                            fontSize: '1.2rem',
+                          }}
+                        >
+                          ★
+                        </Box>
+                      ))}
+                    </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        mb: 3,
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        lineHeight: 1.7,
+                        flexGrow: 1,
+                        fontStyle: 'italic',
+                        color: 'text.secondary',
+                      }}
+                    >
+                      &ldquo;Our team reported stronger awareness within weeks.&rdquo;
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 600,
+                        color: '#063C5E',
+                        fontSize: { xs: '0.9rem', md: '1rem' },
+                      }}
+                    >
+                      — Compliance Officer, New York
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </Container>
+        </Box>
       </Box>
       <Footer />
     </>

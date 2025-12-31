@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import {
   Container,
   Typography,
@@ -10,11 +11,20 @@ import {
   Card,
   CardContent,
   TextField,
-  Snackbar,
   Alert,
+  Stack,
+  Paper,
+  Tabs,
+  Tab,
 } from '@mui/material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -22,100 +32,106 @@ if (!API_BASE_URL) {
   throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
 }
 const API_URL = `${API_BASE_URL}/api`;
-console.log('🔗 Education Page API URL:', API_URL);
 
 export default function EducationPage() {
   const [formData, setFormData] = useState({
     name: '',
-    school: '',
+    institution: '',
     email: '',
-    role: '',
+    studentStaffSize: '',
     message: '',
   });
-  const [errors, setErrors] = useState({});
+  const [errors, setErrors] = useState({
+    name: '',
+    institution: '',
+    email: '',
+  });
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [activeTab, setActiveTab] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
-  const validateField = (name, value) => {
-    let error = '';
-    if (name === 'name' && !value.trim()) {
-      error = 'Name is required';
-    } else if (name === 'school' && !value.trim()) {
-      error = 'School / Institution is required';
-    } else if (name === 'email') {
-      if (!value.trim()) {
-        error = 'Email is required';
-      } else if (!/.+@.+\..+/.test(value)) {
-        error = 'Please enter a valid email address';
-      }
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      import('aos').then((AOS) => {
+        AOS.default.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true,
+          offset: 100,
+        });
+      });
     }
-    return error;
+  }, []);
+
+  const validateEmail = (email) => {
+    const emailRegex = /.+@.+\..+/;
+    return emailRegex.test(email);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: '' });
-    }
-  };
+  const validateForm = () => {
+    const newErrors = {
+      name: '',
+      institution: '',
+      email: '',
+    };
+    let isValid = true;
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    const error = validateField(name, value);
-    setErrors({ ...errors, [name]: error });
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+      isValid = false;
+    }
+
+    if (!formData.institution.trim()) {
+      newErrors.institution = 'Institution is required';
+      isValid = false;
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+      isValid = false;
+    } else if (!validateEmail(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validate all required fields
-    const newErrors = {};
-    ['name', 'school', 'email'].forEach((field) => {
-      const error = validateField(field, formData[field]);
-      if (error) {
-        newErrors[field] = error;
-      }
-    });
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
+    if (!validateForm()) {
+      setSnackbar({ open: true, message: 'Please fill in all required fields correctly.', severity: 'error' });
       return;
     }
 
     setLoading(true);
     try {
+      const url = `${API_URL}/contact`;
       const payload = {
-        name: formData.name,
-        school: formData.school,
-        email: formData.email,
-        role: formData.role,
-        message: formData.message,
-        lead_type: 'b2e',
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        company: formData.institution.trim(),
+        topic: 'education',
+        studentStaffSize: formData.studentStaffSize.trim() || '',
+        message: formData.message.trim() || '',
       };
-
-      const url = `${API_URL}/leads/education`;
-      console.log('📡 API: POST', url, payload);
       await axios.post(url, payload, {
         headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          Pragma: 'no-cache',
-          Expires: '0',
+          'Content-Type': 'application/json',
         },
-        params: { _t: Date.now() },
       });
       
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
-      setFormData({ name: '', school: '', email: '', role: '', message: '' });
-      setErrors({});
+      setFormData({ name: '', institution: '', email: '', studentStaffSize: '', message: '' });
+      setErrors({ name: '', institution: '', email: '' });
     } catch (error) {
-      console.error('❌ Error submitting education lead:', {
-        url: `${API_URL}/leads/education`,
-        error: error.response?.data || error.message,
-        status: error.response?.status,
-      });
-      setSnackbar({ open: true, message: 'Error submitting form. Please try again.', severity: 'error' });
+      console.error('Error submitting form:', error);
+      const errorMessage = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || error.message || 'Error submitting form. Please try again.';
+      setSnackbar({ open: true, message: errorMessage, severity: 'error' });
     } finally {
       setLoading(false);
     }
@@ -124,414 +140,1006 @@ export default function EducationPage() {
   return (
     <>
       <Header />
-      <Box component="main" sx={{ minHeight: '100vh' }}>
+      <Box component="main" sx={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+        {/* Hero Section */}
         <Box
           sx={{
-            background: 'linear-gradient(135deg, #0A4D68 0%, #088395 100%)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
             color: 'white',
-            py: 20,
+            pt: { xs: 12, md: 16 },
+            pb: { xs: 8, md: 12 },
+            position: 'relative',
+            overflow: 'hidden',
           }}
         >
-          <Container maxWidth="lg">
-            <Typography variant="h2" textAlign="center" gutterBottom>
-              Empower Students Against Digital Deception
-            </Typography>
-            <Typography variant="h6" textAlign="center" sx={{ opacity: 0.9 }}>
-              Teaching children how digital manipulation works — before it works on them
-            </Typography>
+          <Container maxWidth="lg"     data-aos="zoom-in"
+                  data-aos-duration="800">
+            <Grid container spacing={6} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Typography
+                  variant="h2"
+                  sx={{
+                    // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                    fontWeight: 700,
+                    mb: 3,
+                    lineHeight: 1.2,
+                    color: 'white',
+                  }}
+                >
+                  Empower Students to Pause Under Pressure
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    fontWeight: 600,
+                    mb: 3,
+                    color: 'white',
+                  }}
+                >
+                  Interactive tools and workshops that teach young people to spot scam tricks early—building real confidence for life online. Perfect for classrooms, clubs, orientation weeks, or leadership programs.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 4,
+                    color: 'white',
+                    lineHeight: 1.8,
+                  }}
+                >
+                  No lectures. Just fun simulations and activities that train the 5-second pause when H.A.C.K. signals hit.
+                </Typography>
+                <Stack 
+                  direction={{ xs: 'column', md: 'row' }}
+                  spacing={{ xs: 2, md: 2 }}
+                  sx={{
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <Button
+                    component={Link}
+                    href="/free-resources"
+                    variant="contained"
+                    size="large"
+                    sx={{
+                      backgroundColor: '#FFFFFF',
+                      color: '#063C5E',
+                      px: { xs: 2.5, sm: 3, md: 3.5 },
+                      py: { xs: 1.25, md: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      whiteSpace: 'nowrap',
+                      '&:hover': {
+                        backgroundColor: '#F5F5F5',
+                        transform: 'translateX(5px)',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    Download Free Lesson Pack →
+                  </Button>
+                  <Button
+                    component="a"
+                    href="#pilot-form"
+                    variant="outlined"
+                    size="large"
+                    sx={{
+                      borderColor: '#FFFFFF',
+                      color: '#FFFFFF',
+                      px: { xs: 2.5, sm: 3, md: 3.5 },
+                      py: { xs: 1.25, md: 1.5 },
+                      fontSize: { xs: '0.875rem', sm: '0.95rem', md: '1rem' },
+                      fontWeight: 600,
+                      borderRadius: 2,
+                      textTransform: 'none',
+                      whiteSpace: 'nowrap',
+                      '&:hover': {
+                        borderColor: '#F5F5F5',
+                        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                        transform: 'translateX(5px)',
+                      },
+                      transition: 'all 0.3s ease',
+                    }}
+                  >
+                    Request Free Pilot →
+                  </Button>
+                </Stack>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box
+                  sx={{
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                    position: 'relative',
+                    animation: 'floatCard 4s ease-in-out infinite',
+                    transformOrigin: 'center',
+                    filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                    '@keyframes floatCard': {
+                      '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                      '50%': {
+                        transform: 'translateY(-15px) rotate(-1deg)',
+                        filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                      },
+                      '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                    },
+                  }}
+                >
+                  <Swiper
+                    modules={[Autoplay, Pagination, Navigation]}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    autoplay={{
+                      delay: 4000,
+                      disableOnInteraction: false,
+                    }}
+                    pagination={{ clickable: true }}
+                    navigation
+                    style={{
+                      '--swiper-pagination-color': '#FFFFFF',
+                      '--swiper-navigation-color': '#FFFFFF',
+                    }}
+                  >
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/education1.jpeg"
+                        alt="Students learning digital safety"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/education2.jpeg"
+                        alt="Interactive workshop"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/education3.jpeg"
+                        alt="Students engaged in activities"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                  </Swiper>
+                </Box>
+              </Grid>
+            </Grid>
           </Container>
         </Box>
 
-        <Container maxWidth="lg" sx={{ py: 8 }}>
-          <Grid container spacing={4} sx={{ mb: 8 }}>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Teacher Handbook</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Comprehensive guide for educators with best practices and teaching strategies
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Lesson Plans</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Ready-to-use curriculum materials aligned with educational standards
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>Interactive Student Decks</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Engaging digital learning tools that make scam prevention fun and memorable
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
-
-          {/* What Schools Receive Section */}
-          <Box sx={{ mb: 6 }}>
-            <Grid container spacing={4} alignItems="center">
-              <Grid item xs={12} md={5}>
+        {/* Why Most Awareness Programs Fail Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }}>
+          <Container maxWidth="lg"     data-aos="fade-out"
+                  data-aos-duration="800">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 6,
+                textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+          Why Most Awareness Programs Fail 
+            </Typography>
+            <Grid container spacing={6} alignItems="center">
+           
+              <Grid item xs={12} md={6}>
+                   <Typography
+              variant="h3"
+              sx={{
+                // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 6,
+                // textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+       Why Videos and Quizzes Aren&apos;t Enough
+            </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 3,
+                    lineHeight: 1.8,
+                    color: 'text.primary',
+                  }}
+                >
+                  Students watch, pass the test... and still click months later. Scams strike when rushed or stressed—triggering the limbic hijack before logic kicks in.{' '}
+                  <Link 
+                    href="/pdfs/the-limbic-hijack.pdf" 
+                    target="_blank" 
+                    style={{ 
+                      color: '#0B7897', 
+                      textDecoration: 'none',
+                      fontWeight: 600,
+                      borderBottom: '1px solid #0B7897',
+                    }}
+                    onMouseEnter={(e) => e.target.style.color = '#063C5E'}
+                    onMouseLeave={(e) => e.target.style.color = '#0B7897'}
+                  >
+                    Read the Science: Why Human Hardware Fails First →
+                  </Link>
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 4,
+                    lineHeight: 1.8,
+                    color: 'text.primary',
+                    fontWeight: 600,
+                  }}
+                >
+                  Konfydence trains the habit that works under pressure: Pause for five seconds when something feels off.
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    lineHeight: 1.8,
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  Most cyber attacks don&apos;t need advanced hacking—they succeed through manipulation when people are under pressure.
+                </Typography>
+              </Grid>
+              <Grid item xs={12} md={6}>
                 <Box
+                  component="img"
+                  src="/images/5SecondsDefense.jpg"
+                  alt="Five seconds is all it takes. No real request breaks if you wait."
                   sx={{
                     width: '100%',
-                    height: { xs: 300, md: 400 },
-                    backgroundColor: '#E9F4FF',
-                    borderRadius: 3,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundImage: 'url(https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80)',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
+                    height: 'auto',
+                    borderRadius: 2,
                     boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  }}
+                />
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.875rem', md: '1rem' },
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    mt: 2,
+                  }}
+                >
+                  Five seconds is all it takes. No real request breaks if you wait.
+                </Typography>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        {/* Free & Premium Tools Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#F6F8FA' }}>
+          <Container maxWidth="lg">
+            <Typography
+              variant="h2"
+              data-aos="fade-down"
+              data-aos-duration="800"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 5,
+                textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+              Free & Premium Tools
+            </Typography>
+            {/* <Typography
+              variant="h4"
+              data-aos="fade-down"
+              data-aos-duration="800"
+              data-aos-delay="100"
+              sx={{
+                fontSize: { xs: '1.25rem', md: '1.5rem' },
+                fontWeight: 600,
+                mb: 6,
+                textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+              Tools That Fit Your Classroom or Campus
+            </Typography> */}
+            
+            <Grid container spacing={4} sx={{ mb: 8 }}>
+              {/* Free Starter Pack */}
+              <Grid item xs={12} md={6}>
+                <Card
+                  data-aos="fade-right"
+                  data-aos-duration="800"
+                  sx={{
+                    height: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    border: '3px solid #0B7897',
+                    backgroundColor: '#ffffff',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
                   }}
                 >
                   <Box
                     sx={{
                       width: '100%',
-                      height: '100%',
-                      backgroundColor: 'rgba(6, 60, 94, 0.3)',
-                      borderRadius: 3,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      height: { xs: 250, md: 300 },
+                      overflow: 'hidden',
+                      position: 'relative',
                     }}
                   >
+                    <Box
+                      component="img"
+                      src="/images/education4.jpeg"
+                      alt="Free Starter Pack"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.3s ease',
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        backgroundColor: '#FFC107',
+                        color: '#000000',
+                        px: 2,
+                        py: 0.5,
+                        borderRadius: 2,
+                        fontSize: '0.875rem',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: 0.5,
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      Free
+                    </Box>
+                  </Box>
+                  <CardContent sx={{ p: 4 }}>
                     <Typography
                       variant="h5"
                       sx={{
-                        color: 'white',
                         fontWeight: 700,
-                        textAlign: 'center',
-                        px: 3,
-                        textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                        mb: 2,
+                        color: '#063C5E',
                       }}
                     >
-                      Youth Pack in Action
+                      Tools That Fit Your Classroom or Campus
                     </Typography>
-                  </Box>
-                </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        color: 'text.secondary',
+                        lineHeight: 1.7,
+                        mb: 3,
+                      }}
+                    >
+                      Downloadable lesson plans, workshop guides, and card game adaptations. Ready-to-use activities teaching H.A.C.K. and pause drills.
+                    </Typography>
+                    <Button
+                      component={Link}
+                      href="/free-resources"
+                      variant="contained"
+                      fullWidth
+                      sx={{
+                        backgroundColor: '#0B7897',
+                        color: 'white',
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#063C5E',
+                        },
+                      }}
+                    >
+                      Download Free Now →
+                    </Button>
+                  </CardContent>
+                </Card>
               </Grid>
-              <Grid item xs={12} md={7}>
-                <Typography
-                  variant="h3"
+
+              {/* Full Workshop & Simulation Kit */}
+              <Grid item xs={12} md={6}>
+                <Card
+                  data-aos="fade-left"
+                  data-aos-duration="800"
+                  data-aos-delay="100"
                   sx={{
-                    mb: 3,
-                    fontSize: { xs: '1.75rem', md: '2.5rem' },
-                    fontWeight: 700,
-                    color: '#063C5E',
+                    height: '100%',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    backgroundColor: '#ffffff',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
                   }}
                 >
-                  What students learn with the Youth Pack
-                </Typography>
-                <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
                   <Box
-                    component="li"
                     sx={{
-                      mb: 2,
-                      display: 'flex',
-                      alignItems: 'start',
-                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      width: '100%',
+                      height: { xs: 250, md: 300 },
+                      overflow: 'hidden',
+                      backgroundColor: '#F6F8FA',
                     }}
                   >
+                    <Box
+                      component="img"
+                      src="/images/education5.png"
+                      alt="Full Workshop & Simulation Kit"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      onError={(e) => {
+                        if (e.target.src.includes('.png')) {
+                          e.target.src = '/images/education5.jpeg';
+                        }
+                      }}
+                    />
+                  </Box>
+                  <CardContent sx={{ p: 4 }}>
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 2,
+                        color: '#063C5E',
+                      }}
+                    >
+                      Full Workshop & Simulation Kit
+                    </Typography>
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
-                        color: '#063C5E',
-                        lineHeight: 1.8,
+                        color: 'text.secondary',
+                        lineHeight: 1.7,
+                        mb: 3,
                       }}
                     >
-                      • How scams exploit trust, fear, and authority
+                      Unlimited digital access for students + facilitator reports. Customizable for clubs, orientation, or full courses. Track habit-building progress.
                     </Typography>
-                  </Box>
-                  <Box
-                    component="li"
-                    sx={{
-                      mb: 2,
-                      display: 'flex',
-                      alignItems: 'start',
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
+                    <Button
+                      component="a"
+                      href="#pilot-form"
+                      variant="contained"
+                      fullWidth
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
-                        color: '#063C5E',
-                        lineHeight: 1.8,
+                        backgroundColor: '#0B7897',
+                        color: 'white',
+                        py: 1.5,
+                        fontWeight: 600,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#063C5E',
+                        },
                       }}
                     >
-                      • How to pause before clicking or sharing
-                    </Typography>
-                  </Box>
-                  <Box
-                    component="li"
-                    sx={{
-                      mb: 2,
-                      display: 'flex',
-                      alignItems: 'start',
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
-                        color: '#063C5E',
-                        lineHeight: 1.8,
-                      }}
-                    >
-                      • How to discuss digital risks openly
-                    </Typography>
-                  </Box>
-                  <Box
-                    component="li"
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'start',
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
-                        color: '#063C5E',
-                        lineHeight: 1.8,
-                      }}
-                    >
-                      • How to support peers and family members
-                    </Typography>
-                  </Box>
-                </Box>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    mt: 3,
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                    color: '#063C5E',
-                    lineHeight: 1.8,
-                    fontStyle: 'italic',
-                  }}
-                >
-                  Konfydence is built by cybersecurity and education experts to turn real-world digital risks into age-appropriate learning experiences.
-                </Typography>
+                      Request Free Pilot →
+                    </Button>
+                  </CardContent>
+                </Card>
               </Grid>
             </Grid>
-          </Box>
 
-          {/* Youth Pack at a glance */}
-          <Box sx={{ mb: 8 }}>
-            <Card
-              sx={{
-                maxWidth: 700,
-                mx: 'auto',
-                p: 4,
-                backgroundColor: '#E9F4FF',
-                borderRadius: 3,
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-              }}
-            >
-              <CardContent>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    mb: 3,
-                    fontSize: { xs: '1.5rem', md: '1.75rem' },
-                    fontWeight: 700,
-                    color: '#063C5E',
-                    textAlign: 'center',
-                  }}
-                >
-                  Youth Pack at a glance
-                </Typography>
-                <Box component="ul" sx={{ listStyle: 'none', pl: 0, m: 0 }}>
-                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
-                      🎯 <strong>Target age:</strong> from 11
-                    </Typography>
+            {/* Card Game Integration */}
+            <Box sx={{ mb: 8 }} data-aos="fade-up" data-aos-duration="800">
+              <Grid container spacing={4} alignItems="center">
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: { xs: 250, md: 300 },
+                      overflow: 'hidden',
+                      borderRadius: 3,
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/education6.jpeg"
+                      alt="Card Game Integration"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                    />
                   </Box>
-                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
-                      ⏱ <strong>Duration:</strong> 3–5 classroom sessions
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
-                      🌍 <strong>Languages:</strong> German & English
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ mb: 2, display: 'flex', alignItems: 'start' }}>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
-                      📊 Includes discussion guides & reflection tools
-                    </Typography>
-                  </Box>
-                  <Box component="li" sx={{ display: 'flex', alignItems: 'start' }}>
-                    <Typography variant="body1" sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, color: '#063C5E' }}>
-                      🛡 <strong>Focus:</strong> scams, manipulation, digital trust
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="h4"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 3,
+                      color: '#063C5E',
+                    }}
+                  >
+                    Card Game Integration
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.125rem' },
+                      lineHeight: 1.8,
+                      color: 'text.primary',
+                    }}
+                  >
+                    Adapt our family card game for group play—spot real scenarios together.
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
 
-          {/* Konfydence for Kids Section */}
-          <Box sx={{ mb: 8, textAlign: 'center' }}>
+            {/* Trust Elements */}
+            <Box sx={{ textAlign: 'center' }} data-aos="fade-up" data-aos-duration="800">
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 700,
+                  mb: 2,
+                  color: '#063C5E',
+                }}
+              >
+                Trust Elements
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: 'text.secondary',
+                  mb: 4,
+                }}
+              >
+                Aligned with education standards + privacy-focused
+              </Typography>
+              <Grid container spacing={4} justifyContent="center">
+                <Grid item xs={12} sm={6} md={5}>
+                  <Box
+                    data-aos="fade-right"
+                    data-aos-duration="800"
+                    sx={{
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/education7.jpeg"
+                      alt="Education Standards"
+                      sx={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} sm={6} md={5}>
+                  <Box
+                    data-aos="fade-left"
+                    data-aos-duration="800"
+                    sx={{
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                      transition: 'transform 0.3s, box-shadow 0.3s',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                      },
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/education8.jpeg"
+                      alt="Privacy Focused"
+                      sx={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
+            </Box>
+          </Container>
+        </Box>
+
+        {/* Social Proof & Impact Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }}>
+          <Container maxWidth="lg" >
             <Typography
-              variant="h4"
+              variant="h2"
               sx={{
-                mb: 2,
-                fontSize: { xs: '1.5rem', md: '2rem' },
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 700,
+                mb: 6,
+                textAlign: 'center',
                 color: '#063C5E',
               }}
             >
-              Konfydence for Kids
+              Already Making Campuses Safer
+            </Typography>
+            
+            <Grid container spacing={4}>
+              <Grid item xs={12} md={6}>
+                <Card
+                    data-aos="fade-right"
+                  data-aos-duration="800"
+                  sx={{
+                    height: '100%',
+                    p: 4,
+                    backgroundColor: '#E9F4FF',
+                    borderRadius: 3,
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                  }}
+                >
+                  <Box sx={{ display: 'flex', gap: 0.5, mb: 2, justifyContent: 'center' }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Box
+                        key={star}
+                        component="span"
+                        sx={{
+                          color: '#FFB800',
+                          fontSize: '1.5rem',
+                        }}
+                      >
+                        ★
+                      </Box>
+                    ))}
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontStyle: 'italic',
+                      textAlign: 'center',
+                      mb: 3,
+                      color: '#063C5E',
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    &ldquo;Engaging and effective—students actually remember the pause habit.&rdquo;
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      textAlign: 'center',
+                      fontWeight: 600,
+                      color: '#063C5E',
+                    }}
+                  >
+                    — University Orientation Director
+                  </Typography>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: { xs: 300, md: 400 },
+                    borderRadius: 3,
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.3s, box-shadow 0.3s',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                    },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="/images/education9.jpeg"
+                    alt="Group facilitation"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.3s ease',
+                      '&:hover': {
+                        transform: 'scale(1.1)',
+                      },
+                    }}
+                  />
+                </Box>
+              </Grid>
+            </Grid>
+          </Container>
+        </Box>
+
+        {/* Pilot Request Form */}
+        <Box
+          id="pilot-form"
+          sx={{
+            py: { xs: 8, md: 12 },
+            backgroundColor: '#F6F8FA',
+          }}
+        >
+          <Container maxWidth="md"     data-aos="zoom-in"
+                  data-aos-duration="800">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 2,
+                textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+              Start with a Free Pilot for Your School/University
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                mb: 5,
+                textAlign: 'center',
+                color: 'text.secondary',
+              }}
+            >
+              See the tools in action—no commitment. We&apos;ll tailor activities and reports to your needs.
+            </Typography>
+
+            {/* Success/Error Message */}
+            {snackbar.open && (
+              <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+                <Alert 
+                  severity={snackbar.severity}
+                  onClose={() => setSnackbar({ ...snackbar, open: false })}
+                  sx={{
+                    maxWidth: 600,
+                    width: '100%',
+                    borderRadius: 2,
+                    fontSize: '1rem',
+                  }}
+                >
+                  {snackbar.message}
+                </Alert>
+              </Box>
+            )}
+
+            <Paper
+              sx={{
+                p: { xs: 3, md: 5 },
+                borderRadius: 3,
+                boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
+              }}
+            >
+              <Box component="form" onSubmit={handleSubmit}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Name"
+                      required
+                      value={formData.name}
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (errors.name) setErrors({ ...errors, name: '' });
+                      }}
+                      error={!!errors.name}
+                      helperText={errors.name}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Institution"
+                      required
+                      value={formData.institution}
+                      onChange={(e) => {
+                        setFormData({ ...formData, institution: e.target.value });
+                        if (errors.institution) setErrors({ ...errors, institution: '' });
+                      }}
+                      error={!!errors.institution}
+                      helperText={errors.institution}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={(e) => {
+                        setFormData({ ...formData, email: e.target.value });
+                        if (errors.email) setErrors({ ...errors, email: '' });
+                      }}
+                      error={!!errors.email}
+                      helperText={errors.email}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Student/Staff Size"
+                      value={formData.studentStaffSize}
+                      onChange={(e) => setFormData({ ...formData, studentStaffSize: e.target.value })}
+                      placeholder="e.g., 500-1000 students"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Message"
+                      multiline
+                      rows={4}
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      placeholder="Tell us about your needs..."
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      fullWidth
+                      disabled={loading}
+                      sx={{
+                        backgroundColor: '#0B7897',
+                        color: 'white',
+                        py: 1.5,
+                        fontSize: '1.125rem',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        '&:hover': {
+                          backgroundColor: '#063C5E',
+                        },
+                      }}
+                    >
+                      {loading ? 'Submitting...' : 'Submit Request'}
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Box>
+            </Paper>
+          </Container>
+        </Box>
+
+        {/* Motivational Close */}
+        <Box
+          sx={{
+            py: { xs: 8, md: 12 },
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+            color: 'white',
+          }}
+        >
+          <Container maxWidth="lg"     data-aos="zoom-in"
+                  data-aos-duration="800">
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                fontWeight: 700,
+                mb: 3,
+                textAlign: 'center',
+                lineHeight: 1.2,
+              }}
+            >
+              Stop Training for the Quiz. Start Training for the Pause.
             </Typography>
             <Typography
               variant="body1"
               sx={{
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                mb: 5,
+                textAlign: 'center',
                 maxWidth: 800,
                 mx: 'auto',
-                fontSize: { xs: '1rem', md: '1.1rem' },
-                color: '#063C5E',
                 lineHeight: 1.8,
+                color: 'white',
               }}
             >
-              Konfydence for Kids reinvests learning into impact.
-              <br />
-              Every Youth Pack contributes directly to organizations that help children grow safer, more confident, and more resilient in digital spaces.
+              Young people face sophisticated scams daily. Five seconds of pause is their strongest defense. Join schools and universities building this habit early.
             </Typography>
-          </Box>
-
-          {/* Form Section */}
-          <Box>
-            <Typography variant="h4" textAlign="center" gutterBottom>
-              Request Pilot Information
-            </Typography>
-            {/* <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 2 }}>
-              Interested in bringing Konfydence to your school? Fill out the form below
-            </Typography> */}
-            
-            {/* Context Copy */}
-            <Typography
-              variant="body2"
-              textAlign="center"
-              sx={{
-                mb: 4,
-                color: '#063C5E',
-                fontStyle: 'italic',
-                maxWidth: 700,
-                mx: 'auto',
-                px: 2,
-              }}
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={3}
+              justifyContent="center"
+              alignItems="center"
             >
-              Request a school pilot and we&apos;ll contact you within 2 working days with details, materials, and next steps.
-            </Typography>
-
-            <Box component="form" onSubmit={handleSubmit} sx={{ maxWidth: 600, mx: 'auto' }}>
-              <Grid container spacing={3}>
-                {/* 1. Name */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="name"
-                    label="Name"
-                    required
-                    value={formData.name}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={!!errors.name}
-                    helperText={errors.name}
-                  />
-                </Grid>
-
-                {/* 2. School / Institution */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="school"
-                    label="School / Institution"
-                    required
-                    value={formData.school}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={!!errors.school}
-                    helperText={errors.school}
-                  />
-                </Grid>
-
-                {/* 3. Email */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="email"
-                    label="Email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={!!errors.email}
-                    helperText={errors.email}
-                  />
-                </Grid>
-
-                {/* 4. Role */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="role"
-                    label="Role (e.g. Teacher, Principal)"
-                    value={formData.role}
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                {/* 5. Message */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    name="message"
-                    label="Message"
-                    multiline
-                    rows={4}
-                    value={formData.message}
-                    onChange={handleChange}
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Button type="submit" variant="contained" size="large" fullWidth disabled={loading}>
-                    {loading ? 'Submitting...' : 'Submit Request'}
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </Box>
-        </Container>
+              <Button
+                component={Link}
+                href="/free-resources"
+                variant="contained"
+                size="large"
+                sx={{
+                  backgroundColor: '#FFFFFF',
+                  color: '#063C5E',
+                  px: { xs: 4, md: 5 },
+                  py: { xs: 1.5, md: 2 },
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Download Free Resources
+              </Button>
+              <Button
+                component="a"
+                href="#pilot-form"
+                variant="outlined"
+                size="large"
+                sx={{
+                  borderColor: '#FFFFFF',
+                  color: '#FFFFFF',
+                  px: { xs: 4, md: 5 },
+                  py: { xs: 1.5, md: 2 },
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  fontWeight: 600,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: '#F5F5F5',
+                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-2px)',
+                  },
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                Request Pilot
+              </Button>
+            </Stack>
+          </Container>
+        </Box>
       </Box>
       <Footer />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
     </>
   );
 }

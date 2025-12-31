@@ -1,4 +1,8 @@
-import { useState } from 'react';
+'use client';
+
+import { useState, useEffect } from 'react';
+import Head from 'next/head';
+import Link from 'next/link';
 import {
   Container,
   Typography,
@@ -6,495 +10,704 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Divider,
-  Fade,
-  Grow,
+  TextField,
+  Button,
+  Grid,
+  Tabs,
+  Tab,
+  Paper,
+  Stack,
 } from '@mui/material';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
-import PeopleIcon from '@mui/icons-material/People';
+import SearchIcon from '@mui/icons-material/Search';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-const konfydenceFAQs = [
-  {
-    question: 'What is Konfydence?',
-    answer: 'Konfydence is an interactive learning system that helps people recognize scams and manipulation before harm happens. It focuses on human behavior, not technical skills.',
-  },
-  {
-    question: 'Is Konfydence a card game or a training program?',
-    answer: 'Both. Konfydence uses physical and digital cards to simulate real-world scam scenarios and guide structured discussion. The goal is learning through decision-making and reflection, not memorization.',
-  },
-  {
-    question: 'Who is Konfydence for?',
-    answer: (
-      <>
-        <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-          <li>Families and individuals</li>
-          <li>Schools and youth programs</li>
-          <li>Organizations and teams</li>
-          <li>Anyone who uses email, messaging apps, or online services</li>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          If you interact digitally, Konfydence is relevant.
-        </Typography>
-      </>
-    ),
-  },
-  {
-    question: 'Is this only for "non-technical" people?',
-    answer: 'No. Scams don\'t target ignorance — they exploit psychological shortcuts. Even experienced professionals fall victim under pressure. Konfydence is designed for all levels.',
-  },
-  {
-    question: 'Does Konfydence use fear or shock tactics?',
-    answer: 'No. We deliberately avoid scare tactics. Learning works best when people feel calm, curious, and confident.',
-  },
-  {
-    question: 'Is Konfydence age-appropriate?',
-    answer: 'Yes. Scenarios are designed to work across generations. From 12 years. Discussions can be adapted for children, teens, adults, and seniors.',
-  },
-  {
-    question: 'Is Konfydence a compliance or certification tool?',
-    answer: 'No. Konfydence does not certify compliance. It supports awareness and behavior-based learning and can provide documentation that organizations may use as part of their risk and training efforts.',
-  },
-  {
-    question: 'Does Konfydence track individual behavior?',
-    answer: 'No. Konfydence focuses on group-level learning and discussion. It does not monitor, score, or profile individuals.',
-  },
-  {
-    question: 'How does the digital extension work?',
-    answer: (
-      <>
-        <Typography variant="body1" paragraph>
-          Each physical kit includes a QR code that unlocks optional digital access, including:
-        </Typography>
-        <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-          <li>additional scenarios</li>
-          <li>updates</li>
-          <li>self-paced learning</li>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          A free trial is included.
-        </Typography>
-      </>
-    ),
-  },
-  {
-    question: 'What is "Konfydence for Kids"?',
-    answer: 'For kids-related products, €1 per unit is donated to initiatives that strengthen digital resilience for children and young people.',
-  },
+const FAQ_CATEGORIES = [
+  'General',
+  'Family Kit',
+  'Science & Approach',
+  'For Schools/Universities',
+  'For Businesses',
+  'Ambassador Program',
 ];
 
-const ambassadorFAQs = [
-  {
-    question: 'What is a Konfydence Ambassador?',
-    answer: 'A Konfydence Ambassador is an independent partner who helps spread digital resilience by introducing Konfydence to families, schools, organizations, or communities. Ambassadors are rewarded for real impact — not for clicks or hype.',
-  },
-  {
-    question: 'Is this an affiliate or MLM program?',
-    answer: (
-      <>
-        <Typography variant="body1" paragraph>
-          No. There are:
-        </Typography>
-        <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-          <li>no teams</li>
-          <li>no downlines</li>
-          <li>no recruiting others</li>
-          <li>no variable pricing</li>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          This is a direct, transparent partner model.
-        </Typography>
-      </>
-    ),
-  },
-  {
-    question: 'How are ambassadors rewarded?',
-    answer: (
-      <>
-        <Typography variant="body1" paragraph>
-          Ambassadors are rewarded based on outcomes:
-        </Typography>
-        <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-          <li>product sales (B2C)</li>
-          <li>qualified leads (education & organizations)</li>
-          <li>closed contracts (where applicable)</li>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Typical rewards range from 10–15%, depending on the context.
-        </Typography>
-      </>
-    ),
-  },
-  {
-    question: 'What is an ambassador code?',
-    answer: 'Each ambassador receives a personal code used to: attribute sales, track introductions, and ensure transparent rewards. The code is used only for attribution.',
-  },
-  {
-    question: 'Can ambassadors offer discounts?',
-    answer: 'No. Pricing is fixed across all channels to protect trust and fairness.',
-  },
-  {
-    question: 'Can I order products in bulk for events or workshops?',
-    answer: (
-      <>
-        <Typography variant="body1" paragraph>
-          Yes. Ambassadors can place bulk orders for:
-        </Typography>
-        <Box component="ul" sx={{ pl: 3, mb: 0 }}>
-          <li>workshops</li>
-          <li>trainings</li>
-          <li>conferences</li>
-          <li>community events</li>
-        </Box>
-        <Typography variant="body1" sx={{ mt: 2 }}>
-          Bulk orders follow fixed pricing and still qualify for ambassador rewards.
-        </Typography>
-      </>
-    ),
-  },
-  {
-    question: 'Do ambassadors need to close sales?',
-    answer: 'No. Especially for schools and organizations, ambassadors typically: make introductions, open conversations, and support pilots. Konfydence handles contracting and pricing.',
-  },
-  {
-    question: 'When are rewards paid?',
-    answer: 'Rewards are paid based on: confirmed sales, or qualified leads reaching defined milestones. Details are shared during onboarding.',
-  },
-  {
-    question: 'Are there minimum sales targets?',
-    answer: 'No. Ambassador activity is quality-driven, not quota-driven.',
-  },
-  {
-    question: 'Can anyone become an ambassador?',
-    answer: 'We review each application to ensure alignment with Konfydence values and mission. This helps protect: ambassadors\' credibility, customer trust, and brand integrity.',
-  },
-  {
-    question: 'Is there a contract?',
-    answer: 'Yes. Ambassadors receive a clear, plain-language agreement outlining: responsibilities, rewards, data protection, and ethical guidelines.',
-  },
-  {
-    question: 'Can I stop anytime?',
-    answer: 'Yes. There are no long-term obligations.',
-  },
-];
+const faqData = {
+  'General': [
+    {
+      question: 'What is Konfydence?',
+      answer: 'Konfydence teaches the one habit that stops most scams: a quick pause under pressure. Using fun simulations and games based on behavioral science.',
+    },
+    {
+      question: 'Who is Konfydence for?',
+      answer: 'Families, students, schools, teams, and organizations—anyone wanting real confidence online.',
+    },
+    {
+      question: 'How is Konfydence different from other training?',
+      answer: 'We train behavior under stress (not just knowledge) with engaging tools that stick.',
+    },
+  ],
+  'Family Kit': [
+    {
+      question: 'What\'s included in the Family Scam Survival Kit?',
+      answer: '80 premium scenario cards, H.A.C.K. reference, digital extensions, and free Family Tech Agreement.',
+    },
+    {
+      question: 'Is it suitable for kids and grandparents?',
+      answer: 'Yes—designed for ages 12+, multi-generational play, no-blame discussions.',
+    },
+    {
+      question: 'What are the current prices?',
+      answer: 'Introductory: Physical $49 | Digital $29/year | Bundle $69 (Retail higher post-launch).',
+    },
+    {
+      question: 'Does buying a kit help schools?',
+      answer: 'Yes—every purchase donates a digital school license via Buy One, Give One.',
+    },
+  ],
+  'Science & Approach': [
+    {
+      question: 'What is the "limbic hijack" and why does it matter?',
+      answer: 'Scammers trigger emotions to bypass logic. We train you to pause and regain control. Explain the H.A.C.K. framework. Hurry, Authority, Comfort, Kill-Switch— the four tricks scammers always use. Spot them, pause 5 seconds.',
+      hasImage: true,
+      image: '/images/f3.png',
+      imageAlt: 'Hot Brain vs Cool Brain - Limbic Hijack',
+    },
+    // {
+    //   question: 'Explain the H.A.C.K. framework.',
+    //   answer: 'Hurry, Authority, Comfort, Kill-Switch— the four tricks scammers always use. Spot them, pause 5 seconds.',
+    // },
+    {
+      question: 'Is this based on real science?',
+      answer: 'Yes—behavioral psychology proves short pauses outsmart emotional triggers. Read More →',
+      hasImage: true,
+      image: '/images/f4.png',
+      imageAlt: 'Science-based approach',
+      answerAfterImage: 'Answer to HACK = Breath, Pause, Think, Respond.',
+      hasLink: true,
+      linkText: 'Read More →',
+      linkUrl: '/pdfs/the-limbic-hijack.pdf',
+    },
+  ],
+  'For Schools/Universities': [
+    {
+      question: 'Are there free resources for educators?',
+      answer: 'Yes—download our full Lesson Pack instantly.',
+    },
+    {
+      question: 'How can we run a pilot?',
+      answer: 'Request a free pilot tailored to your campus—no commitment.',
+    },
+  ],
+  'For Businesses': [
+    {
+      question: 'What is CoMaSy?',
+      answer: 'Our Compliance Mastery System: Simulations + auditor-ready reports for real risk reduction.',
+    },
+    {
+      question: 'How does pricing work?',
+      answer: 'Custom per-seat licensing—book a demo for details.',
+    },
+  ],
+  'Ambassador Program': [
+    {
+      question: 'What is a Konfydence Ambassador?',
+      answer: 'Passionate individuals spreading scam resilience—earn rewards, early access.',
+    },
+    {
+      question: 'How do I join?',
+      answer: 'Apply here',
+      hasLink: true,
+      linkText: 'Apply here',
+      linkUrl: '/contact',
+    },
+  ],
+};
 
 export default function FAQPage() {
   const [expanded, setExpanded] = useState({});
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState(0);
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded({ ...expanded, [panel]: isExpanded });
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+    setSearchQuery('');
+  };
+
+  const filterFAQs = (category) => {
+    if (!searchQuery.trim()) return faqData[category];
+    
+    const query = searchQuery.toLowerCase();
+    return faqData[category].filter(
+      (faq) =>
+        faq.question.toLowerCase().includes(query) ||
+        (faq.answer && faq.answer.toLowerCase().includes(query)) ||
+        (faq.answerAfterImage && faq.answerAfterImage.toLowerCase().includes(query))
+    );
+  };
+
+  // Update active tab when search query changes
+  useEffect(() => {
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      let matchingTabIndex = activeTab;
+      
+      for (let i = 0; i < FAQ_CATEGORIES.length; i++) {
+        const category = FAQ_CATEGORIES[i];
+        const categoryFAQs = faqData[category] || [];
+        const hasMatch = categoryFAQs.some(
+          (faq) =>
+            faq.question.toLowerCase().includes(query) ||
+            (faq.answer && faq.answer.toLowerCase().includes(query)) ||
+            (faq.answerAfterImage && faq.answerAfterImage.toLowerCase().includes(query))
+        );
+        if (hasMatch) {
+          matchingTabIndex = i;
+          break;
+        }
+      }
+      
+      if (matchingTabIndex !== activeTab) {
+        setActiveTab(matchingTabIndex);
+      }
+    }
+  }, [searchQuery]);
+
+  const currentCategory = FAQ_CATEGORIES[activeTab];
+  const filteredFAQs = filterFAQs(currentCategory);
+
   return (
     <>
+      <Head>
+        <title>Konfydence FAQ</title>
+        <meta name="description" content="Got questions about Konfydence? Find answers about building real scam resilience for families, schools, and teams." />
+      </Head>
       <Header />
-      <Box
-        component="main"
-        sx={{
-          pt: { xs: 8, md: 10 },
-          minHeight: '80vh',
-          background: 'linear-gradient(180deg, #f5f5f5 0%, #ffffff 100%)',
-        }}
-      >
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 } }}>
-          {/* Header Section */}
-          <Fade in timeout={800}>
-            <Box sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}>
+      
+      {/* Hero Section */}
+      <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#063C5E' }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
+          {/* First Row: Left Content, Right Image Carousel */}
+          <Grid container spacing={4} alignItems="center" sx={{ mb: 4 }}>
+            <Grid item xs={12} md={6}>
               <Typography
                 variant="h1"
                 sx={{
-                  fontSize: { xs: '2.5rem', md: '3.5rem' },
+                  fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
                   fontWeight: 700,
-                  color: '#0B7897',
                   mb: 2,
-                  background: 'linear-gradient(135deg, #0B7897 0%, #063C5E 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  color: '#FFFFFF',
+                  lineHeight: 1.2,
                 }}
               >
-                Frequently Asked Questions
+                Got Questions About Konfydence? We&apos;ve Got Answers.
               </Typography>
               <Typography
-                variant="h6"
+                variant="h5"
                 sx={{
-                  color: 'text.secondary',
-                  maxWidth: '600px',
-                  mx: 'auto',
-                  fontWeight: 400,
+                  fontSize: { xs: '1.1rem', md: '1.3rem' },
+                  fontWeight: 500,
+                  mb: 2,
+                  color: '#FFFFFF',
+                  lineHeight: 1.6,
                 }}
               >
-                Find answers to common questions about Konfydence and our Ambassador program
+                Everything you need to know about building real scam resilience—for families, schools, and teams.
               </Typography>
-            </Box>
-          </Fade>
-
-          {/* Konfydence FAQs Section */}
-          <Grow in timeout={1000}>
-            <Box sx={{ mb: { xs: 6, md: 8 } }}>
-              <Box
+              <Typography
+                variant="body1"
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  mb: 4,
-                  pb: 2,
-                  borderBottom: '3px solid #0B7897',
+                  fontSize: { xs: '1rem', md: '1.125rem' },
+                  mb: 3,
+                  lineHeight: 1.7,
+                  color: 'rgba(255,255,255,0.9)',
                 }}
               >
-                <QuestionAnswerIcon
-                  sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
-                    color: '#0B7897',
-                  }}
-                />
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontSize: { xs: '1.75rem', md: '2.25rem' },
-                    fontWeight: 600,
-                    color: '#0B7897',
-                  }}
-                >
-                  Konfydence
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {konfydenceFAQs.map((faq, index) => (
-                  <Fade
-                    key={index}
-                    in
-                    timeout={600}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <Accordion
-                      expanded={expanded[`konfydence-${index}`] || false}
-                      onChange={handleChange(`konfydence-${index}`)}
-                      sx={{
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        borderRadius: '8px !important',
-                        mb: 1,
-                        '&:before': {
-                          display: 'none',
-                        },
-                        '&.Mui-expanded': {
-                          margin: '0 0 8px 0',
-                          boxShadow: '0 4px 16px rgba(11, 120, 151, 0.15)',
-                        },
-                        transition: 'all 0.3s ease-in-out',
-                        '&:hover': {
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-                          transform: 'translateY(-2px)',
-                        },
-                      }}
-                    >
-                      <AccordionSummary
-                        expandIcon={
-                          <ExpandMoreIcon
-                            sx={{
-                              color: '#0B7897',
-                              transition: 'transform 0.3s ease',
-                              transform: expanded[`konfydence-${index}`]
-                                ? 'rotate(180deg)'
-                                : 'rotate(0deg)',
-                            }}
-                          />
-                        }
-                        sx={{
-                          py: 2,
-                          px: 3,
-                          '&.Mui-expanded': {
-                            backgroundColor: '#f0f9fb',
-                            borderLeft: '4px solid #0B7897',
-                          },
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: 600,
-                            color: '#063C5E',
-                            fontSize: { xs: '1rem', md: '1.125rem' },
-                          }}
-                        >
-                          {faq.question}
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails
-                        sx={{
-                          px: 3,
-                          py: 3,
-                          backgroundColor: '#fafafa',
-                          borderTop: '1px solid #e0e0e0',
-                        }}
-                      >
-                        {typeof faq.answer === 'string' ? (
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              color: 'text.primary',
-                              lineHeight: 1.8,
-                              fontSize: { xs: '0.9375rem', md: '1rem' },
-                            }}
-                          >
-                            {faq.answer}
-                          </Typography>
-                        ) : (
-                          <Box
-                            sx={{
-                              color: 'text.primary',
-                              lineHeight: 1.8,
-                              fontSize: { xs: '0.9375rem', md: '1rem' },
-                            }}
-                          >
-                            {faq.answer}
-                          </Box>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  </Fade>
-                ))}
-              </Box>
-            </Box>
-          </Grow>
-
-          <Divider sx={{ my: { xs: 4, md: 6 }, borderWidth: 2, borderColor: '#e0e0e0' }} />
-
-          {/* Ambassador FAQs Section */}
-          <Grow in timeout={1200}>
-            <Box>
+                From how the 5-second pause works to pricing and science—find quick answers below. Still have questions? We&apos;re here to help.
+              </Typography>
+            </Grid>
+            <Grid item xs={12} md={6}>
               <Box
                 sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  mb: 4,
-                  pb: 2,
-                  borderBottom: '3px solid #0B7897',
+                  borderRadius: 3,
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                  position: 'relative',
+                  animation: 'floatCard 4s ease-in-out infinite',
+                  transformOrigin: 'center',
+                  filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                  '@keyframes floatCard': {
+                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                    '50%': {
+                      transform: 'translateY(-15px) rotate(-1deg)',
+                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
+                    },
+                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
+                  },
                 }}
               >
-                <PeopleIcon
-                  sx={{
-                    fontSize: { xs: '2rem', md: '2.5rem' },
-                    color: '#0B7897',
+                <Swiper
+                  modules={[Autoplay, Pagination, Navigation]}
+                  spaceBetween={0}
+                  slidesPerView={1}
+                  autoplay={{
+                    delay: 4000,
+                    disableOnInteraction: false,
                   }}
-                />
-                <Typography
-                  variant="h3"
-                  sx={{
-                    fontSize: { xs: '1.75rem', md: '2.25rem' },
-                    fontWeight: 600,
-                    color: '#0B7897',
+                  pagination={{ clickable: true }}
+                  navigation
+                  style={{
+                    '--swiper-pagination-color': '#FFFFFF',
+                    '--swiper-navigation-color': '#FFFFFF',
                   }}
                 >
-                  Konfydence Ambassador
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {ambassadorFAQs.map((faq, index) => (
-                  <Fade
-                    key={index}
-                    in
-                    timeout={600}
-                    style={{ transitionDelay: `${index * 100}ms` }}
-                  >
-                    <Accordion
-                      expanded={expanded[`ambassador-${index}`] || false}
-                      onChange={handleChange(`ambassador-${index}`)}
+                  <SwiperSlide>
+                    <Box
+                      component="img"
+                      src="/images/f1.jpeg"
+                      alt="Konfydence FAQ"
                       sx={{
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                        borderRadius: '8px !important',
-                        mb: 1,
-                        '&:before': {
-                          display: 'none',
-                        },
-                        '&.Mui-expanded': {
-                          margin: '0 0 8px 0',
-                          boxShadow: '0 4px 16px rgba(11, 120, 151, 0.15)',
-                        },
-                        transition: 'all 0.3s ease-in-out',
-                        '&:hover': {
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
-                          transform: 'translateY(-2px)',
-                        },
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
                       }}
-                    >
-                      <AccordionSummary
-                        expandIcon={
-                          <ExpandMoreIcon
-                            sx={{
-                              color: '#0B7897',
-                              transition: 'transform 0.3s ease',
-                              transform: expanded[`ambassador-${index}`]
-                                ? 'rotate(180deg)'
-                                : 'rotate(0deg)',
-                            }}
-                          />
-                        }
-                        sx={{
-                          py: 2,
-                          px: 3,
-                          '&.Mui-expanded': {
-                            backgroundColor: '#f0f9fb',
-                            borderLeft: '4px solid #0B7897',
-                          },
-                        }}
-                      >
-                        <Typography
-                          variant="h6"
-                          sx={{
-                            fontWeight: 600,
-                            color: '#063C5E',
-                            fontSize: { xs: '1rem', md: '1.125rem' },
-                          }}
-                        >
-                          {faq.question}
-                        </Typography>
-                      </AccordionSummary>
-                      <AccordionDetails
-                        sx={{
-                          px: 3,
-                          py: 3,
-                          backgroundColor: '#fafafa',
-                          borderTop: '1px solid #e0e0e0',
-                        }}
-                      >
-                        {typeof faq.answer === 'string' ? (
-                          <Typography
-                            variant="body1"
-                            sx={{
-                              color: 'text.primary',
-                              lineHeight: 1.8,
-                              fontSize: { xs: '0.9375rem', md: '1rem' },
-                            }}
-                          >
-                            {faq.answer}
-                          </Typography>
-                        ) : (
-                          <Box
-                            sx={{
-                              color: 'text.primary',
-                              lineHeight: 1.8,
-                              fontSize: { xs: '0.9375rem', md: '1rem' },
-                            }}
-                          >
-                            {faq.answer}
-                          </Box>
-                        )}
-                      </AccordionDetails>
-                    </Accordion>
-                  </Fade>
-                ))}
+                    />
+                  </SwiperSlide>
+                  <SwiperSlide>
+                    <Box
+                      component="img"
+                      src="/images/f2.jpeg"
+                      alt="Konfydence FAQ"
+                      sx={{
+                        width: '100%',
+                        height: 'auto',
+                        display: 'block',
+                      }}
+                    />
+                  </SwiperSlide>
+                </Swiper>
               </Box>
-            </Box>
-          </Grow>
+            </Grid>
+          </Grid>
+
+          {/* Second Row: Search Bar and CTA Button - Centered */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Grid container spacing={3} justifyContent="center" sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={8} md={6}>
+                <TextField
+                  fullWidth
+                  placeholder="Search FAQs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  InputProps={{
+                    startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
+                  }}
+                  sx={{
+                    backgroundColor: 'white',
+                    borderRadius: 2,
+                    '& .MuiOutlinedInput-root': {
+                      '&:hover fieldset': {
+                        borderColor: '#0B7897',
+                      },
+                      '&.Mui-focused fieldset': {
+                        borderColor: '#0B7897',
+                      },
+                    },
+                  }}
+                />
+              </Grid>
+            </Grid>
+            <Button
+              component={Link}
+              href="/contact"
+              variant="outlined"
+              sx={{
+                borderColor: '#FFFFFF',
+                color: '#FFFFFF',
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                '&:hover': {
+                  borderColor: '#F5F5F5',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                },
+              }}
+            >
+              Can&apos;t find your answer? Contact Us →
+            </Button>
+          </Box>
         </Container>
       </Box>
+
+      {/* FAQ Categories Section */}
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#ffffff' }}>
+        <Container maxWidth="lg">
+          <Paper
+            elevation={0}
+            sx={{
+              border: '1px solid #e0e0e0',
+              borderRadius: 3,
+              overflow: 'hidden',
+            }}
+          >
+            <Tabs
+              value={activeTab}
+              onChange={handleTabChange}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              sx={{
+                borderBottom: '2px solid #e0e0e0',
+                '& .MuiTab-root': {
+                  fontWeight: 600,
+                  color: '#063C5E',
+                  textTransform: 'none',
+                  fontSize: { xs: '0.75rem', sm: '0.875rem', md: '1rem' },
+                  minHeight: { xs: '48px', md: '64px' },
+                  px: { xs: 1.5, sm: 2, md: 3 },
+                  '&.Mui-selected': {
+                    color: '#0B7897',
+                  },
+                },
+                '& .MuiTabs-indicator': {
+                  backgroundColor: '#0B7897',
+                  height: 3,
+                },
+                '& .MuiTabs-scrollButtons': {
+                  color: '#0B7897',
+                  '&.Mui-disabled': {
+                    opacity: 0.3,
+                  },
+                  '&:hover': {
+                    backgroundColor: 'rgba(11, 120, 151, 0.1)',
+                  },
+                },
+                '& .MuiTabs-scrollButtons.Mui-disabled': {
+                  opacity: 0.3,
+                },
+              }}
+            >
+              {FAQ_CATEGORIES.map((category) => (
+                <Tab key={category} label={category} />
+              ))}
+            </Tabs>
+
+            <Box sx={{ p: { xs: 3, md: 4 }, maxWidth: '900px', mx: 'auto' }}>
+              {filteredFAQs.length === 0 ? (
+                <Typography
+                  variant="body1"
+                  sx={{
+                    textAlign: 'center',
+                    color: 'text.secondary',
+                    py: 4,
+                  }}
+                >
+                  No FAQs found matching &quot;{searchQuery}&quot; in {currentCategory}.
+                </Typography>
+              ) : (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {filteredFAQs.map((faq, index) => (
+                    <Accordion
+                      key={index}
+                      expanded={expanded[`${currentCategory}-${index}`] || false}
+                      onChange={handleChange(`${currentCategory}-${index}`)}
+                      sx={{
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                        borderRadius: '8px !important',
+                        mb: 1,
+                        '&:before': {
+                          display: 'none',
+                        },
+                        '&.Mui-expanded': {
+                          margin: '0 0 8px 0',
+                          boxShadow: '0 4px 16px rgba(11, 120, 151, 0.15)',
+                        },
+                        transition: 'all 0.3s ease-in-out',
+                        '&:hover': {
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      <AccordionSummary
+                        expandIcon={
+                          <ExpandMoreIcon
+                            sx={{
+                              color: '#0B7897',
+                              transition: 'transform 0.3s ease',
+                              transform: expanded[`${currentCategory}-${index}`]
+                                ? 'rotate(180deg)'
+                                : 'rotate(0deg)',
+                            }}
+                          />
+                        }
+                        sx={{
+                          py: 2,
+                          px: 3,
+                          pr: 1,
+                          '&.Mui-expanded': {
+                            backgroundColor: '#f0f9fb',
+                            borderLeft: '4px solid #0B7897',
+                            paddingLeft: '19px',
+                          },
+                        }}
+                      >
+                        <Typography
+                          variant="h6"
+                          sx={{
+                            fontWeight: 600,
+                            color: '#063C5E',
+                            fontSize: { xs: '1rem', md: '1.125rem' },
+                            width: '100%',
+                            pr: 2,
+                          }}
+                        >
+                          {faq.question}
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails
+                        sx={{
+                          px: 3,
+                          py: 3,
+                          backgroundColor: '#fafafa',
+                          borderTop: '1px solid #e0e0e0',
+                        }}
+                      >
+                        {faq.answer && (
+                          <Typography
+                            variant="body1"
+                            component="div"
+                            sx={{
+                              color: 'text.primary',
+                              lineHeight: 1.8,
+                              fontSize: { xs: '0.9375rem', md: '1rem' },
+                              mb: faq.hasImage ? 2 : 0,
+                            }}
+                          >
+                            {faq.hasLink && (faq.answer.includes('[Read More →]') || faq.answer.includes('Read More →')) ? (
+                              <>
+                                {faq.answer.includes('[Read More →]') 
+                                  ? faq.answer.split('[Read More →]')[0]
+                                  : faq.answer.split('Read More →')[0]
+                                }{' '}
+                                {faq.linkUrl.startsWith('/pdfs/') ? (
+                                  <Typography
+                                    component="a"
+                                    href={faq.linkUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    sx={{
+                                      color: '#0B7897',
+                                      fontWeight: 600,
+                                      textDecoration: 'none',
+                                      cursor: 'pointer',
+                                      display: 'inline',
+                                      '&:hover': {
+                                        color: '#063C5E',
+                                        textDecoration: 'underline',
+                                      },
+                                    }}
+                                  >
+                                    Read More →
+                                  </Typography>
+                                ) : (
+                                  <Link
+                                    href={faq.linkUrl}
+                                    style={{
+                                      color: '#0B7897',
+                                      fontWeight: 600,
+                                      textDecoration: 'none',
+                                      cursor: 'pointer',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.color = '#063C5E';
+                                      e.target.style.textDecoration = 'underline';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.color = '#0B7897';
+                                      e.target.style.textDecoration = 'none';
+                                    }}
+                                  >
+                                    Read More →
+                                  </Link>
+                                )}
+                              </>
+                            ) : (
+                              faq.answer
+                            )}
+                          </Typography>
+                        )}
+                        {faq.hasImage && (
+                          <Box
+                            component="img"
+                            src={faq.image}
+                            alt={faq.imageAlt}
+                            sx={{
+                              width: '100%',
+                              maxWidth: '600px',
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                              mt: faq.answer ? 2 : 0,
+                              mb: faq.answerAfterImage ? 2 : 0,
+                              display: 'block',
+                              mx: 'auto',
+                            }}
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
+                        )}
+                        {faq.answerAfterImage && (
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              color: 'text.primary',
+                              lineHeight: 1.8,
+                              fontSize: { xs: '0.9375rem', md: '1rem' },
+                              fontWeight: 600,
+                              mt: 2,
+                            }}
+                          >
+                            {faq.answerAfterImage}
+                          </Typography>
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              )}
+            </Box>
+          </Paper>
+        </Container>
+      </Box>
+
+      {/* Bottom Close & Conversion */}
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#063C5E', color: 'white' }}>
+        <Container maxWidth="lg">
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <Typography
+              variant="h3"
+              sx={{
+                fontSize: { xs: '1.75rem', md: '2.5rem' },
+                fontWeight: 700,
+                mb: 3,
+                color: 'white',
+              }}
+            >
+              Still Have Questions? Let&apos;s Talk.
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                mb: 4,
+                lineHeight: 1.8,
+                color: 'rgba(255,255,255,0.9)',
+                maxWidth: '800px',
+                mx: 'auto',
+              }}
+            >
+              We&apos;re real people building real habits—reach out anytime.
+            </Typography>
+          </Box>
+          
+          <Grid container spacing={2} sx={{ maxWidth: '700px', mx: 'auto' }}>
+            <Grid item xs={12} sm={6}>
+              <Button
+                component={Link}
+                href="/products"
+                variant="contained"
+                fullWidth
+                sx={{
+                  backgroundColor: '#FF725E',
+                  color: 'white',
+                  py: 1.5,
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  '&:hover': {
+                    backgroundColor: '#e65a4a',
+                  },
+                }}
+              >
+                Families → Get Your Kit
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button
+                component={Link}
+                href="/education#pilot-form"
+                variant="contained"
+                fullWidth
+                sx={{
+                  backgroundColor: '#0B7897',
+                  color: 'white',
+                  py: 1.5,
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  '&:hover': {
+                    backgroundColor: '#063C5E',
+                  },
+                }}
+              >
+                Schools → Free Resources
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button
+                component={Link}
+                href="/comasy#demo-form"
+                variant="contained"
+                fullWidth
+                sx={{
+                  backgroundColor: '#0B7897',
+                  color: 'white',
+                  py: 1.5,
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  '&:hover': {
+                    backgroundColor: '#063C5E',
+                  },
+                }}
+              >
+                Business → Request Demo
+              </Button>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Button
+                component={Link}
+                href="/contact"
+                variant="outlined"
+                fullWidth
+                sx={{
+                  borderColor: 'white',
+                  color: 'white',
+                  py: 1.5,
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                  '&:hover': {
+                    borderColor: '#FF725E',
+                    backgroundColor: 'rgba(255, 114, 94, 0.1)',
+                  },
+                }}
+              >
+                Contact Us →
+              </Button>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
       <Footer />
     </>
   );
 }
-

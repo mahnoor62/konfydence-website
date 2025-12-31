@@ -1,42 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Box, Container, Grid, Typography, Link, IconButton, Stack } from '@mui/material';
+import { useState } from 'react';
+import { 
+  Box, 
+  Container, 
+  Grid, 
+  Typography, 
+  Link, 
+  IconButton, 
+  TextField,
+  Button,
+  Chip,
+  Stack,
+  Snackbar,
+  Alert,
+  CircularProgress
+} from '@mui/material';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import YouTubeIcon from '@mui/icons-material/YouTube';
 import TwitterIcon from '@mui/icons-material/Twitter';
+import SendIcon from '@mui/icons-material/Send';
 import NextLink from 'next/link';
-import axios from 'axios';
-
-const navItems = [
-  { label: 'Home', href: '/' },
-  { label: 'Products', href: '/products' },
-  { label: 'CoMaSy', href: '/comasy' },
-  { label: 'Education', href: '/education' },
-  { label: 'Shop', href: '/shop' },
-  { label: 'Blog', href: '/blog' },
-  { label: 'About', href: '/about' },
-  { label: 'Contact', href: '/contact' },
-];
-
-const footerLinks = {
-  company: [
-    { label: 'About', href: '/about' },
-    { label: 'Contact', href: '/contact' },
-    { label: 'CoMaSy', href: '/comasy' },
-  ],
-  resources: [
-    { label: 'Blog', href: '/blog' },
-    { label: 'Education', href: '/education' },
-    { label: 'Shop', href: '/shop' },
-    { label: 'FAQ', href: '/faq' },
-  ],
-  legal: [
-    { label: 'Privacy', href: '/privacy' },
-    { label: 'Terms', href: '/terms' },
-  ],
-};
 
 const socialLinks = [
   { icon: LinkedInIcon, href: 'https://linkedin.com', label: 'LinkedIn' },
@@ -45,101 +30,115 @@ const socialLinks = [
   { icon: TwitterIcon, href: 'https://twitter.com', label: 'Twitter' },
 ];
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE_URL) {
-  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
-}
-const API_URL = `${API_BASE_URL}/api`;
-const NO_CACHE_HEADERS = {
-  'Cache-Control': 'no-store, no-cache, must-revalidate',
-  Pragma: 'no-cache',
-  Expires: '0',
-};
+const trustBadges = [
+  'NIS2-Ready',
+  'ISO 27001 Aligned',
+  'Behavioral Science Backed',
+];
 
-const formatTypeName = (slug = '') =>
-  slug
-    .split('-')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+const solutionsForHome = [
+  { label: 'Family Scam Survival Kit', href: '/sskit-family' },
+  { label: 'Digital Extension', href: '/sskit-family' },
+  { label: 'Free Family Tech Contract', href: '/resources' },
+];
+
+const solutionsForEducation = [
+  { label: 'Free Lesson Pack', href: '/resources' },
+  { label: 'Student Workshops', href: '/education' },
+];
+
+const solutionsForWork = [
+  { label: 'CoMaSy Platform', href: '/comasy' },
+  { label: 'Request Demo', href: '/contact' },
+];
+
+const resources = [
+  { label: 'Blog (Latest Insights)', href: '/blog' },
+  { label: 'FAQ', href: '/faq' },
+  { label: 'The Limbic Hijack', href: '/pdfs/the-limbic-hijack.pdf', external: true },
+  { label: 'H.A.C.K. Framework Guide', href: '/resources' },
+  { label: 'Ambassador Program', href: '/about' },
+  { label: 'Hub', href: '/resources' },
+];
+
+const company = [
+  { label: 'About Us', href: '/about' },
+  { label: 'Contact', href: '/contact' },
+  { label: 'Join Waitlist', href: '/scam-survival-kit' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Terms of Service', href: '/terms' },
+];
 
 export default function Footer() {
-  const [footerTypes, setFooterTypes] = useState([]);
+  const [email, setEmail] = useState('');
+  const [emailError, setEmailError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
-  useEffect(() => {
-    const fetchFooterTypes = async () => {
-      let types = [];
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setEmailError(false);
+    setErrorMessage('');
+    setSuccessMessage('');
 
-      try {
-        const res = await axios.get(`${API_URL}/productTypes`, {
-          headers: NO_CACHE_HEADERS,
-          params: { active: 'true', _t: Date.now() },
-        });
-        types = Array.isArray(res.data) ? res.data : res.data?.types || [];
-      } catch (error) {
-        if (error.response?.status !== 404) {
-          console.error('❌ Error fetching footer product types:', {
-            url: `${API_URL}/productTypes`,
-            error: error.response?.data || error.message,
-            status: error.response?.status,
-          });
-        }
+    if (!email || !email.includes('@')) {
+      setEmailError(true);
+      setErrorMessage('Please enter a valid email address');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${API_URL}/api/newsletter/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          email,
+          subscriptionType: 'general',
+          source: 'newsletter-form',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSuccessMessage('Successfully subscribed! Thank you for joining us.');
+        setEmail('');
+        setTimeout(() => setSuccessMessage(''), 5000);
+      } else {
+        setEmailError(true);
+        setErrorMessage(data.message || 'An error occurred. Please try again.');
       }
-
-      if (!types.length) {
-        try {
-          const fallbackRes = await axios.get(`${API_URL}/products`, {
-            headers: NO_CACHE_HEADERS,
-            params: { all: true, _t: Date.now() },
-          });
-          const allProducts = Array.isArray(fallbackRes.data)
-            ? fallbackRes.data
-            : fallbackRes.data?.products || [];
-
-          types = Array.from(
-            new Map(
-              allProducts
-                .map((product) => product.type)
-                .filter(Boolean)
-                .map((typeSlug) => [
-                  typeSlug,
-                  {
-                    slug: typeSlug,
-                    name: formatTypeName(typeSlug),
-                  },
-                ])
-            ).values()
-          );
-        } catch (fallbackError) {
-          console.error('❌ Error deriving footer product types:', {
-            url: `${API_URL}/products?all=true`,
-            error: fallbackError.response?.data || fallbackError.message,
-            status: fallbackError.response?.status,
-          });
-        }
-      }
-
-      setFooterTypes((types || []).slice(0, 3));
-    };
-
-    fetchFooterTypes();
-  }, []);
+    } catch (error) {
+      console.error('Newsletter subscription error:', error);
+      setEmailError(true);
+      setErrorMessage('Unable to subscribe. Please try again later.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <Box
       component="footer"
       sx={{
-        backgroundColor: 'black',
+        backgroundColor: '#000',
         color: 'white',
-        pt: 8,
-        pb: 4,
+        pt: { xs: 6, md: 8 },
+        pb: { xs: 4, md: 6 },
         mt: 0,
-        position: 'relative',
-        overflow: 'hidden',
       }}
     >
-      <Container maxWidth="lg">
-        <Grid container spacing={6} sx={{ position: 'relative', zIndex: 1, mb: 6 }}>
-          <Grid item xs={12} md={4}>
+      <Container maxWidth='xl' sx={{ px: { xs: 3, md: 5 } }}>
+        {/* Main Footer Content - 4 Columns */}
+        <Grid container spacing={3} sx={{ mb: 4, justifyContent: 'space-between' }}>
+          {/* Column 1: Brand & Mission */}
+          <Grid item xs={12} sm={6} md={3}>
             <Box
               component={NextLink}
               href="/"
@@ -149,166 +148,386 @@ export default function Footer() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: 1.2,
-                mb: 3,
+                mb: 2,
               }}
             >
               <Box
+                component="img"
+                src="/images/footer-logo.png"
+                alt="Konfydence Logo"
                 sx={{
                   width: 48,
                   height: 48,
-                  borderRadius: '50%',
-                  background: 'linear-gradient(135deg, #00c4c7, #1c6edb)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  color: 'white',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-poppins)',
-                  fontSize: '1.3rem',
+                  objectFit: 'contain',
                 }}
-              >
-                K
-              </Box>
+              />
               <Box>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   sx={{
                     fontWeight: 700,
                     fontFamily: 'var(--font-poppins)',
                     letterSpacing: '-0.02em',
-                    mb: 0.5,
-                    fontSize: '1.55rem',
+                    fontSize: '1.3rem',
                   }}
                 >
                   Konfydence
                 </Typography>
-                <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.82rem' }}>
+                <Typography variant="body2" sx={{ opacity: 0.8, fontSize: '0.85rem' }}>
                   Safer Digital Decisions
                 </Typography>
               </Box>
             </Box>
-            <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.7, maxWidth: 320, mb: 4 }}>
-              Empowering individuals, schools, and businesses with interactive scam prevention training and compliance solutions.
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                opacity: 0.9, 
+                lineHeight: 1.7, 
+                mb: 3,
+                fontSize: '0.85rem',
+              }}
+            >
+              Empowering families, schools, and teams to pause under pressure and outsmart scams.
             </Typography>
+            
+            {/* Trust Badges */}
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+              {/* First Row: 2 badges */}
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                {trustBadges.slice(0, 2).map((badge, index) => (
+                  <Chip
+                    key={badge}
+                    label={badge}
+                    size="small"
+                    sx={{
+                      backgroundColor: index % 2 === 0 ? '#008B8B' : 'white',
+                      color: index % 2 === 0 ? 'white' : 'black',
+                      fontSize: '0.65rem',
+                      height: 24,
+                      fontWeight: 600,
+                      '& .MuiChip-label': {
+                        px: 1,
+                      },
+                    }}
+                  />
+                ))}
+              </Box>
+              {/* Second Row: 1 badge */}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {trustBadges.slice(2, 3).map((badge) => (
+                  <Chip
+                    key={badge}
+                    label={badge}
+                    size="small"
+                    sx={{
+                      backgroundColor: '#008B8B',
+                      color: 'white',
+                      fontSize: '0.65rem',
+                      height: 24,
+                      fontWeight: 600,
+                      '& .MuiChip-label': {
+                        px: 1,
+                      },
+                    }}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Grid>
 
-            {/* Navigation Menu */}
-            {/* <Box>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
-                Navigation
+          {/* Column 2: Solutions */}
+          <Grid item xs={12} sm={6} md={3}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
+              Solutions
+            </Typography>
+            
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, opacity: 0.9, fontSize: '0.8rem' }}>
+                For Home
               </Typography>
-              <Stack spacing={1} direction="row" flexWrap="wrap" gap={1.5}>
-                {navItems.map((item) => (
+              <Stack spacing={1}>
+                {solutionsForHome.map((item) => (
                   <Link
                     key={item.href}
                     component={NextLink}
                     href={item.href}
-                    color="inherit"
-                    underline="hover"
                     sx={{
-                      opacity: 0.85,
-                      fontSize: '0.9rem',
-                      whiteSpace: 'nowrap',
+                      display: 'block',
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
                       '&:hover': {
-                        opacity: 1,
+                        color: 'white',
+                        textDecoration: 'underline',
                       },
+                      transition: 'all 0.2s',
                     }}
                   >
                     {item.label}
                   </Link>
                 ))}
               </Stack>
-            </Box> */}
+            </Box>
+
+            <Box sx={{ mb: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, opacity: 0.9, fontSize: '0.8rem' }}>
+                For Education
+              </Typography>
+              <Stack spacing={1}>
+                {solutionsForEducation.map((item) => (
+                  <Link
+                    key={item.href}
+                    component={NextLink}
+                    href={item.href}
+                    sx={{
+                      display: 'block',
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: 'white',
+                        textDecoration: 'underline',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </Stack>
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, opacity: 0.9, fontSize: '0.8rem' }}>
+                For Work
+              </Typography>
+              <Stack spacing={1}>
+                {solutionsForWork.map((item) => (
+                  <Link
+                    key={item.href}
+                    component={NextLink}
+                    href={item.href}
+                    sx={{
+                      display: 'block',
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: 'white',
+                        textDecoration: 'underline',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </Stack>
+            </Box>
           </Grid>
 
-          <Grid item xs={6} sm={6} md={2}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
-              Products
-            </Typography>
-            {footerTypes.map((type) => (
-              <Link
-                key={type.slug}
-                component={NextLink}
-                href={`/products?type=${encodeURIComponent(type.slug)}`}
-                color="inherit"
-                underline="hover"
-                sx={{ display: 'block', mb: 1.5, opacity: 0.85, fontSize: '0.9rem', '&:hover': { opacity: 1 } }}
-              >
-                {type.name || formatTypeName(type.slug)}
-              </Link>
-            ))}
-          </Grid>
-
-          <Grid item xs={6} sm={6} md={2}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
-              Company
-            </Typography>
-            {footerLinks.company.map((link) => (
-              <Link
-                key={link.href}
-                component={NextLink}
-                href={link.href}
-                color="inherit"
-                underline="hover"
-                sx={{ display: 'block', mb: 1.5, opacity: 0.85, fontSize: '0.9rem', '&:hover': { opacity: 1 } }}
-              >
-                {link.label}
-              </Link>
-            ))}
-          </Grid>
-
-          <Grid item xs={6} sm={6} md={2}>
+          {/* Column 3: Resources */}
+          <Grid item xs={12} sm={6} md={3}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
               Resources
             </Typography>
-            {footerLinks.resources.map((link) => (
-              <Link
-                key={link.href}
-                component={NextLink}
-                href={link.href}
-                color="inherit"
-                underline="hover"
-                sx={{ display: 'block', mb: 1.5, opacity: 0.85, fontSize: '0.9rem', '&:hover': { opacity: 1 } }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            <Stack spacing={1.5}>
+              {resources.map((item) => (
+                <Link
+                  key={item.href}
+                  component={item.external ? 'a' : NextLink}
+                  href={item.href}
+                  target={item.external ? '_blank' : undefined}
+                  rel={item.external ? 'noopener noreferrer' : undefined}
+                  sx={{
+                    display: 'block',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: '0.85rem',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      textDecoration: 'underline',
+                    },
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </Stack>
           </Grid>
 
-          <Grid item xs={6} sm={6} md={2}>
+          {/* Column 4: Company */}
+          <Grid item xs={12} sm={6} md={3}>
             <Typography variant="h6" sx={{ mb: 2, fontWeight: 600, fontSize: '0.95rem' }}>
-              Legal
+              Company
             </Typography>
-            {footerLinks.legal.map((link) => (
-              <Link
-                key={link.href}
-                component={NextLink}
-                href={link.href}
-                color="inherit"
-                underline="hover"
-                sx={{ display: 'block', mb: 1.5, opacity: 0.85, fontSize: '0.9rem', '&:hover': { opacity: 1 } }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            <Stack spacing={1.5}>
+              {company.map((item) => (
+                <Link
+                  key={item.href}
+                  component={NextLink}
+                  href={item.href}
+                  sx={{
+                    display: 'block',
+                    color: 'rgba(255,255,255,0.85)',
+                    fontSize: '0.85rem',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      textDecoration: 'underline',
+                    },
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </Stack>
           </Grid>
         </Grid>
 
+        {/* Bottom Bar */}
         <Box
           sx={{
             pt: 4,
             borderTop: '1px solid rgba(255,255,255,0.2)',
             display: 'flex',
-            justifyContent: 'space-between',
+            flexDirection: { xs: 'column', lg: 'row' },
             alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 2,
-            position: 'relative',
-            zIndex: 1,
+            justifyContent: { xs: 'center', lg: 'space-between' },
+            gap: { xs: 2, lg: 2 },
           }}
         >
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-          Copyright © 2026 Konfydence UG (haftungsbeschränkt)
+          {/* Left: Copyright */}
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              opacity: 0.9,
+              fontSize: '0.8rem',
+              textAlign: { xs: 'center', lg: 'left' },
+              whiteSpace: { lg: 'nowrap' },
+              flex: { lg: '0 1 auto' },
+            }}
+          >
+            Copyright © 2025 Konfydence UG (haftungsbeschränkt) • All rights reserved.
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+
+          {/* Center: Email Signup */}
+          <Box
+            component="form"
+            onSubmit={handleEmailSubmit}
+            sx={{
+              display: 'flex',
+              flexDirection: { xs: 'column', md: 'row' },
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: { xs: 1.5, md: 1.5 },
+              flex: { lg: '0 1 auto' },
+              width: { xs: '100%', lg: 'auto' },
+              maxWidth: { xs: '100%', md: 500 },
+            }}
+          >
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                opacity: 0.9,
+                fontSize: { xs: '0.75rem', md: '0.8rem' },
+                whiteSpace: { xs: 'normal', md: 'nowrap' },
+                display: 'block',
+                mb: { xs: 0.5, md: 0 },
+                textAlign: 'center',
+                width: { xs: '100%', md: 'auto' },
+              }}
+            >
+              Join 10,000+ building the pause habit
+            </Typography>
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', md: 'row' },
+                gap: { xs: 1.5, md: 1 },
+                width: { xs: '100%', md: 'auto' },
+                justifyContent: 'center',
+              }}
+            >
+              <TextField
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setEmailError(false);
+                  setErrorMessage('');
+                  setSuccessMessage('');
+                }}
+                error={emailError}
+                helperText={errorMessage}
+                size="small"
+                disabled={isSubmitting}
+                sx={{
+                  width: { xs: '100%', md: '200px' },
+                  '& .MuiOutlinedInput-root': {
+                    backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: 'white',
+                    '& fieldset': {
+                      borderColor: 'rgba(255,255,255,0.3)',
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(255,255,255,0.5)',
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: 'rgba(255,255,255,0.7)',
+                    },
+                  },
+                  '& .MuiInputBase-input': {
+                    color: 'white',
+                    fontSize: { xs: '0.875rem', md: '0.8rem' },
+                    py: { xs: 1.25, md: 0.75 },
+                    '&::placeholder': {
+                      color: 'rgba(255,255,255,0.6)',
+                      opacity: 1,
+                    },
+                  },
+                }}
+              />
+              <Button
+                type="submit"
+                variant="contained"
+                endIcon={isSubmitting ? <CircularProgress size={16} color="inherit" /> : <SendIcon />}
+                disabled={isSubmitting}
+                sx={{
+                  backgroundColor: '#008B8B',
+                  color: 'white',
+                  px: { xs: 3, md: 2.5 },
+                  py: { xs: 1.25, md: 0.75 },
+                  fontSize: { xs: '0.875rem', md: '0.8rem' },
+                  textTransform: 'none',
+                  whiteSpace: 'nowrap',
+                  width: { xs: '100%', md: 'auto' },
+                  minWidth: { xs: 'auto', md: 140 },
+                  '&:hover': {
+                    backgroundColor: '#006E6E',
+                  },
+                  '&:disabled': {
+                    backgroundColor: '#008B8B',
+                    opacity: 0.7,
+                  },
+                }}
+              >
+                {isSubmitting ? 'Subscribing...' : 'Get Updates'}
+              </Button>
+            </Box>
+          </Box>
+
+          {/* Right: Social Icons */}
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 0.5, 
+            justifyContent: { xs: 'center', lg: 'flex-end' },
+            flex: { lg: '0 1 auto' },
+            whiteSpace: 'nowrap',
+          }}>
             {socialLinks.map((social) => {
               const Icon = social.icon;
               return (
@@ -336,8 +555,28 @@ export default function Footer() {
           </Box>
         </Box>
       </Container>
+
+      {/* Success/Error Snackbar */}
+      <Snackbar
+        open={!!successMessage || !!errorMessage}
+        autoHideDuration={5000}
+        onClose={() => {
+          setSuccessMessage('');
+          setErrorMessage('');
+        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => {
+            setSuccessMessage('');
+            setErrorMessage('');
+          }}
+          severity={successMessage ? 'success' : 'error'}
+          sx={{ width: '100%' }}
+        >
+          {successMessage || errorMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
-
-

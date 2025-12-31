@@ -539,8 +539,8 @@ export default function PackagesPage() {
     }
 
     // Set processing state immediately to prevent multiple clicks
-    setProcessingPurchase(pkg._id);
-
+      setProcessingPurchase(pkg._id);
+      
     // Validate product before purchase (if productId is in URL)
     if (productId) {
       try {
@@ -746,7 +746,7 @@ export default function PackagesPage() {
           : '',
         currency: 'EUR'
       };
-
+      
       const requestData = {
         entityType: requestForm.entityType || undefined,
         organizationName: requestForm.organizationName,

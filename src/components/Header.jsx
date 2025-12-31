@@ -18,7 +18,7 @@ import {
 import MenuIcon from '@mui/icons-material/Menu';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 
 const navItems = [
@@ -27,7 +27,7 @@ const navItems = [
   { label: 'CoMaSy', href: '/comasy' },
   { label: 'Education', href: '/education' },
   { label: 'Resource Hub', href: '/resources' },
-  { label: 'Shop', href: '/shop' },
+  { label: 'SsKit-family', href: '/sskit-family' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },
@@ -38,7 +38,8 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.pathname;
   const { user, logout, loading: authLoading } = useAuth();
 
   const trigger = useScrollTrigger({
@@ -117,7 +118,7 @@ export default function Header() {
           color: scrolled ? 'text.primary' : 'white',
         }}
       >
-        <Container maxWidth={false} sx={{ px: { xs: 3, md: 8 } }}>
+        <Container maxWidth={false} sx={{ px: { xs: 3, md: 10 } }}>
           <Toolbar sx={{ py: 1, minHeight: { xs: 64, md: 88 }, px: '0 !important' }}>
             <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: { xs: 1, md: 1.5 } }}>
               <Box
@@ -133,21 +134,16 @@ export default function Header() {
                 }}
               >
                 <Box
+                  component="img"
+                  src={scrolled ? "/images/navbar-logo.png" : "/images/footer-logo.png"}
+                  alt="Konfydence Logo"
                   sx={{
                     width: { xs: 40, md: 44 },
                     height: { xs: 40, md: 44 },
-                    borderRadius: '50%',
-                    background: 'linear-gradient(135deg, #00c4c7, #1c6edb)',
-                    display: 'grid',
-                    placeItems: 'center',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontFamily: 'var(--font-poppins)',
-                    fontSize: { xs: '1.1rem', md: '1.2rem' },
+                    objectFit: 'contain',
+                    transition: 'all 0.4s ease',
                   }}
-                >
-                  K
-                </Box>
+                />
                 <Box>
                   <Box
                     component="span"
@@ -354,7 +350,7 @@ export default function Header() {
                     <Button
                       variant="contained"
                       component={Link}
-                      href="/shop"
+                      href="/sskit-family"
                       sx={{
                         textTransform: 'none',
                         fontWeight: 600,
@@ -470,7 +466,7 @@ export default function Header() {
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/shop">
+                  <ListItemButton component={Link} href="/sskit-family">
                     <ListItemText primary="Shop Now" />
                   </ListItemButton>
                 </ListItem>

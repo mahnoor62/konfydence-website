@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Head from 'next/head';
 import {
   Container,
   Typography,
@@ -151,6 +152,7 @@ export default function ContactPage() {
 
       const url = `${API_URL}/contact`;
       console.log(`📡 POST ${url}`, payload);
+      console.log('📤 Sending topic value:', formData.topic);
       await axios.post(url, payload, {
         headers: {
           'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -179,6 +181,9 @@ export default function ContactPage() {
 
   return (
     <>
+      <Head>
+        <title>Konfydence Contact</title>
+      </Head>
       <Header />
       <Box
         component="main"

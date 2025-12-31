@@ -405,33 +405,33 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                 }}
               >
                 {/* Request Demo Button */}
-                <Button
-                  variant="contained"
-                  component={Link}
+              <Button
+                variant="contained"
+                component={Link}
                   href={`/contact?topic=${getContactTopic()}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                  }}
-                  sx={{
-                    backgroundColor: '#00A4E8',
-                    color: 'white',
-                    fontWeight: 700,
-                    borderRadius: 2,
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                sx={{
+                  backgroundColor: '#00A4E8',
+                  color: 'white',
+                  fontWeight: 700,
+                  borderRadius: 2,
                     px: { xs: 3, md: 2 },
                     py: { xs: 1.5, md: 1 },
                     fontSize: { xs: '1rem', md: '0.875rem' },
                     width: { xs: '100%', md: '50%' },
                     flex: { xs: 'none', md: 1 },
-                    '&:hover': {
-                      backgroundColor: '#0088C7',
+                  '&:hover': {
+                    backgroundColor: '#0088C7',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 12px rgba(0, 164, 232, 0.3)',
-                    },
+                  },
                     transition: 'all 0.3s ease',
-                  }}
-                >
-                  Request Demo
-                </Button>
+                }}
+              >
+                Request Demo
+              </Button>
 
                 {/* Buy Now / Get Early Access Button for B2B/B2E */}
                 <Button
@@ -465,48 +465,48 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
             // B2C: Price and Buy Now button
             <>
               {!hidePrice && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                     mb: 2,
+                }}
+              >
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                  €{product.price}/month
+                </Typography>
+                <Button
+                  variant="contained"
+                  component={Link}
+                  href={`/products/${product.slug}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  sx={{
+                    backgroundColor: product.type === 'membership'
+                      ? '#063C5E'
+                      : product.type === 'bundle'
+                      ? '#0B7897'
+                      : '#FFD700',
+                    color: product.type === 'starter' ? '#063C5E' : 'white',
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    borderRadius: 2,
+                    px: 3,
+                    py: 1,
+                    '&:hover': {
+                      backgroundColor: product.type === 'membership'
+                        ? '#052A42'
+                        : product.type === 'bundle'
+                        ? '#095f75'
+                        : '#FFC700',
+                    },
                   }}
                 >
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    €{product.price}/month
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    component={Link}
-                    href={`/products/${product.slug}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                    }}
-                    sx={{
-                      backgroundColor: product.type === 'membership'
-                        ? '#063C5E'
-                        : product.type === 'bundle'
-                        ? '#0B7897'
-                        : '#FFD700',
-                      color: product.type === 'starter' ? '#063C5E' : 'white',
-                      fontWeight: 700,
-                      textTransform: 'uppercase',
-                      borderRadius: 2,
-                      px: 3,
-                      py: 1,
-                      '&:hover': {
-                        backgroundColor: product.type === 'membership'
-                          ? '#052A42'
-                          : product.type === 'bundle'
-                          ? '#095f75'
-                          : '#FFC700',
-                      },
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </Box>
+                  View Details
+                </Button>
+              </Box>
               )}
               
               {/* Buy Now / Get Early Access button - shows for B2C products */}

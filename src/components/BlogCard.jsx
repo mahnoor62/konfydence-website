@@ -119,13 +119,16 @@ export default function BlogCard({ post, delay = 0 }) {
         >
           {post.excerpt || post.description || 'No description available'}
         </Typography>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 'auto' }}>
-          <Typography variant="caption" color="text.secondary">
+        <Box sx={{ mt: 'auto' }}>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
             {new Date(post.publishedAt || post.createdAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
+              month: 'short',
               day: 'numeric',
+              year: 'numeric',
             })}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2, fontSize: '0.75rem' }}>
+            By {post.author || 'Tichi Mbanwie'} {post.authorTitle ? `(${post.authorTitle})` : '(Financial and Compliance Controller, ex-PIMCO, ex-Ford)'}
           </Typography>
           <Button
             component={Link}
@@ -135,9 +138,17 @@ export default function BlogCard({ post, delay = 0 }) {
             }}
             size="small"
             variant="contained"
-            sx={{ background: 'linear-gradient(135deg, #FF725E, #FF9B8A)' }}
+            fullWidth
+            sx={{
+              backgroundColor: '#FF725E',
+              color: 'white',
+              fontWeight: 600,
+              '&:hover': {
+                backgroundColor: '#e65a4a',
+              },
+            }}
           >
-            Read More
+            Read More →
           </Button>
         </Box>
       </CardContent>

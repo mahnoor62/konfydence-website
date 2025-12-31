@@ -1,5 +1,5 @@
-import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography } from '@mui/material';
-import { LockOutlined, SchoolOutlined, BusinessCenterOutlined, SecurityOutlined, PersonOutline, EmailOutlined, ChatBubbleOutline, ShieldOutlined } from '@mui/icons-material';
+import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, IconButton } from '@mui/material';
+import { LockOutlined, SchoolOutlined, BusinessCenterOutlined, SecurityOutlined, PersonOutline, EmailOutlined, ChatBubbleOutline, ShieldOutlined, Close } from '@mui/icons-material';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
@@ -7,6 +7,8 @@ import ProductCard from '@/components/ProductCard';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import axios from 'axios';
 import Link from 'next/link';
+import Head from 'next/head';
+import { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -159,6 +161,40 @@ export async function getServerSideProps() {
 export default function Home({ products, blogPosts, partnerLogos, error }) {
   const homeProducts = Array.isArray(products) ? products : [];
   const latestPosts = Array.isArray(blogPosts) ? blogPosts : [];
+  const [mounted, setMounted] = useState(false);
+  const [showBanner, setShowBanner] = useState(false);
+  
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== 'undefined') {
+      import('aos').then((AOS) => {
+        AOS.default.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: true,
+          offset: 100,
+        });
+      });
+      
+      // Check localStorage to see if user already clicked banner and visited /skk
+      const hasVisitedWaitlist = localStorage.getItem('skk_banner_clicked');
+      if (!hasVisitedWaitlist) {
+        setShowBanner(true);
+      }
+    }
+  }, []);
+  
+  const handleBannerClick = () => {
+    // Mark that user clicked banner
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('skk_banner_clicked', 'true');
+    }
+    setShowBanner(false);
+  };
+  
+  const handleCloseBanner = () => {
+    setShowBanner(false);
+  };
   
   // Debug logging
   console.log('🏠 Homepage render - products:', homeProducts.length, homeProducts.map(p => ({ 
@@ -170,6 +206,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
   if (error) {
     return (
       <>
+        <Head>
+          <title>Konfydence Homepage</title>
+        </Head>
         <Header />
         <Box component="main" sx={{ backgroundColor: '#F5F8FB', minHeight: '80vh' }}>
           <Container maxWidth="lg" sx={{ py: 8 }}>
@@ -183,7 +222,67 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
 
   return (
     <>
+      <Head>
+        <title>Konfydence Homepage</title>
+      </Head>
       <Header />
+      
+      {/* Red Banner - Top of Page */}
+      {showBanner && (
+        <Box
+          sx={{
+            position: 'relative',
+            backgroundColor: '#FF725E',
+            color: 'white',
+            py: { xs: 1.5, md: 2 },
+            zIndex: 1200,
+          }}
+        >
+          <Container maxWidth="lg">
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+              }}
+            >
+              <Button
+                component={Link}
+                href="/scam-survival-kit"
+                onClick={handleBannerClick}
+                sx={{
+                  color: 'white',
+                  textDecoration: 'underline',
+                  fontWeight: 600,
+                  fontSize: { xs: '0.875rem', md: '1rem' },
+                  '&:hover': {
+                    textDecoration: 'underline',
+                    backgroundColor: 'transparent',
+                  },
+                }}
+              >
+                Join the Waitlist for Early Access →
+              </Button>
+              <IconButton
+                size="small"
+                onClick={handleCloseBanner}
+                sx={{
+                  position: 'absolute',
+                  right: 0,
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'rgba(255,255,255,0.2)',
+                  },
+                }}
+              >
+                <Close fontSize="small" />
+              </IconButton>
+            </Box>
+          </Container>
+        </Box>
+      )}
+      
       <Box component="main" sx={{ backgroundColor: '#F5F8FB' }}>
         <Box
           sx={{
@@ -342,7 +441,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        Outsmart Scams. Build Digital Confidence.
+                        Outsmart Scams. Build Real Confidence.
                       </Typography>
                       <Typography
                         variant="body1"
@@ -354,7 +453,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        The game that empowers families, students, and teams to spot scams before they happen.
+                        The interactive game that helps families, students, and teams spot tricks before they click—turning everyday pressure into smart pauses.
                       </Typography>
                       <Box
                         sx={{
@@ -364,7 +463,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       >
                         <Button
                           component={Link}
-                          href="/shop"
+                          href="/sskit-family"
                           variant="contained"
                           size="large"
                           endIcon={
@@ -392,7 +491,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             transition: 'all 0.3s ease',
                           }}
                         >
-                          Get Your Kit
+                          Get Your Family Kit
                         </Button>
                       </Box>
                     </Box>
@@ -435,33 +534,41 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        Compliance that engages. Awareness that lasts.
+                        Compliance that Actually Works. Habits that Last.
                       </Typography>
                       <Typography
                         variant="body1"
                         sx={{
                           fontSize: '1rem',
-                          mb: 4,
+                          mb: 3,
                           opacity: 0.95,
                           color: 'white',
                           textAlign: 'center',
                         }}
                       >
-                        Konfydence supports trains and documents real-world decision-making and awareness activities aligned with frameworks such as NIS2 and ISO 27001.
+                        Konfydence trains real behavior—not just knowledge. Short, fun simulations build the one habit that stops scams: a quick pause when pressure hits.
                       </Typography>
-                      <Typography
-                        variant="body1"
+                      <Box
                         sx={{
-                          fontSize: '1rem',
-                          mb: 4,
-                          opacity: 0.95,
-                          color: 'white',
-                          textAlign: 'center',
+                          display: 'flex',
+                          justifyContent: 'center',
+                          mb: 3,
                         }}
                       >
-                        <b>CoMaSy - Compliance Mastery System - aligned with behavior-based NIS2.</b>
-                        Transform compliance training into engaging, behavior-changing simulations
-                      </Typography>
+                        <Link
+                          href="/pdfs/the-limbic-hijack.pdf"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            color: 'white',
+                            textDecoration: 'underline',
+                            fontSize: '0.95rem',
+                            fontWeight: 500,
+                          }}
+                        >
+                          Understand the Limbic Hijack →
+                        </Link>
+                      </Box>
                       <Box
                         sx={{
                           display: 'flex',
@@ -470,7 +577,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       >
                         <Button
                           component={Link}
-                          href="/contact?topic=b2b_demo"
+                          href="/contact"
                           variant="contained"
                           size="large"
                           endIcon={
@@ -498,7 +605,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             transition: 'all 0.3s ease',
                           }}
                         >
-                          Request B2B Demo
+                          Request a Free Demo
                         </Button>
                       </Box>
                     </Box>
@@ -609,7 +716,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    Outsmart Scams. Build Digital Confidence.
+                    Outsmart Scams. Build Real Confidence.
                   </Typography>
                   <Typography
                     variant="body1"
@@ -621,7 +728,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    The game that empowers families, students, and teams to spot scams before they happen.
+                    The interactive game that helps families, students, and teams spot tricks before they click—turning everyday pressure into smart pauses.
                   </Typography>
                   <Box
                     sx={{
@@ -634,7 +741,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   >
                     <Button
                       component={Link}
-                      href="/shop"
+                      href="/sskit-family"
                       variant="contained"
                       size="large"
                       endIcon={
@@ -662,7 +769,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         transition: 'all 0.3s ease',
                       }}
                     >
-                      Get Your Kit
+                      Get Your Family Kit
                     </Button>
                   </Box>
                 </Box>
@@ -712,33 +819,41 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    Compliance that engages. Awareness that lasts.
+                    Compliance that Actually Works. Habits that Last.
                   </Typography>
                   <Typography
                     variant="body1"
                     sx={{
                       fontSize: { xs: '1rem', md: '1.15rem' },
-                      mb: 4,
+                      mb: 3,
                       opacity: 0.95,
                       color: 'white',
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    Konfydence supports trains and documents real-world decision-making and awareness activities aligned with frameworks such as NIS2 and ISO 27001.
+                    Konfydence trains real behavior—not just knowledge. Short, fun simulations build the one habit that stops scams: a quick pause when pressure hits.
                   </Typography>
-                  <Typography
-                    variant="body1"
+                  <Box
                     sx={{
-                      fontSize: { xs: '1rem', md: '1.15rem' },
-                      mb: 4,
-                      opacity: 0.95,
-                      color: 'white',
-                      textAlign: { xs: 'center', md: 'left' },
+                      display: 'flex',
+                      justifyContent: { xs: 'center', md: 'flex-start' },
+                      mb: 3,
                     }}
                   >
-                    <b>CoMaSy - Compliance Mastery System - aligned with behavior-based NIS2.</b>
-                    Transform compliance training into engaging, behavior-changing simulations
-                  </Typography>
+                    <Link
+                      href="/pdfs/the-limbic-hijack.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: 'white',
+                        textDecoration: 'underline',
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        fontWeight: 500,
+                      }}
+                    >
+                      Understand the Limbic Hijack →
+                    </Link>
+                  </Box>
                   <Box
                     sx={{
                       display: 'flex',
@@ -748,38 +863,38 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     data-aos-duration="800"
                     data-aos-delay="400"
                   >
-                    <Button
-                      component={Link}
-                      href="/contact?topic=b2b_demo"
-                      variant="contained"
-                      size="large"
-                      endIcon={
-                        <Box
-                          component="span"
+                        <Button
+                          component={Link}
+                          href="/contact?topic=comasy"
+                          variant="contained"
+                          size="large"
+                          endIcon={
+                            <Box
+                              component="span"
+                              sx={{
+                                ml: 0.5,
+                                fontSize: '1.2rem',
+                                lineHeight: 1,
+                              }}
+                            >
+                              →
+                            </Box>
+                          }
                           sx={{
-                            ml: 0.5,
-                            fontSize: '1.2rem',
-                            lineHeight: 1,
+                            backgroundColor: '#00A4E8',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#0088C7',
+                              transform: 'translateX(5px)',
+                            },
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease',
                           }}
                         >
-                          →
-                        </Box>
-                      }
-                      sx={{
-                        backgroundColor: '#00A4E8',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: '#0088C7',
-                          transform: 'translateX(5px)',
-                        },
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 600,
-                        transition: 'all 0.3s ease',
-                      }}
-                    >
-                      Request B2B Demo
-                    </Button>
+                          Request a Free Demo
+                        </Button>
                   </Box>
                 </Box>
               </Container>
@@ -793,7 +908,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             data-aos-delay="200"
             maxWidth="lg"
             sx={{
-              mt:-15,
+              mt:-10,
               display: { xs: 'none', md: 'block' },
               // position: 'absolute',
               // bottom: { xs: -300, md: -100 },
@@ -837,11 +952,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 }}
               >
                 <Typography variant="h4" sx={{ fontWeight: 700, color: 'white', mb: 1.5, lineHeight: 1.4, fontSize: { xs: '0.95rem', md: '1.1rem' } }}>
-                Ilo Cybercrime causes over €200 billion in damages every year in Germany alone.* Most attacks still start with a single human click. and update the footnote to
-              
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'white', opacity: 0.95, fontSize: { xs: '0.75rem', md: '0.85rem' }, mt: 'auto' }}>
-                *Based on figures reported by Bitkom for the German economy.
+                  Scammers steal an average of $2,000+ per victim. For just $49, you can give your family the habit that stops them cold.
                 </Typography>
               </Box>
             </Grid>
@@ -876,20 +987,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   },
                 }}
               >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' } }}>
-                Most cyberattacks don&apos;t break systems — they exploit people.
-                </Typography>
-                {/* <Typography variant="body2" sx={{ color: 'white', mb: 1.5, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
-                  Most cyberattacks don&apos;t break systems — they exploit people.
-                </Typography> */}
-                <Typography variant="body2" sx={{ color: 'white', mb: 1.5, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
-                  Scammers use the same psychological levers again and again:
-                </Typography>
-                <Typography variant="body1" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.8rem', md: '0.9rem' } }}>
-                  HACK — Urgency, Authority, Trust, Fear.
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'white', mb: 2, fontSize: { xs: '0.75rem', md: '0.85rem' }, lineHeight: 1.5 }}>
-                  One moment of pressure is often all it takes.
+                <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.4 }}>
+                  Scammers always use the same four tricks: H.A.C.K. – Hurry, Authority, Comfort, Kill-Switch (panic or excitement). Spot the trick. Take five seconds. Stay safe.
                 </Typography>
                 {/* <Stack spacing={1}>
                   {['Fun and engaging', 'Accessible for all ages', 'Proven learning method'].map((item) => (
@@ -904,6 +1003,155 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               <Grid item sm={6} xs={12} md={1}></Grid>
           </Grid>
         </Container>
+        </Box>
+
+        {/* New Introductory Section - Why Most Scam Training Doesn't Work */}
+        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'white' }}>
+          <Container maxWidth="lg">
+            <Grid container spacing={6} alignItems="center">
+              <Grid item xs={12} md={6}>
+                <Box data-aos="fade-right" data-aos-duration="800">
+                  <Typography
+                    variant="h2"
+                    sx={{
+                      fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                      fontWeight: 700,
+                      color: '#063C5E',
+                      mb: 3,
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    Why Most Scam Training Doesn&apos;t Work (And What Does)
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      mb: 3,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    You&apos;ve seen the yearly videos and quizzes. Everyone clicks through, passes the test, and… still falls for scams months later.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      mb: 3,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    Why? Because scams don&apos;t happen in calm moments. They hit when you&apos;re busy, stressed, or rushed. In those seconds, your brain reacts before you can think—and even smart people click.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      mb: 3,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    In order to dismantle the Kill-Switch of shame, we enhance the &quot;No-Blame&quot; culture established in our{' '}
+                    <Link
+                      href="/resources"
+                      style={{
+                        color: '#00A4E8',
+                        textDecoration: 'underline',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Family Tech Contract →
+                    </Link>
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      mb: 3,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    <strong>Stop the Limbic Hijack:</strong> Our framework trains your brain to outsmart the biological triggers scammers use to bypass your logic.{' '}
+                    <Link
+                      href="/pdfs/the-limbic-hijack.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#00A4E8',
+                        textDecoration: 'underline',
+                        fontWeight: 600,
+                      }}
+                    >
+                      Read the Science: Why Human Hardware Fails Before Software →
+                    </Link>
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      mb: 3,
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    Konfydence fixes this by training the one simple habit that works under pressure: <strong>Pause for five seconds when something feels off.</strong>
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: 'text.primary',
+                      lineHeight: 1.8,
+                    }}
+                  >
+                    No long lectures. Just quick, real-life practice that sticks.
+                  </Typography>
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box
+                  data-aos="fade-left"
+                  data-aos-duration="800"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src="/images/5SecondsDefense.jpg"
+                    alt="Five seconds is all it takes. No real request breaks if you wait."
+                    sx={{
+                      width: '100%',
+                      maxWidth: '100%',
+                      height: 'auto',
+                      borderRadius: {xs:1, md:2},
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      mb: 2,
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: '0.875rem', md: '1rem' },
+                      color: 'text.secondary',
+                      fontStyle: 'italic',
+                      textAlign: 'center',
+                      maxWidth: '90%',
+                    }}
+                  >
+                    Five seconds is all it takes. No real request breaks if you wait.
+                  </Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          </Container>
         </Box>
 
         {/* B2C Product Hero - Scam Survival Kit */}
@@ -937,7 +1185,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       // fontSize: { xs: '1.1rem', md: '1.5rem' },
                     }}
                   >
-                   The interactive card game that teaches your family to spot scams before they happen. Change to: The interactive card game that helps families spot HACKS before they get HACKED.
+                   The interactive card game that helps families spot HACKS before they get HACKED.
                   </Typography>
                   <Stack spacing={2} sx={{ mb: 4 }}>
                     {[
@@ -985,7 +1233,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   </Stack>
                   <Button
                     component={Link}
-                    href="/shop"
+                    href="/comasy#demo-form"
                     variant="contained"
                     size="large"
                     sx={{
@@ -1198,182 +1446,243 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
           </Container>
         </Box>
 
-        <Box sx={{ py: 15, position: 'relative', overflow: 'hidden' }}>
-          <Container        data-aos="zoom-in"
-                 data-aos-duration="800"
-                data-aos-delay="100" maxWidth="lg">
-            <Box data-aos="zoom-in" data-aos-duration="800">
-              <Typography 
-                variant="h2" 
-                textAlign="center" 
-                sx={{ 
-                  mb: 6,
-                  mt:8,
+        {/* Product Teasers Section */}
+        <Box sx={{ py: { xs: 8, md: 12 }, position: 'relative', overflow: 'hidden', backgroundColor: 'white' }}>
+          <Container maxWidth="lg">
+            {/* Latest Products Heading */}
+            <Box sx={{ mb: 6, textAlign: 'center' }}>
+              <Typography
+                variant="h2"
+                sx={{
                   fontSize: { xs: '2rem', md: '3rem' },
                   fontWeight: 700,
                   color: '#063C5E',
-                  position: 'relative',
-                  zIndex: 1,
+                  mb: 2,
                 }}
               >
                 Latest Products
               </Typography>
-              <Typography 
-                variant="h3" 
-                sx={{ 
-                  mb: 4,
-                  fontSize: { xs: '1.75rem', md: '2.5rem' },
-                  fontWeight: 700,
-                  color: '#063C5E',
-                  textAlign: 'left',
-                }}
-              >
-                Family:
-              </Typography>
             </Box>
-            {homeProducts.length === 0 ? (
-              <Box textAlign="center" py={6}>
-                <Typography variant="h6" color="text.secondary">
-                  No featured products are available right now. Please check back soon.
-                  </Typography>
-                      </Box>
-            ) : (
-              <>
-                {/* Split products into B2C and B2B/B2E */}
-                {(() => {
-                  // B2C products: For families - prioritize targetAudience
-                  const b2cProducts = homeProducts.filter(p => {
-                    // Primary: Check targetAudience first
-                    if (p.targetAudience === 'private-users') return true;
-                    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
-                    
-                    // Fallback: If no targetAudience, check category
-                    if (!p.targetAudience) {
-                      return p.category === 'private-users' ||
-                             p.category === 'membership' ||
-                             p.category === 'template' ||
-                             p.category === 'guide' ||
-                             p.category === 'toolkit' ||
-                             p.category === 'digital-guide' ||
-                             (p.name?.toLowerCase().includes('scam survival kit'));
-                    }
-                    return false;
-                  });
-                  
-                  // B2B/B2E products: For organizations & schools - prioritize targetAudience
-                  const b2bProducts = homeProducts.filter(p => {
-                    // Primary: Check targetAudience first
-                    if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
-                    if (p.targetAudience === 'private-users') return false;
-                    
-                    // Fallback: If no targetAudience, check category
-                    if (!p.targetAudience) {
-                      return p.category === 'schools' || p.category === 'businesses';
-                    }
-                    return false;
-                  });
-                  
-                  // Remove duplicates - ensure each product appears only once
-                  const uniqueB2C = b2cProducts.filter(p => 
-                    !b2bProducts.some(bp => bp._id === p._id)
-                  );
-                  const uniqueB2B = b2bProducts.filter(p => 
-                    !b2cProducts.some(cp => cp._id === p._id)
-                  );
-                  
-                  const uncategorizedProducts = homeProducts.filter(p => 
-                    !uniqueB2C.some(cp => cp._id === p._id) && 
-                    !uniqueB2B.some(bp => bp._id === p._id)
-                  );
-                  
-                  console.log('🔍 Product filtering results:', {
-                    total: homeProducts.length,
-                    b2c: b2cProducts.length,
-                    b2b: b2bProducts.length,
-                    uncategorized: uncategorizedProducts.length,
-                  });
-                  
-                  // Separate B2B and B2E products
-                  const b2bOnlyProducts = uniqueB2B.filter(p => 
-                    (p.targetAudience === 'businesses' || p.category === 'businesses') &&
-                    !(p.targetAudience === 'schools' || p.category === 'schools')
-                  );
-                  const b2eOnlyProducts = uniqueB2B.filter(p => 
-                    (p.targetAudience === 'schools' || p.category === 'schools') &&
-                    !(p.targetAudience === 'businesses' || p.category === 'businesses')
-                  );
-                  
-                  return (
-                    <>
-                      {/* Family section - B2C products */}
+
+            {/* Split products into B2C, B2E, and B2B */}
+            {(() => {
+              const products = Array.isArray(homeProducts) ? homeProducts : [];
+              
+              // B2C products: For families - prioritize targetAudience
+              const b2cProducts = products.filter(p => {
+                if (p.targetAudience === 'private-users') return true;
+                if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
+                if (!p.targetAudience) {
+                  return p.category === 'private-users' ||
+                         p.category === 'membership' ||
+                         p.category === 'template' ||
+                         p.category === 'guide' ||
+                         p.category === 'toolkit' ||
+                         p.category === 'digital-guide' ||
+                         (p.name?.toLowerCase().includes('scam survival kit'));
+                }
+                return false;
+              });
+              
+              // B2B/B2E products: For organizations & schools - prioritize targetAudience
+              const b2bProducts = products.filter(p => {
+                if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return true;
+                if (p.targetAudience === 'private-users') return false;
+                if (!p.targetAudience) {
+                  return p.category === 'schools' || p.category === 'businesses';
+                }
+                return false;
+              });
+              
+              // Remove duplicates
+              const uniqueB2C = b2cProducts.filter(p => 
+                !b2bProducts.some(bp => bp._id === p._id)
+              );
+              const uniqueB2B = b2bProducts.filter(p => 
+                !b2cProducts.some(cp => cp._id === p._id)
+              );
+              
+              // Separate B2B and B2E products
+              const b2bOnlyProducts = uniqueB2B.filter(p => 
+                (p.targetAudience === 'businesses' || p.category === 'businesses') &&
+                !(p.targetAudience === 'schools' || p.category === 'schools')
+              );
+              const b2eOnlyProducts = uniqueB2B.filter(p => 
+                (p.targetAudience === 'schools' || p.category === 'schools') &&
+                !(p.targetAudience === 'businesses' || p.category === 'businesses')
+              );
+              
+              return (
+                <Grid container spacing={6}>
+                  {/* Family/Private Users Section */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      data-aos="fade-up"
+                      data-aos-duration="800"
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.1rem' },
+                          fontWeight: 600,
+                          color: '#00A4E8',
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        Family
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          fontWeight: 700,
+                          color: '#063C5E',
+                          mb: 2,
+                        }}
+                      >
+                        Protect Your Family Without the Nag
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.05rem' },
+                          color: 'text.secondary',
+                          mb: 4,
+                          lineHeight: 1.7,
+                          flex: 1,
+                        }}
+                      >
+                        Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
+                      </Typography>
+                      
+                      {/* Carousel of Cards */}
                       {uniqueB2C.length > 0 && (
-                        <Box sx={{ mb: 6 }}>
-                          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
+                        <Box sx={{ mb: 4 }}>
+                          <Swiper
+                            modules={[Pagination, Navigation]}
+                            spaceBetween={16}
+                            slidesPerView={1}
+                            pagination={{ clickable: true }}
+                            navigation={uniqueB2C.length > 1}
+                            style={{
+                              paddingBottom: '40px',
+                            }}
+                          >
                             {uniqueB2C.map((product, index) => (
-                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
+                              <SwiperSlide key={product._id || index}>
                                 <ProductCard 
                                   product={product} 
-                                  delay={index * 150}
+                                  delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
                                 />
-                              </Grid>
+                              </SwiperSlide>
                             ))}
-                          </Grid>
+                          </Swiper>
                         </Box>
                       )}
+                      
+                      <Button
+                        component={Link}
+                        href="/sskit-family"
+                        variant="contained"
+                        size="large"
+                        endIcon={
+                          <Box
+                            component="span"
+                            sx={{
+                              ml: 0.5,
+                              fontSize: '1.2rem',
+                              lineHeight: 1,
+                            }}
+                          >
+                            →
+                          </Box>
+                        }
+                        sx={{
+                          backgroundColor: '#063C5E',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: '#052A42',
+                            transform: 'translateX(5px)',
+                          },
+                          px: 4,
+                          py: 1.5,
+                          fontWeight: 600,
+                          transition: 'all 0.3s ease',
+                          alignSelf: 'flex-start',
+                          mt: 'auto',
+                        }}
+                      >
+                        Get Your Kit Now
+                      </Button>
+                    </Box>
+                  </Grid>
 
-                      {/* Schools section - B2E products */}
+                  {/* Schools & Universities Section */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      data-aos="fade-up"
+                      data-aos-duration="800"
+                      data-aos-delay="100"
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.1rem' },
+                          fontWeight: 600,
+                          color: '#00A4E8',
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        Schools & Universities
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          fontWeight: 700,
+                          color: '#063C5E',
+                          mb: 2,
+                        }}
+                      >
+                        Turn Students into the Strongest Defense
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.05rem' },
+                          color: 'text.secondary',
+                          mb: 4,
+                          lineHeight: 1.7,
+                          flex: 1,
+                        }}
+                      >
+                        Quick classroom activities and workshops teach young people to spot pressure tricks early. Perfect for student clubs, orientation weeks, or leadership training—easy for teachers, engaging for students.
+                      </Typography>
+                      
                       {b2eOnlyProducts.length > 0 && (
-                        <Box sx={{ mb: 6 }}>
-                          <Typography 
-                            variant="h3" 
-                            sx={{ 
-                              mb: 4,
-                              fontSize: { xs: '1.75rem', md: '2.5rem' },
-                              fontWeight: 700,
-                              color: '#063C5E',
-                              textAlign: 'left',
-                            }}
-                          >
-                            Schools
-                          </Typography>
-                          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {b2eOnlyProducts.map((product, index) => (
-                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
+                        <Box sx={{ mb: 4 }}>
+                          <Grid container spacing={2}>
+                            {b2eOnlyProducts.slice(0, 1).map((product, index) => (
+                              <Grid item xs={12} key={product._id || index}>
                                 <ProductCard 
                                   product={product} 
-                                  delay={index * 150}
-                                  hidePrice={true}
-                                  buttonText="Get Early Access"
-                                />
-                              </Grid>
-                            ))}
-                          </Grid>
-                        </Box>
-                      )}
-
-                      {/* Companies section - B2B products */}
-                      {b2bOnlyProducts.length > 0 && (
-                        <Box sx={{ mb: 6 }}>
-                          <Typography 
-                            variant="h3" 
-                            sx={{ 
-                              mb: 4,
-                              fontSize: { xs: '1.75rem', md: '2.5rem' },
-                              fontWeight: 700,
-                              color: '#063C5E',
-                              textAlign: 'left',
-                            }}
-                          >
-                            Companies
-                          </Typography>
-                          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {b2bOnlyProducts.map((product, index) => (
-                              <Grid item xs={12} sm={6} md={4} key={product._id || index}>
-                                <ProductCard 
-                                  product={product} 
-                                  delay={index * 150}
+                                  delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
                                 />
@@ -1383,45 +1692,148 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         </Box>
                       )}
                       
-                      {/* Fallback: Show uncategorized products if no categorized products found */}
-                      {b2cProducts.length === 0 && b2bProducts.length === 0 && uncategorizedProducts.length > 0 && (
+                      <Button
+                        component={Link}
+                        href="/resources"
+                        variant="contained"
+                        size="large"
+                        endIcon={
+                          <Box
+                            component="span"
+                            sx={{
+                              ml: 0.5,
+                              fontSize: '1.2rem',
+                              lineHeight: 1,
+                            }}
+                          >
+                            →
+                          </Box>
+                        }
+                        sx={{
+                          backgroundColor: '#00A4E8',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: '#0088C7',
+                            transform: 'translateX(5px)',
+                          },
+                          px: 4,
+                          py: 1.5,
+                          fontWeight: 600,
+                          transition: 'all 0.3s ease',
+                          alignSelf: 'flex-start',
+                          mt: 'auto',
+                        }}
+                      >
+                        Download Free Lesson Pack
+                      </Button>
+                    </Box>
+                  </Grid>
+
+                  {/* Businesses & Organizations Section */}
+                  <Grid item xs={12} md={4}>
+                    <Box
+                      data-aos="fade-up"
+                      data-aos-duration="800"
+                      data-aos-delay="200"
+                      sx={{
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                      }}
+                    >
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.1rem' },
+                          fontWeight: 600,
+                          color: '#00A4E8',
+                          mb: 1,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                        }}
+                      >
+                        Businesses & Organizations
+                      </Typography>
+                      <Typography
+                        variant="h3"
+                        sx={{
+                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          fontWeight: 700,
+                          color: '#063C5E',
+                          mb: 2,
+                        }}
+                      >
+                        Compliance That Actually Reduces Risk
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.05rem' },
+                          color: 'text.secondary',
+                          mb: 4,
+                          lineHeight: 1.7,
+                          flex: 1,
+                        }}
+                      >
+                        Go beyond check-box training. Our simulations prove your team can handle real pressure—with reports ready for auditors. NIS2-ready, fun, and effective.
+                      </Typography>
+                      
+                      {b2bOnlyProducts.length > 0 && (
                         <Box sx={{ mb: 4 }}>
-                          <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
-                            {uncategorizedProducts.map((product, index) => (
-                              <Grid item xs={12} md={4} key={product._id || index}>
-                                <ProductCard product={product} delay={index * 150} />
+                          <Grid container spacing={2}>
+                            {b2bOnlyProducts.slice(0, 1).map((product, index) => (
+                              <Grid item xs={12} key={product._id || index}>
+                                <ProductCard 
+                                  product={product} 
+                                  delay={0}
+                                  hidePrice={true}
+                                  buttonText="Get Early Access"
+                                />
                               </Grid>
                             ))}
                           </Grid>
                         </Box>
                       )}
-                    </>
-                  );
-                })()}
-                <Box textAlign="center">
-                  <Button 
-                    component={Link} 
-                    href="/products"
-                    variant="outlined"
-                    size="large"
-                    sx={{
-                      px: 5,
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontWeight: 700,
-                      borderColor: '#063C5E',
-                      color: '#063C5E',
-                      '&:hover': {
-                        borderColor: '#052A42',
-                        color: '#052A42',
-                      },
-                    }}
-                  >
-                    Show more
-                  </Button>
-                </Box>
-              </>
-            )}
+                      
+                      <Button
+                        component={Link}
+                        href="/contact"
+                        variant="contained"
+                        size="large"
+                        endIcon={
+                          <Box
+                            component="span"
+                            sx={{
+                              ml: 0.5,
+                              fontSize: '1.2rem',
+                              lineHeight: 1,
+                            }}
+                          >
+                            →
+                          </Box>
+                        }
+                        sx={{
+                          backgroundColor: '#5FA8BA',
+                          color: 'white',
+                          '&:hover': {
+                            backgroundColor: '#4a8a9a',
+                            transform: 'translateX(5px)',
+                          },
+                          px: 4,
+                          py: 1.5,
+                          fontWeight: 600,
+                          transition: 'all 0.3s ease',
+                          alignSelf: 'flex-start',
+                          mt: 'auto',
+                        }}
+                      >
+                        Book a Free Pilot
+                      </Button>
+                    </Box>
+                  </Grid>
+                </Grid>
+              );
+            })()}
           </Container>
         </Box>
 
@@ -1680,7 +2092,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   {/* CTA Button */}
                   <Button
                     component={Link}
-                    href="/comasy"
+                  href="/comasy#demo-form"
                     variant="contained"
                     size="large"
                     sx={{
@@ -1895,7 +2307,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             >
               <Button
                 component={Link}
-                href="/education"
+                href="/education#pilot-form"
                 variant="contained"
                 size="large"
                 sx={{
@@ -2547,7 +2959,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
           >
             <Button
               component={Link}
-              href="/shop"
+              href="/sskit-family"
               variant="contained"
               sx={{
                 backgroundColor: '#063C5E',
@@ -2567,7 +2979,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
             </Button>
             <Button
               component={Link}
-              href="/contact?topic=b2b_demo"
+              href="/comasy#demo-form"
               variant="contained"
               sx={{
                 backgroundColor: '#00A4E8',
@@ -2587,7 +2999,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
             </Button>
             <Button
               component={Link}
-              href="/education"
+              href="/education#pilot-form"
               variant="contained"
               sx={{
                 backgroundColor: '#0B7897',
@@ -2660,6 +3072,179 @@ Empowering individuals, organizations, and compliance teams with interactive sca
         </Container>
       </Box>
       </Box>
+
+      {/* Final Motivational Section */}
+      <Box
+    
+       sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)', position: 'relative', overflow: 'hidden' }}>
+        <Box
+          sx={{
+            background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 0,
+          }}
+        />
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+          <Box
+            data-aos="zoom-in"
+            data-aos-duration="800"
+            sx={{
+              textAlign: 'center',
+              color: 'white',
+            }}
+          >
+            <Typography
+              variant="h2"
+              sx={{
+                fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                fontWeight: 700,
+                color: 'white',
+                mb: 3,
+                lineHeight: 1.2,
+              }}
+            >
+              Stop Training for the Quiz. Start Training for the Pause.
+            </Typography>
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                color: 'rgba(255, 255, 255, 0.95)',
+                mb: 5,
+                maxWidth: 800,
+                mx: 'auto',
+                lineHeight: 1.7,
+              }}
+            >
+              One moment of rush is all a scammer needs. Five seconds of pause is all you need to stop them.
+              <br />
+              Join thousands of families, schools, and teams already building this habit.
+            </Typography>
+            
+            {/* CTA Buttons */}
+            <Box
+              sx={{
+                display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: { xs: 2, sm: 3 },
+                flexWrap: 'wrap',
+              }}
+            >
+              <Button
+                component={Link}
+                href="/sskit-family"
+                variant="contained"
+                size="large"
+                endIcon={
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      fontSize: '1.2rem',
+                      lineHeight: 1,
+                    }}
+                  >
+                    →
+                  </Box>
+                }
+                sx={{
+                  backgroundColor: '#FFFFFF',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#F5F5F5',
+                    transform: 'translateX(5px)',
+                  },
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  minWidth: { xs: '100%', sm: '200px' },
+                }}
+              >
+                For Home → Get Kit
+              </Button>
+              
+              <Button
+                component={Link}
+                href="/free-resources"
+                variant="contained"
+                size="large"
+                endIcon={
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      fontSize: '1.2rem',
+                      lineHeight: 1,
+                    }}
+                  >
+                    →
+                  </Box>
+                }
+                sx={{
+                  backgroundColor: '#00A4E8',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#0088C7',
+                    transform: 'translateX(5px)',
+                  },
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  minWidth: { xs: '100%', sm: '200px' },
+                }}
+              >
+                For School/Uni → Free Resources
+              </Button>
+              
+              <Button
+                component={Link}
+                href="/contact"
+                variant="contained"
+                size="large"
+                endIcon={
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      fontSize: '1.2rem',
+                      lineHeight: 1,
+                    }}
+                  >
+                    →
+                  </Box>
+                }
+                sx={{
+                  backgroundColor: '#5FA8BA',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: '#4a8a9a',
+                    transform: 'translateX(5px)',
+                  },
+                  px: 4,
+                  py: 1.5,
+                  fontWeight: 600,
+                  transition: 'all 0.3s ease',
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  minWidth: { xs: '100%', sm: '200px' },
+                }}
+              >
+                For Work → Request Demo
+              </Button>
+            </Box>
+          </Box>
+        </Container>
+      </Box>
+
       <Footer />
     </>
   );
