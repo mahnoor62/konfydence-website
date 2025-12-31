@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
+import { Global } from '@emotion/react';
 import {
   Container,
   Typography,
@@ -50,6 +51,7 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 
 export default function SKKPage() {
+  const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -139,6 +141,7 @@ export default function SKKPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     if (typeof window !== 'undefined') {
       // Mark that user has visited waitlist page, so banner won't show again on homepage
       localStorage.setItem('skk_banner_clicked', 'true');
@@ -156,11 +159,12 @@ export default function SKKPage() {
 
   // Card flip animation for hero
   useEffect(() => {
+    if (!mounted) return;
     const interval = setInterval(() => {
       setCardIndex((prev) => (prev + 1) % 5);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mounted]);
 
   const cards = [
     { name: 'Bank Email', scenario: 'Urgent account verification required' },
@@ -172,6 +176,18 @@ export default function SKKPage() {
 
   return (
     <>
+      <Global
+        styles={{
+          '@keyframes floatImage': {
+            '0%, 100%': { 
+              transform: 'translateY(0px)',
+            },
+            '50%': {
+              transform: 'translateY(-20px)',
+            },
+          },
+        }}
+      />
       <Head>
         <title>Konfydence Pre-Launch - Train the 5-Second Pause | Kickstarter Feb 2026</title>
         <meta name="description" content="Join the waitlist for Konfydence - the card game that trains the one habit that beats every scam: the 5-second pause. Launching on Kickstarter February 2026." />
@@ -378,6 +394,7 @@ export default function SKKPage() {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
+                    animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
               </Box>
@@ -726,6 +743,7 @@ export default function SKKPage() {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
+                    animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
               </Box>
@@ -1052,6 +1070,7 @@ export default function SKKPage() {
                   Design aligned to NIS2 and ISO 27001 human factor security awareness training requirements.
                 </Typography>
                 <Button
+                href="/comasy#demo-form"
                   variant="outlined"
                   sx={{
                     borderColor: '#0B7897',
@@ -1407,6 +1426,7 @@ export default function SKKPage() {
                       height: '100%',
                       objectFit: 'contain',
                       borderRadius: '30px',
+                      animation: 'floatImage 3s ease-in-out infinite',
                     }}
                   />
                 </Box>
@@ -1417,14 +1437,14 @@ export default function SKKPage() {
       </Box>
 
       {/* Product Details Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#E9F4FF' }}>
+      <Box sx={{ py: { xs: 4, md: 5 }, backgroundColor: '#E9F4FF' }}>
         <Container maxWidth="lg" data-aos="fade-up">
           <Typography
             variant="h2"
             sx={{
               fontSize: { xs: '2rem', md: '2.5rem' },
               fontWeight: 700,
-              mb: 4,
+              mb: 6,
               textAlign: 'center',
               color: '#063C5E',
             }}
@@ -1432,8 +1452,9 @@ export default function SKKPage() {
             Inside Your Konfydence Kit
           </Typography>
           
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={2} alignItems="center">
+          {/* <Grid item xs={12} md={2}></Grid> */}
+            <Grid item xs={12} md={4}>
               <Stack spacing={3}>
                 <Box>
                   <Typography
@@ -1501,58 +1522,60 @@ export default function SKKPage() {
               </Stack>
             </Grid>
             
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  borderRadius: 3,
-                  overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+            <Grid item xs={12} md={8}>
+              <Swiper
+                modules={[Autoplay, Pagination]}
+                spaceBetween={8}
+                slidesPerView={2}
+                breakpoints={{
+                  0: {
+                    slidesPerView: 2,
+                    spaceBetween: 8,
+                  },
+                  600: {
+                    slidesPerView: 2,
+                    spaceBetween: 8,
+                  },
+                  960: {
+                    slidesPerView: 2,
+                    spaceBetween: 8,
+                  },
                 }}
+                autoplay={{
+                  delay: 3000,
+                  disableOnInteraction: false,
+                }}
+                pagination={{ clickable: true }}
               >
-                <Swiper
-                  modules={[Autoplay, Pagination]}
-                  spaceBetween={0}
-                  slidesPerView={1}
-                  autoplay={{
-                    delay: 3000,
-                    disableOnInteraction: false,
-                  }}
-                  pagination={{ clickable: true }}
-                >
-                  {cards.map((card, idx) => (
-                    <SwiperSlide key={idx}>
-                      <Box
-                        sx={{
-                          p: 6,
-                          backgroundColor: '#063C5E',
-                          color: 'white',
-                          textAlign: 'center',
-                          minHeight: '300px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          justifyContent: 'center',
-                        }}
-                      >
-                        <Typography
-                          variant="h4"
-                          sx={{
-                            fontWeight: 700,
-                            mb: 2,
-                            color: 'white',
-                          }}
-                        >
-                          {card.name}
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontSize: '1.1rem', color: 'white' }}>
-                          {card.scenario}
-                        </Typography>
-                      </Box>
-                    </SwiperSlide>
-                  ))}
-                </Swiper>
-              </Box>
+                {[
+                  { src: '/images/1.png', alt: 'Bank Email Scam Back Side Card' },
+                  { src: '/images/1Bank.png', alt: 'Bank Email Scam' },
+                  { src: '/images/2delivery.png', alt: 'Package Tracking Scam' },
+                  { src: '/images/2.png', alt: 'Bank Email Scam Back Side Card' },
+                  { src: '/images/5lottery.png', alt: 'Lottery Scam' },
+                  { src: '/images/5.png', alt: 'Bank Email Scam Back Side Card' },
+                  { src: '/images/7friend.png', alt: 'Friend in Need Scam' },
+                  { src: '/images/7.png', alt: 'Bank Email Scam Back Side Card' },
+                  { src: '/images/15grandchild.png', alt: 'Grandchild Scam' },
+                  { src: '/images/15.png', alt: 'Bank Email Scam Back Side Card' },
+                ].map((image, idx) => (
+                  <SwiperSlide key={idx}>
+                    <Box
+                      component="img"
+                      src={image.src}
+                      alt={image.alt}
+                      sx={{
+                        width: '100%',
+                        height: { xs: '400px', md: '500px' },
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
+                  </SwiperSlide>
+                ))}
+              </Swiper>
             </Grid>
+            {/* <Grid item xs={12} md={2}></Grid> */}
           </Grid>
         </Container>
       </Box>
@@ -1709,7 +1732,7 @@ export default function SKKPage() {
               lineHeight: 1.8,
               mb: 4,
               fontWeight: 600,
-              color: '#FF725E',
+              // color: '#FF725E',
             }}
           >
             Every month without training is another chance for scammers to win.
@@ -1871,7 +1894,7 @@ export default function SKKPage() {
               <Box
                 sx={{
                   width: '100%',
-                  height: { xs: '400px', md: '500px' },
+                  // height: { xs: '400px', md: '500px' },
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -1885,6 +1908,7 @@ export default function SKKPage() {
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
+                    animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
               </Box>
@@ -1897,8 +1921,7 @@ export default function SKKPage() {
                   p: { xs: 3, md: 5 },
                   backgroundColor: 'white',
                   borderRadius: 2,
-                  height: { xs: '400px', md: '500px' },
-                  minHeight: { xs: '400px', md: '500px' },
+                  height: 'auto',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -1949,7 +1972,7 @@ export default function SKKPage() {
               </Stack>
             </Box>
             
-            <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Box sx={{ mt: 2, textAlign: 'center' }}>
               <Typography
                 variant="body2"
                 sx={{
@@ -1964,7 +1987,7 @@ export default function SKKPage() {
                 variant="body2"
                 sx={{
                   fontSize: '0.875rem',
-                  color: '#FF725E',
+                  // color: '#FF725E',
                   fontWeight: 600,
                   mb: 1,
                 }}
