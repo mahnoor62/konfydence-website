@@ -25,7 +25,7 @@ body {
 }
 
 body {
-  font-family: var(--font-inter), sans-serif;
+  font-family: var(--font-poppins), sans-serif;
   background: radial-gradient(
       circle at 20% 20%,
       rgba(0, 139, 139, 0.08),

@@ -2246,7 +2246,28 @@ export default function OrganizationDashboardPage() {
     return null;
   }
 
-  const { user, organizations: userOrgs } = dashboardData;
+  const { user, organizations: userOrgs, gameProgress } = dashboardData;
+
+  // Check if user has incomplete game progress (has started but not completed all 3 levels)
+  const hasIncompleteProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && gameProgress.totalLevelsPlayed < 3;
+  
+  // Determine which level to resume from (find the first incomplete level)
+  const getResumeLevel = () => {
+    if (!gameProgress) return null;
+    // Check each level (1, 2, 3) to find the first one that hasn't been completed
+    for (let levelNum = 1; levelNum <= 3; levelNum++) {
+      const levelArray = gameProgress[`level${levelNum}`] || [];
+      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+      // If level has no cards or no stats, it's incomplete
+      if (levelArray.length === 0 || !levelStats.completedAt) {
+        return levelNum;
+      }
+    }
+    // If all levels are completed, return null
+    return null;
+  };
+  
+  const resumeLevel = getResumeLevel();
 
   return (
     <>
@@ -2445,6 +2466,25 @@ export default function OrganizationDashboardPage() {
                           </Box>
 
                           <Divider sx={{ my: 2 }} />
+
+                          {/* Resume Game Button - Show if user has incomplete progress */}
+                          {hasIncompleteProgress && resumeLevel && (
+                            <Button
+                              variant="contained"
+                              fullWidth
+                              onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                              sx={{
+                                backgroundColor: '#0B7897',
+                                color: '#fff',
+                                mb: 2,
+                                '&:hover': {
+                                  backgroundColor: '#085f76',
+                                },
+                              }}
+                            >
+                              Resume Game
+                            </Button>
+                          )}
 
                           <Stack spacing={1}>
                             <Box>

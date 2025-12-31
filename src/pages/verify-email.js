@@ -24,16 +24,16 @@ export default function VerifyEmailPage() {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    if (token) {
+    if (router.isReady && token) {
       verifyEmail();
     }
-  }, [token]);
+  }, [router.isReady, token]);
 
   const verifyEmail = async () => {
     try {
       setStatus('verifying');
       const response = await axios.get(`${API_URL}/auth/user/verify-email`, {
-        params: { token },
+        params: { token: token },
       });
 
       setStatus('success');

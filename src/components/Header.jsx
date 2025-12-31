@@ -228,6 +228,7 @@ export default function Header() {
                           color: scrolled ? 'primary.main' : 'white',
                           textTransform: 'none',
                           fontWeight: 600,
+                          fontFamily: 'var(--font-poppins), sans-serif',
                           px: 2.5,
                           '&:hover': {
                             borderColor: scrolled ? 'primary.dark' : 'white',
@@ -268,6 +269,7 @@ export default function Header() {
                               color: '#063C5E',
                               textDecoration: 'none',
                               fontSize: '0.95rem',
+                              fontFamily: 'var(--font-poppins), sans-serif',
                               fontWeight: 500,
                               transition: 'background-color 0.2s',
                               '&:hover': {
@@ -287,6 +289,7 @@ export default function Header() {
                               color: '#063C5E',
                               textDecoration: 'none',
                               fontSize: '0.95rem',
+                              fontFamily: 'var(--font-poppins), sans-serif',
                               fontWeight: 500,
                               transition: 'background-color 0.2s',
                               '&:hover': {
@@ -310,6 +313,7 @@ export default function Header() {
                               textDecoration: 'none',
                               fontSize: '0.95rem',
                               fontWeight: 500,
+                              fontFamily: 'var(--font-poppins), sans-serif',
                               border: 'none',
                               background: 'none',
                               textAlign: 'left',
@@ -391,6 +395,7 @@ export default function Header() {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 280,
+            fontFamily: 'var(--font-poppins), sans-serif',
             background: 'linear-gradient(180deg, #FFFFFF 0%, #F6F8FA 100%)',
           },
         }}
@@ -421,8 +426,11 @@ export default function Header() {
                   >
                     <ListItemText
                       primary={item.label}
-                      primaryTypographyProps={{
-                        fontWeight: isActive ? 600 : 500,
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontWeight: isActive ? 600 : 500,
+                        },
                       }}
                     />
                   </ListItemButton>
@@ -433,12 +441,26 @@ export default function Header() {
               <>
                 <ListItem disablePadding>
                   <ListItemButton component={Link} href={getDashboardRoute()}>
-                    <ListItemText primary="Dashboard" />
+                    <ListItemText 
+                      primary="Dashboard" 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                        },
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton component={Link} href="/game">
-                    <ListItemText primary="Game" />
+                    <ListItemText 
+                      primary="Game" 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                        },
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
@@ -454,7 +476,14 @@ export default function Header() {
                       },
                     }}
                   >
-                    <ListItemText primary="Logout" />
+                    <ListItemText 
+                      primary="Logout" 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                        },
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
               </>
@@ -462,12 +491,26 @@ export default function Header() {
               <>
                 <ListItem disablePadding>
                   <ListItemButton component={Link} href="/login">
-                    <ListItemText primary="Login" />
+                    <ListItemText 
+                      primary="Login" 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                        },
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
                   <ListItemButton component={Link} href="/sskit-family">
-                    <ListItemText primary="Shop Now" />
+                    <ListItemText 
+                      primary="Shop Now" 
+                      sx={{
+                        '& .MuiTypography-root': {
+                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                        },
+                      }}
+                    />
                   </ListItemButton>
                 </ListItem>
               </>

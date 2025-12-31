@@ -361,7 +361,7 @@ export default function PaymentSuccessPage() {
                   }}
                 >
                   <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                    Your Unique Order Code
+                    Your Unique Order Code (Send to you via email)
                   </Typography>
                   <Box
                     sx={{
@@ -421,8 +421,9 @@ export default function PaymentSuccessPage() {
                     Important Instructions:
                   </Typography>
                   <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                    Copy this code now - this is a one-time display. Without this code, you cannot play the game. 
-                    Make sure to save it in a safe place before proceeding.
+                    You&apos;ll need it to play the game
+                    {/* Copy this code now - this is a one-time display. Without this code, you cannot play the game. 
+                    Make sure to save it in a safe place before proceeding. */}
                   </Typography>
                 </Alert>
 

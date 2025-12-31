@@ -8,7 +8,6 @@ import {
   TextField,
   Grid,
   MenuItem,
-  Snackbar,
   Alert,
   Checkbox,
   FormControlLabel,
@@ -243,7 +242,7 @@ export default function ContactPage() {
               >
                 Have questions about HACKs, training, or partnerships?
               </Typography>
-              <Typography
+              {/* <Typography
                 variant="body1"
                 sx={{
                   color: 'rgba(255,255,255,0.92)',
@@ -252,7 +251,7 @@ export default function ContactPage() {
                 }}
               >
                 We usually respond within one business day.
-              </Typography>
+              </Typography> */}
             </Box>
           </Container>
         </Box>
@@ -277,6 +276,15 @@ export default function ContactPage() {
               zIndex: 2,
             }}
           >
+            {snackbar.open && (
+              <Alert 
+                severity={snackbar.severity}
+                onClose={() => setSnackbar({ ...snackbar, open: false })}
+                sx={{ mb: 3 }}
+              >
+                {snackbar.message}
+              </Alert>
+            )}
             {submitted ? (
               <Box sx={{ textAlign: 'center', py: 4 }}>
                 <Typography
@@ -288,15 +296,15 @@ export default function ContactPage() {
                     fontSize: { xs: '1.5rem', md: '1.75rem' },
                   }}
                 >
-                  Thank you for your message.
+                  Thank you for requesting a demo.
                 </Typography>
-                <Typography
+                {/* <Typography
                   variant="body1"
                   color="text.secondary"
                   sx={{ fontSize: { xs: '1rem', md: '1.1rem' }, lineHeight: 1.7 }}
                 >
                   We&apos;ll get back to you within 24 hours.
-                </Typography>
+                </Typography> */}
               </Box>
             ) : (
               <>
@@ -354,6 +362,7 @@ export default function ContactPage() {
                               style: {
                                 maxHeight: 224,
                                 width: 'auto',
+                                fontFamily: 'var(--font-poppins), sans-serif',
                               },
                             },
                             anchorOrigin: {
@@ -508,7 +517,7 @@ export default function ContactPage() {
           </Box>
 
           {/* Response time info - outside form box, inside container */}
-          <Typography
+          {/* <Typography
             variant="body2"
             color="text.secondary"
             sx={{
@@ -521,17 +530,10 @@ export default function ContactPage() {
             }}
           >
             We typically reply within 24 hours on business days.
-          </Typography>
+          </Typography> */}
         </Container>
       </Box>
       <Footer />
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-      >
-        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
-      </Snackbar>
     </>
   );
 }

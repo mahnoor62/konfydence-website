@@ -31,7 +31,7 @@ import styles from './game.module.css';
 const triggerConfetti = () => {
   if (typeof window === 'undefined') return;
   
-  const colors = ['#008B8B', '#33BABA', '#FFC247', '#FF725E', '#FFFFFF'];
+  const colors = ['#000B3D', '#000B3D', '#FFC247', '#FF725E', '#FFFFFF'];
   const confettiCount = 250;
   const duration = 4000;
   
@@ -158,7 +158,7 @@ const CodeVerificationDialog = ({
   // REMOVED: Auto-verification from sessionStorage
   // We want to always show the dialog on page load
 
-  const verifyCode = async (codeToVerify) => {
+  const verifyCode = async (codeToVerify, isAutoVerify = false) => {
     if (!codeToVerify || codeToVerify.trim() === '') {
       setError('Please enter a code');
       return;
@@ -166,6 +166,11 @@ const CodeVerificationDialog = ({
 
     setVerifying(true);
     setError(null);
+    
+    // If auto-verifying, don't show dialog
+    if (isAutoVerify) {
+      setShowCodeDialog(false);
+    }
 
     try {
       // First check if it's a trial code (FreeTrial table)
@@ -644,6 +649,9 @@ const CodeVerificationDialog = ({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 2 }}>
+        <Typography variant="body1" color="text.secondary" sx={{fontWeight:600}}>
+          Code forgotton?Check the email you recieved after purchase/demo request.
+          </Typography>
           <Typography variant="body1" color="text.secondary">
             Please enter your code to access the game. If you have a free trial, enter your trial code. If you made a purchase, enter the code you received after payment.
           </Typography>
@@ -652,12 +660,13 @@ const CodeVerificationDialog = ({
             <Alert 
               severity="info"
               action={
-                <Button size="small" onClick={handleUseClipboardCode} disabled={verifying}>
+                <Button size="large" onClick={handleUseClipboardCode} disabled={verifying}>
                   Use
                 </Button>
               }
             >
-              Found code in clipboard: {codeFromClipboard}
+              
+              <strong style={{ fontSize: '1.1rem', fontWeight: 700 }}>  Found code in clipboard: {codeFromClipboard}</strong>
             </Alert>
           )}
 
@@ -760,7 +769,7 @@ const CodeVerificationDialog = ({
 
 // Helper functionss
 const getRiskLevel = (finalScore) => {
-  if (finalScore >= 84) return { level: 'Confident', color: '#008B8B' };
+  if (finalScore >= 84) return { level: 'Confident', color: '#000B3D' };
   if (finalScore >= 44) return { level: 'Cautious', color: '#FFC247' };
   return { level: 'Vulnerable', color: '#FF725E' };
 };
@@ -787,6 +796,7 @@ export default function GamePage() {
   // IMPORTANT: Always start with 'landing' - don't allow game to start without code verification
   const [gameState, setGameState] = useState('landing'); // landing, levelSelect, game, summary
   const [selectedLevel, setSelectedLevel] = useState(null);
+  const [resumeLevel, setResumeLevel] = useState(null); // Store resume level from query parameter
   const [availableLevels, setAvailableLevels] = useState([]); // Track which levels are available - start empty until checked
   const [checkingLevels, setCheckingLevels] = useState(false); // Track if we're checking levels
   const [scenarios, setScenarios] = useState([]);
@@ -800,24 +810,71 @@ export default function GamePage() {
   const [howToPlayScreen, setHowToPlayScreen] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showCopySuccess, setShowCopySuccess] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [completedLevels, setCompletedLevels] = useState([]); // Array to track completed levels with their scores
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
   const [errorModal, setErrorModal] = useState({ open: false, message: '', title: 'Error' }); // Error modal state
 
   // Mark component as mounted (client-side only)
+  // Check for resume query parameter
+  useEffect(() => {
+    if (router.isReady && router.query.resume) {
+      const resumeLevelParam = parseInt(router.query.resume);
+      if (resumeLevelParam >= 1 && resumeLevelParam <= 3) {
+        console.log(`🔄 Resume level detected: ${resumeLevelParam}`);
+        setResumeLevel(resumeLevelParam);
+      }
+    }
+  }, [router.isReady, router.query.resume]);
+
   // IMPORTANT: This runs FIRST on page load/refresh
   useEffect(() => {
     console.log('🚀 Component mounting - ALWAYS show dialog first, then check verification');
     
-    // CRITICAL: Always show dialog on page load/refresh FIRST
-    // Don't check sessionStorage immediately - let user verify code again
-    setCodeVerified(false);
-    setShowCodeDialog(true);
-    setGameState('landing');
-    
     // Mark as mounted
     setMounted(true);
+
+    // Check if user has a referrer and try to use their code
+    const checkReferrerCode = async () => {
+      if (!user || !mounted) return;
+      
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        // Check if user has referrer and get their code
+        const referrerResponse = await axios.get(
+          `${API_URL}/payments/referrer-code`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (referrerResponse.data.uniqueCode) {
+          // Auto-verify with referrer's code
+          console.log('✅ Found referrer code, auto-verifying:', referrerResponse.data.uniqueCode);
+          const referrerCode = referrerResponse.data.uniqueCode;
+          
+          // Use the same verification logic as manual code entry
+          await verifyCode(referrerCode, true); // Pass true to indicate it's auto-verification
+          return; // Exit early if referral code was used
+        }
+      } catch (error) {
+        // User doesn't have referrer or referrer has no code - continue normally
+        console.log('No referrer code available, showing code dialog');
+      }
+
+      // CRITICAL: Always show dialog on page load/refresh FIRST
+      // Don't check sessionStorage immediately - let user verify code again
+      setCodeVerified(false);
+      setShowCodeDialog(true);
+      setGameState('landing');
+    };
+
+    checkReferrerCode();
     
     // Then check sessionStorage in background (but don't auto-verify)
     if (typeof window !== 'undefined') {
@@ -895,7 +952,7 @@ export default function GamePage() {
         setSeatsAvailable(false);
       }
     }
-  }, []);
+  }, [user]);
 
   // This useEffect is removed - all logic moved to mount useEffect above
 
@@ -1346,6 +1403,14 @@ export default function GamePage() {
     }
   }, [gameState, codeVerified, checkAvailableLevels]);
 
+  // Auto-start resume level when code is verified and resume level is set
+  useEffect(() => {
+    if (codeVerified && resumeLevel && gameState === 'levelSelect') {
+      console.log(`🎮 Auto-starting resume level: ${resumeLevel}`);
+      selectLevel(resumeLevel);
+    }
+  }, [codeVerified, resumeLevel, gameState, selectLevel]);
+
   const handleAnswerClick = useCallback((answerIndex) => {
     if (isCardLocked || !scenarios[currentCardIndex]) return;
     
@@ -1557,6 +1622,14 @@ export default function GamePage() {
       // Calculate maxScore from sum of all card max scores (not hardcoded 4 per question)
       const maxScore = cards.reduce((sum, card) => sum + card.cardMaxScore, 0);
       const percentageScore = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
+      
+      // Calculate risk level based on percentage score
+      let riskLevel = 'Vulnerable';
+      if (percentageScore >= 84) {
+        riskLevel = 'Confident';
+      } else if (percentageScore >= 44) {
+        riskLevel = 'Cautious';
+      }
 
       // Save one entry per user per level with cards array (only productId and userId)
       try {
@@ -1568,7 +1641,8 @@ export default function GamePage() {
           maxScore: maxScore,
           correctAnswers: correctAnswers,
           totalQuestions: totalQuestions,
-          percentageScore: percentageScore
+          percentageScore: percentageScore,
+          riskLevel: riskLevel
         };
 
         console.log(`📤 Sending progress data to API:`, {
@@ -1730,8 +1804,6 @@ export default function GamePage() {
   }, [selectedLevel, selectLevel, score, scenarios.length, answerHistory, saveGameProgress]);
 
   const currentScenario = scenarios[currentCardIndex];
-  const riskLevel = gameState === 'summary' ? getRiskLevel(score) : null;
-  const summaryMessage = gameState === 'summary' ? getSummaryMessage(score) : '';
   
   // Calculate performance metrics
   const totalQuestions = scenarios.length;
@@ -1764,6 +1836,10 @@ export default function GamePage() {
   
   const percentageScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
   
+  // Calculate risk level based on percentage score
+  const riskLevel = gameState === 'summary' ? getRiskLevel(percentageScore) : null;
+  const summaryMessage = gameState === 'summary' ? getSummaryMessage(percentageScore) : '';
+  
   // Initialize AOS
   useEffect(() => {
     AOS.init({
@@ -1779,10 +1855,54 @@ export default function GamePage() {
     AOS.refresh();
   }, [gameState]);
 
-  // Trigger confetti when summary screen appears and ensure progress is saved
+  // Play win/lose sound and trigger confetti when summary screen appears
   useEffect(() => {
     if (gameState === 'summary' && selectedLevel) {
+      // Calculate percentage score to determine win/lose
+      const currentPercentageScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+      
+      // Play sound based on win/lose condition (>= 60% is considered a win)
+      const playSound = () => {
+        try {
+          const audio = new Audio();
+          
+          if (currentPercentageScore >= 60) {
+            // Win sound
+            audio.src = '/sounds/win.mp3';
+            audio.volume = 0.5; // Set volume to 50%
+          } else {
+            // Lose sound
+            audio.src = '/sounds/lose.mp3';
+            audio.volume = 0.5; // Set volume to 50%
+          }
+          
+          audio.play().catch(err => {
+            // Silently handle audio play errors (user interaction required, etc.)
+            console.log('Audio play failed (this is normal on some browsers):', err);
+          });
+        } catch (error) {
+          // Silently handle any audio errors
+          console.log('Audio error (this is normal if audio files are missing):', error);
+        }
+      };
+      
+      // Play sound with a small delay to ensure summary screen is rendered
+      const soundTimeout = setTimeout(() => {
+        playSound();
+      }, 300);
+      
       triggerConfetti();
+      
+      // Cleanup timeout on unmount or state change
+      return () => {
+        clearTimeout(soundTimeout);
+      };
+    }
+  }, [gameState, selectedLevel, score, maxScore]);
+  
+  // Ensure progress is saved when summary screen appears (backup save)
+  useEffect(() => {
+    if (gameState === 'summary' && selectedLevel) {
       // Ensure progress is saved when summary screen appears (backup save)
       // This handles cases where progress might not have been saved in nextCard
       // Only save if we have answer history (user actually played the level)
@@ -1891,7 +2011,7 @@ export default function GamePage() {
     return (
       <>
         <Head>
-          <title>Konfydence - Cybersecurity Training Game</title>
+          <title>Konfydence Play</title>
           <meta name="description" content="Test your digital safety skills in 30 quick scenarios" />
         </Head>
         <Header />
@@ -2131,7 +2251,7 @@ export default function GamePage() {
                         p: 2,
                         backgroundColor: seatsAvailable ? 'rgba(11, 120, 151, 0.1)' : 'rgba(255, 114, 94, 0.1)',
                         borderRadius: 2,
-                        border: `2px solid ${seatsAvailable ? '#0B7897' : '#FF725E'}`,
+                        border: `2px solid ${seatsAvailable ? '#000B3D' : '#000B3D'}`,
                       }}
                       data-aos="zoom-in" 
                       data-aos-delay="250"
@@ -2165,7 +2285,7 @@ export default function GamePage() {
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <Typography variant="body2" sx={{ color: 'text.secondary' }}>Games Played:</Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#008B8B' }}>
+                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#000B3D' }}>
                           {typeof trialInfo.gamePlays === 'number' ? trialInfo.gamePlays : (Array.isArray(trialInfo.gamePlays) ? trialInfo.gamePlays.length : 0)} times
                         </Typography>
                       </Box>
@@ -2205,7 +2325,7 @@ export default function GamePage() {
                       cursor: (codeVerified && seatsAvailable) ? 'pointer' : 'not-allowed',
                     }}
                   >
-                    Start Game
+                    {resumeLevel ? 'Resume Game' : 'Start Game'}
                   </button>
                   <button 
                     className={`${styles.btn} ${styles.btnSecondary}`}
@@ -2543,11 +2663,66 @@ export default function GamePage() {
               <div className={styles.summaryContent}>
                 <h2 className={styles.completionTitle} data-aos="zoom-in" data-aos-delay="100">Cybersecurity Training Complete!</h2>
                 <p className={styles.completionMessage} data-aos="zoom-in" data-aos-delay="200">
-                  Congratulations on completing the Konfydence Cybersecurity Training!
+                  {percentageScore >= 60 ? (
+                    <>Congratulations! You have completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
+                  ) : (
+                    <>Oh no, you lost! You completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
+                  )}
                 </p>
                 
                 <div className={styles.resultCard} data-aos="zoom-in" data-aos-delay="300">
-                  <div className={styles.scoreIcon} data-aos="zoom-in" data-aos-delay="350">📊</div>
+                  {/* Win/Defeat Badge */}
+                  {/* {percentageScore >= 60 ? (
+                    <div className={styles.winDefeatBadgeContainer} data-aos="zoom-in" data-aos-delay="320">
+                      <div className={`${styles.winDefeatBadge} ${styles.victoryBadge}`}>
+                        <div className={styles.shield}>
+                          <div className={styles.shieldRim}></div>
+                          <div className={styles.shieldCenter}>
+                            <div className={styles.stars}>
+                              <span className={styles.star}>⭐</span>
+                              <span className={styles.star}>⭐</span>
+                              <span className={styles.star}>⭐</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.ribbon}>VICTORY</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className={styles.winDefeatBadgeContainer} data-aos="zoom-in" data-aos-delay="320">
+                      <div className={`${styles.winDefeatBadge} ${styles.defeatBadge}`}>
+                        <div className={styles.shield}>
+                          <div className={styles.shieldRim}></div>
+                          <div className={`${styles.shieldCenter} ${styles.brokenShield}`}>
+                            <div className={styles.crack}></div>
+                            <div className={styles.bloodSplatter}></div>
+                          </div>
+                        </div>
+                        <div className={styles.ribbon}>DEFEAT</div>
+                      </div>
+                    </div>
+                  )}
+                   */}
+                  <div className={styles.riskBadgeContainer} data-aos="zoom-in" data-aos-delay="350">
+                    <div className={styles.riskBadgeCard}>
+                      <div className={styles.riskBadgeInner}>
+                        <div 
+                          className={`${styles.riskBadge} ${styles.riskBadgeFront}`}
+                          style={{ backgroundColor: '#FFD700' }}
+                        >
+                          <span className={styles.riskLabel}>Risk Level</span>
+                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
+                        </div>
+                        <div 
+                          className={`${styles.riskBadge} ${styles.riskBadgeBack}`}
+                          style={{ backgroundColor: '#FFD700' }}
+                        >
+                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
+                          <span className={styles.riskLabel}>Risk Level</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                   <div className={styles.percentageScore} data-aos="zoom-in" data-aos-delay="400">{percentageScore}%</div>
                   <div className={styles.scoreDisplay} data-aos="zoom-in" data-aos-delay="450">
                     <span className={styles.levelScoreLabel}>Level {selectedLevel || 1} Total Score</span>
@@ -2643,49 +2818,52 @@ export default function GamePage() {
                     )}
                   </div>
                   
-                  {/* <div className={styles.riskBadgeContainer} data-aos="zoom-in" data-aos-delay="1100">
-                    <div className={styles.riskBadgeCard}>
-                      <div className={styles.riskBadgeInner}>
-                        <div 
-                          className={`${styles.riskBadge} ${styles.riskBadgeFront}`}
-                          style={{ backgroundColor: riskLevel?.color || '#ef4444' }}
-                        >
-                          <span className={styles.riskLabel}>Risk Level</span>
-                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
-                        </div>
-                        <div 
-                          className={`${styles.riskBadge} ${styles.riskBadgeBack}`}
-                          style={{ backgroundColor: riskLevel?.color || '#ef4444' }}
-                        >
-                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
-                          <span className={styles.riskLabel}>Risk Level</span>
+                  {/* Demo User Promotional Card */}
+                  {(() => {
+                    const codeType = sessionStorage.getItem('codeType');
+                    const isDemoUser = codeType === 'trial';
+                    if (!isDemoUser) return null;
+                    
+                    return (
+                      <div className={styles.demoPromoCard} data-aos="zoom-in" data-aos-delay="1150">
+                        <div className={styles.demoPromoContent}>
+                          <div className={styles.demoPromoLeft}>
+                            <div className={styles.germanFlagIcon}>
+                              <div className={styles.flagBlack}></div>
+                              <div className={styles.flagRed}>
+                                <span className={styles.madeInGermany}>Made in Germany</span>
+                              </div>
+                              <div className={styles.flagYellow}></div>
+                            </div>
+                            <span className={styles.demoOnlyText}>only for demos</span>
+                          </div>
+                          <div className={styles.demoPromoCenter}>
+                            <h3 className={styles.demoPromoTitle}>
+                              Want to master all 80 scenarios? Get the full Physical Kit & unlimited digital access.
+                            </h3>
+                            <button 
+                              className={styles.demoPromoButton}
+                              onClick={() => router.push('/packages')}
+                            >
+                              Unlock Full Power →
+                            </button>
+                          </div>
+                          <div className={styles.demoPromoRight}>
+                            <div className={styles.kidsLogo}>
+                              <div className={styles.kidsShield}>🛡️</div>
+                              <div className={styles.kidsText}>
+                                <span className={styles.kidsBrand}>Konfydence</span>
+                                <span className={styles.kidsFor}>for Kids</span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div> */}
+                    );
+                  })()}
                   
                   <div className={styles.actionButtons} data-aos="zoom-in" data-aos-delay="1200">
-                    {/* Play Again button commented out */}
-                    {/* {(() => {
-                      const codeType = sessionStorage.getItem('codeType');
-                      const isTrialUser = codeType === 'trial';
-                      // For trial users, hide Play Again if they've used a seat (played once)
-                      const hasPlayedOnce = trialInfo?.usedSeats >= 1;
-                      const shouldHidePlayAgain = isTrialUser && hasPlayedOnce;
-                      
-                      if (!shouldHidePlayAgain) {
-                        return (
-                          <button 
-                            className={`${styles.btn} ${styles.btnPlayAgain}`}
-                            onClick={playAgain}
-                          >
-                            <span className={styles.btnIcon}>▶</span>
-                            Play Again
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()} */}
+                    {/* Next Level button - show only if level < 3 and seats available */}
                     {(() => {
                       const codeType = sessionStorage.getItem('codeType');
                       const isTrialUser = codeType === 'trial';
@@ -2702,19 +2880,62 @@ export default function GamePage() {
                             className={`${styles.btn} ${styles.btnPrimary}`}
                             onClick={nextLevel}
                           >
-                            <span className={styles.btnIcon}>➡️</span>
+                            {/* <span className={styles.btnIcon}>➡️</span> */}
                             Next Level
                           </button>
                         );
                       }
                       return null;
                     })()}
+                    
+                    {/* Play Again button - Always show */}
+                    <button 
+                      className={`${styles.btn} ${styles.btnPlayAgain}`}
+                      onClick={playAgain}
+                    >
+                      {/* <span className={styles.btnIcon}>▶</span> */}
+                      Play Again
+                    </button>
+                    
+                    {/* Join Membership button - Show for trial users with seats used or all levels completed */}
+                    {(() => {
+                      const codeType = sessionStorage.getItem('codeType');
+                      const isTrialUser = codeType === 'trial';
+                      const allLevelsCompleted = completedLevels.length === 3 || (selectedLevel === 3);
+                      const seatsUsed = trialInfo?.usedSeats >= 2;
+                      
+                      // Show "Join Membership" if trial user and seats used or all levels completed
+                      if (isTrialUser && (seatsUsed || allLevelsCompleted)) {
+                        return (
+                          <button 
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={() => router.push('/packages')}
+                            style={{ whiteSpace: 'normal', textAlign: 'center', lineHeight: '1.4' }}
+                          >
+                            <span>Join the Konfydence Membership for the Full Experience</span>
+                          </button>
+                        );
+                      }
+                      
+                      return null;
+                    })()}
+                    
+                    {/* Share Results button */}
                     <button 
                       className={`${styles.btn} ${styles.btnSecondary}`}
                       onClick={() => setShowShareModal(true)}
                     >
-                      <span className={styles.btnIcon}>👁️</span>
+                      {/* <span className={styles.btnIcon}>👁️</span> */}
                       Share Results
+                    </button>
+                    
+                    {/* Invite a Friend button */}
+                    <button 
+                      className={`${styles.btn} ${styles.btnSecondary}`}
+                      onClick={() => setShowInviteModal(true)}
+                    >
+                      {/* <span className={styles.btnIcon}>👥</span> */}
+                      Invite a Friend & Earn
                     </button>
                   </div>
                 </div>
@@ -2788,6 +3009,102 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
                 >
                   Copy to Clipboard
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Invite a Friend Modal */}
+        {showInviteModal && (
+          <div className={styles.modal} onClick={() => setShowInviteModal(false)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <span className={styles.modalClose} onClick={() => setShowInviteModal(false)}>&times;</span>
+              <h2>Invite a Friend & Earn Rewards</h2>
+              <div className={styles.shareContent}>
+                <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+                  Share your referral link with friends and earn rewards when they join Konfydence!
+                </Typography>
+                <TextField
+                  fullWidth
+                  label="Your Referral Link"
+                  value={typeof window !== 'undefined' && user ? `${window.location.origin}/register?ref=${user.id || user._id}` : (typeof window !== 'undefined' ? `${window.location.origin}/register` : '')}
+                  readOnly
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    endAdornment: (
+                      <Button
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            const referralLink = user ? `${window.location.origin}/register?ref=${user.id || user._id}` : `${window.location.origin}/register`;
+                            navigator.clipboard.writeText(referralLink);
+                            setShowCopySuccess(true);
+                            setTimeout(() => setShowCopySuccess(false), 3000);
+                          }
+                        }}
+                        size="small"
+                        sx={{ mr: -1 }}
+                      >
+                        Copy
+                      </Button>
+                    ),
+                  }}
+                />
+                {showCopySuccess && (
+                  <Alert severity="success" sx={{ mb: 2 }}>
+                    Referral link copied to clipboard!
+                  </Alert>
+                )}
+                <Box sx={{ 
+                  p: 2, 
+                  backgroundColor: '#F5F8FB', 
+                  borderRadius: 2,
+                  mb: 2 
+                }}>
+                  <Typography variant="h6" sx={{ mb: 1, fontWeight: 600 }}>
+                    How it works:
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Share your referral link with friends
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • When they sign up and make a purchase, you earn rewards
+                  </Typography>
+                  <Typography variant="body2" component="div" sx={{ mb: 1 }}>
+                    • Earn up to $50 per successful referral
+                  </Typography>
+                  <Typography variant="body2" component="div">
+                    • Rewards are credited to your account automatically
+                  </Typography>
+                </Box>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      const referralLink = user ? `${window.location.origin}/register?ref=${user.id || user._id}` : `${window.location.origin}/register`;
+                      const shareText = `Join Konfydence - Interactive Cybersecurity Training! 🛡️\n\nUse my referral link: ${referralLink}\n\nLearn to outsmart scams with fun, game-based training!`;
+                      if (navigator.share) {
+                        navigator.share({
+                          title: 'Join Konfydence',
+                          text: shareText,
+                          url: referralLink,
+                        });
+                      } else {
+                        navigator.clipboard.writeText(shareText);
+                        setShowCopySuccess(true);
+                        setTimeout(() => setShowCopySuccess(false), 3000);
+                      }
+                    }
+                  }}
+                  sx={{
+                    backgroundColor: '#0B7897',
+                    '&:hover': { backgroundColor: '#063C5E' },
+                    fontWeight: 600,
+                    py: 1.5,
+                  }}
+                >
+                  Share Referral Link
+                </Button>
               </div>
             </div>
           </div>

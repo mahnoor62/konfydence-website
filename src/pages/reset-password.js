@@ -14,7 +14,11 @@ import {
   Link as MuiLink,
   Stack,
   LinearProgress,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 
 // Password strength checker
@@ -61,6 +65,8 @@ export default function ResetPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, label: '', color: '#e0e0e0', requirements: {} });
   const [loading, setLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (router.isReady) {
@@ -178,12 +184,25 @@ export default function ResetPasswordPage() {
                         <TextField
                           fullWidth
                           label="New Password"
-                          type="password"
+                          type={showPassword ? 'text' : 'password'}
                           value={formData.password}
                           onChange={handlePasswordChange}
                           required
                           autoComplete="new-password"
                           error={formData.password && passwordStrength.strength < 100}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                  aria-label="toggle password visibility"
+                                >
+                                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
                         />
                         {formData.password && formData.password.length > 0 && (
                           <Box sx={{ mt: 1 }}>
@@ -235,13 +254,26 @@ export default function ResetPasswordPage() {
                       <TextField
                         fullWidth
                         label="Confirm Password"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         required
                         autoComplete="new-password"
                         error={formData.confirmPassword && formData.password !== formData.confirmPassword}
                         helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                edge="end"
+                                aria-label="toggle confirm password visibility"
+                              >
+                                {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       <Button
                         type="submit"

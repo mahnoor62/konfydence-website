@@ -358,6 +358,27 @@ export default function DashboardPage() {
   const hasProgress = (gameProgress && gameProgress.totalLevelsPlayed > 0) || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0)));
   const hasTransactions = transactions && transactions.length > 0;
   const hasMemberships = (allMemberships && allMemberships.length > 0) || (activePackages && activePackages.length > 0);
+  
+  // Check if user has incomplete game progress (has started but not completed all 3 levels)
+  const hasIncompleteProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && gameProgress.totalLevelsPlayed < 3;
+  
+  // Determine which level to resume from (find the first incomplete level)
+  const getResumeLevel = () => {
+    if (!gameProgress) return null;
+    // Check each level (1, 2, 3) to find the first one that hasn't been completed
+    for (let levelNum = 1; levelNum <= 3; levelNum++) {
+      const levelArray = gameProgress[`level${levelNum}`] || [];
+      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+      // If level has no cards or no stats, it's incomplete
+      if (levelArray.length === 0 || !levelStats.completedAt) {
+        return levelNum;
+      }
+    }
+    // If all levels are completed, return null
+    return null;
+  };
+  
+  const resumeLevel = getResumeLevel();
 
   return (
     <>
@@ -446,6 +467,25 @@ export default function DashboardPage() {
 
                     <Box>
                       <Divider sx={{ my: 1 }} />
+
+                      {/* Resume Game Button - Show if user has incomplete progress */}
+                      {hasIncompleteProgress && resumeLevel && (
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                          sx={{
+                            backgroundColor: '#0B7897',
+                            color: '#fff',
+                            mb: 1,
+                            '&:hover': {
+                              backgroundColor: '#085f76',
+                            },
+                          }}
+                        >
+                          Resume Game
+                        </Button>
+                      )}
 
                       <Button
                         variant="outlined"
@@ -791,9 +831,27 @@ export default function DashboardPage() {
                         {/* Overall Game Progress */}
                         {gameProgress && gameProgress.totalLevelsPlayed > 0 && (
                           <Box sx={{ mb: 4 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
-                              Game Progress
-                            </Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                              <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                Game Progress
+                              </Typography>
+                              {/* Resume Game Button */}
+                              {hasIncompleteProgress && resumeLevel && (
+                                <Button
+                                  variant="contained"
+                                  onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                                  sx={{
+                                    backgroundColor: '#0B7897',
+                                    color: '#fff',
+                                    '&:hover': {
+                                      backgroundColor: '#085f76',
+                                    },
+                                  }}
+                                >
+                                  Resume Game
+                                </Button>
+                              )}
+                            </Box>
                             <Box sx={{ mb: 3 }}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
                                 <Typography variant="body2" color="text.secondary">

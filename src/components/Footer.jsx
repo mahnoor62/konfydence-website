@@ -564,7 +564,7 @@ export default function Footer() {
           setSuccessMessage('');
           setErrorMessage('');
         }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           onClose={() => {

@@ -13,12 +13,15 @@ import {
   Alert,
   Link as MuiLink,
   Stack,
-  Snackbar,
   LinearProgress,
   Autocomplete,
   Tabs,
   Tab,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -82,7 +85,9 @@ export default function RegisterPage() {
   const [passwordStrength, setPasswordStrength] = useState({ strength: 0, label: '', color: '#e0e0e0', requirements: {} });
   const [emailError, setEmailError] = useState('');
   const [memberContext, setMemberContext] = useState('unknown'); // organization | school | unknown
-  const { redirect } = router.query;
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const { redirect, ref: referralCode } = router.query;
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -274,6 +279,12 @@ export default function RegisterPage() {
       }
     }
 
+    // Add referral code if present in URL
+    if (referralCode) {
+      registrationData.referralCode = referralCode;
+      console.log('Adding referral code to registration:', referralCode);
+    }
+
     const result = await register(registrationData);
     if (result.success) {
       setSubmitting(false);
@@ -332,6 +343,15 @@ export default function RegisterPage() {
         }}
       >
         <Container maxWidth="sm">
+            {snackbar.open && (
+                <Alert 
+                  severity={snackbar.severity}
+                  onClose={() => setSnackbar({ ...snackbar, open: false })}
+                  sx={{ mb: 3 }}
+                >
+                  {snackbar.message}
+                </Alert>
+              )}
           <Card sx={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)', borderRadius: 3 }}>
             <CardContent sx={{ p: 4 }}>
               <Typography
@@ -352,6 +372,8 @@ export default function RegisterPage() {
               >
                 Create an account to get started
               </Typography>
+
+            
 
               {/* Registration Type Tabs */}
               <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
@@ -467,12 +489,25 @@ export default function RegisterPage() {
                       <TextField
                         fullWidth
                         label="Password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={handlePasswordChange}
                         required
                         autoComplete="new-password"
                         error={formData.password && passwordStrength.strength < 100}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                                aria-label="toggle password visibility"
+                              >
+                                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       {formData.password && formData.password.length > 0 && (
                         <Box sx={{ mt: 1 }}>
@@ -502,13 +537,26 @@ export default function RegisterPage() {
                     <TextField
                       fullWidth
                       label="Confirm Password"
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       required
                       autoComplete="new-password"
                       error={formData.confirmPassword && formData.password !== formData.confirmPassword}
                       helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              edge="end"
+                              aria-label="toggle confirm password visibility"
+                            >
+                              {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   <Button
                       type="submit"
@@ -561,12 +609,25 @@ export default function RegisterPage() {
                       <TextField
                         fullWidth
                         label="Password"
-                        type="password"
+                        type={showPassword ? 'text' : 'password'}
                         value={formData.password}
                         onChange={handlePasswordChange}
                         required
                         autoComplete="new-password"
                         error={formData.password && passwordStrength.strength < 100}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowPassword(!showPassword)}
+                                edge="end"
+                                aria-label="toggle password visibility"
+                              >
+                                {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       {formData.password && formData.password.length > 0 && (
                         <Box sx={{ mt: 1 }}>
@@ -618,13 +679,26 @@ export default function RegisterPage() {
                     <TextField
                       fullWidth
                       label="Confirm Password"
-                      type="password"
+                      type={showConfirmPassword ? 'text' : 'password'}
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       required
                       autoComplete="new-password"
                       error={formData.confirmPassword && formData.password !== formData.confirmPassword}
                       helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              edge="end"
+                              aria-label="toggle confirm password visibility"
+                            >
+                              {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                   <Button
                       type="submit"
@@ -756,12 +830,25 @@ export default function RegisterPage() {
                         <TextField
                           fullWidth
                           label="Password"
-                          type="password"
+                          type={showPassword ? 'text' : 'password'}
                           value={formData.password}
                           onChange={handlePasswordChange}
                           required
                           autoComplete="new-password"
                           error={formData.password && passwordStrength.strength < 100}
+                          InputProps={{
+                            endAdornment: (
+                              <InputAdornment position="end">
+                                <IconButton
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  edge="end"
+                                  aria-label="toggle password visibility"
+                                >
+                                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                                </IconButton>
+                              </InputAdornment>
+                            ),
+                          }}
                         />
                         {formData.password && formData.password.length > 0 && (
                           <Box sx={{ mt: 1 }}>
@@ -813,13 +900,26 @@ export default function RegisterPage() {
                       <TextField
                         fullWidth
                         label="Confirm Password"
-                        type="password"
+                        type={showConfirmPassword ? 'text' : 'password'}
                         value={formData.confirmPassword}
                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                         required
                         autoComplete="new-password"
                         error={formData.confirmPassword && formData.password !== formData.confirmPassword}
                         helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                edge="end"
+                                aria-label="toggle confirm password visibility"
+                              >
+                                {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
                       />
                       <Button
                         type="submit"
@@ -949,12 +1049,25 @@ export default function RegisterPage() {
                     <TextField
                       fullWidth
                       label="Password"
-                      type="password"
+                      type={showPassword ? 'text' : 'password'}
                       value={formData.password}
                       onChange={handlePasswordChange}
                       required
                       autoComplete="new-password"
                       error={formData.password && passwordStrength.strength < 100}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                              aria-label="toggle password visibility"
+                            >
+                              {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
                     />
                     {formData.password && formData.password.length > 0 && (
                       <Box sx={{ mt: 1 }}>
@@ -1006,13 +1119,26 @@ export default function RegisterPage() {
                   <TextField
                     fullWidth
                     label="Confirm Password"
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                     required
                     autoComplete="new-password"
                     error={formData.confirmPassword && formData.password !== formData.confirmPassword}
                     helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                            edge="end"
+                            aria-label="toggle confirm password visibility"
+                          >
+                            {showConfirmPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                   <Button
                     type="submit"
@@ -1060,20 +1186,6 @@ export default function RegisterPage() {
         </Container>
       </Box>
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={10000}
-        onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert 
-          onClose={() => setSnackbar({ ...snackbar, open: false })} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
 
       <Footer />
     </>

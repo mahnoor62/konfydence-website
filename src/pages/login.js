@@ -16,7 +16,11 @@ import {
   Tabs,
   Tab,
   CircularProgress,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,6 +32,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [errorCode, setErrorCode] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { redirect } = router.query;
 
   useEffect(() => {
@@ -139,6 +144,26 @@ export default function LoginPage() {
         }}
       >
         <Container maxWidth="sm">
+        {error && (
+                <Alert 
+                  severity="error" 
+                  sx={{ mb: 3 }}
+                  action={
+                    errorCode === 'EMAIL_NOT_VERIFIED' && (
+                      <Button
+                        size="small"
+                        href="/resend-verification"
+                        sx={{ color: 'inherit', textTransform: 'none' }}
+                      >
+                        Resend Email
+                      </Button>
+                    )
+                  }
+                >
+                  {error}
+                </Alert>
+              )}
+              
           <Card sx={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)', borderRadius: 3 }}>
             <CardContent sx={{ p: 4 }}>
               <Typography
@@ -160,25 +185,7 @@ export default function LoginPage() {
                 Sign in to access your dashboard
               </Typography>
 
-              {error && (
-                <Alert 
-                  severity="error" 
-                  sx={{ mb: 3 }}
-                  action={
-                    errorCode === 'EMAIL_NOT_VERIFIED' && (
-                      <Button
-                        size="small"
-                        href="/resend-verification"
-                        sx={{ color: 'inherit', textTransform: 'none' }}
-                      >
-                        Resend Email
-                      </Button>
-                    )
-                  }
-                >
-                  {error}
-                </Alert>
-              )}
+             
 
               {/* Single Login Form - Email and Password Only */}
               <Box component="form" onSubmit={handleSubmit}>
@@ -195,11 +202,24 @@ export default function LoginPage() {
                   <TextField
                     fullWidth
                     label="Password"
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
                     autoComplete="current-password"
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => setShowPassword(!showPassword)}
+                            edge="end"
+                            aria-label="toggle password visibility"
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                   <Button
                     type="submit"

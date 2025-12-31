@@ -44,7 +44,7 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: 'var(--font-inter), sans-serif',
+    fontFamily: 'var(--font-poppins), sans-serif',
     h1: {
       fontFamily: 'var(--font-poppins), sans-serif',
       fontWeight: 700,
@@ -71,11 +71,16 @@ export const theme = createTheme({
       lineHeight: 1.35,
     },
     subtitle1: {
+      fontFamily: 'var(--font-poppins), sans-serif',
       fontWeight: 500,
     },
     body1: {
+      fontFamily: 'var(--font-poppins), sans-serif',
       fontSize: '1rem',
       color: slate,
+    },
+    body2: {
+      fontFamily: 'var(--font-poppins), sans-serif',
     },
     button: {
       fontFamily: 'var(--font-poppins), sans-serif',
@@ -96,7 +101,7 @@ export const theme = createTheme({
         },
       },
     },
-    MuiButton: {
+        MuiButton: {
       defaultProps: {
         disableElevation: true,
       },
@@ -164,20 +169,68 @@ export const theme = createTheme({
         },
       },
     },
+    // MuiButton: {
+    //   defaultProps: {
+    //     disableElevation: true,
+    //   },
+    //   styleOverrides: {
+    //     root: {
+    //       borderRadius: 999,
+    //       padding: '12px 28px',
+    //       fontFamily: 'var(--font-poppins), sans-serif',
+    //       fontSize: '0.95rem',
+    //       transition: 'all 0.3s ease',
+    //     },
+    //   },
+    // },
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+          borderRadius: 20,
+          border: `1px solid ${alpha(navy, 0.06)}`,
+          boxShadow: '0 25px 50px rgba(15,31,43,0.08)',
+          transition: 'all 0.35s ease',
+          position: 'relative',
+          overflow: 'hidden',
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            inset: 0,
+            background: 'linear-gradient(135deg, rgba(0,139,139,0.08), rgba(255,114,94,0.08))',
+            opacity: 0,
+            transition: 'opacity 0.3s ease',
+            zIndex: 0,
+          },
+          '&:hover': {
+            transform: 'translateY(-6px) scale(1.01)',
+            boxShadow: '0 35px 60px rgba(15,31,43,0.12)',
+            '&::before': {
+              opacity: 1,
+            },
+          },
+          '& > *': {
+            position: 'relative',
+            zIndex: 1,
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 20,
+          fontFamily: 'var(--font-poppins), sans-serif'
+        },
+      },
+    },
     MuiChip: {
       styleOverrides: {
         root: {
           borderRadius: 999,
           fontWeight: 600,
+          fontFamily: 'var(--font-poppins), sans-serif',
           letterSpacing: 0.2,
-        },
-        colorPrimary: {
-          backgroundColor: alpha(teal, 0.1),
-          color: teal,
-        },
-        colorSecondary: {
-          backgroundColor: alpha(coral, 0.1),
-          color: coral,
         },
       },
     },
@@ -185,7 +238,154 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           backgroundColor: alpha('#FFFFFF', 0.85),
+          fontFamily: 'var(--font-poppins), sans-serif',
           backdropFilter: 'blur(16px)',
+        },
+      },
+    },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiMenu: {
+      styleOverrides: {
+        paper: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiAutocomplete: {
+      styleOverrides: {
+        input: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiInputBase: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiTab: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiSnackbar: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiAlert: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+        message: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiTooltip: {
+      styleOverrides: {
+        tooltip: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          fontFamily: 'var(--font-poppins), sans-serif !important',
+        },
+        secondary: {
+          fontFamily: 'var(--font-poppins), sans-serif !important',
+        },
+      },
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiList: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiListItem: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          fontFamily: 'var(--font-poppins), sans-serif',
         },
       },
     },
