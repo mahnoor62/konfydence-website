@@ -1846,7 +1846,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
         </Box>
 
         {/* CoMaSy B2B Section */}
-        <Box sx={{ py: { xs: 8, md: 12 },    backgroundColor: '#E9F4FF' }}>
+        {/* <Box sx={{ py: { xs: 8, md: 12 },    backgroundColor: '#E9F4FF' }}>
           <Container maxWidth="lg">
             <Box data-aos="zoom-in" data-aos-duration="800" sx={{ mb: { xs: 4, md: 6 } }}>
               <Typography
@@ -1864,7 +1864,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               </Typography>
             </Box>
             <Grid container spacing={6} alignItems="center">
-              {/* Left Side - Product Mockup */}
+          
               <Grid item xs={12} md={6}>
                 <Box
                   data-aos="fade-right"
@@ -1924,7 +1924,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       },
                     }}
                   >
-                    {/* Dashboard Preview Mockup */}
+             
                     <Box
                       sx={{
                         flex: 1,
@@ -1954,7 +1954,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         ))}
                       </Box>
                     </Box>
-                    {/* Cards Preview */}
+               
                     <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center' }}>
                       {[1, 2, 3].map((i) => (
                         <Box
@@ -1973,7 +1973,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 </Box>
               </Grid>
 
-              {/* Right Side - Content */}
+           
               <Grid item xs={12} md={6}>
                 <Box data-aos="fade-left" data-aos-duration="800" data-aos-delay="200">
                   <Typography
@@ -2002,7 +2002,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     Every session can be documented with notes and supports NIS2 and GDPR-related awareness obligations.
                   </Typography>
 
-                  {/* Pitch Bullets */}
+               
                   <Stack spacing={2} sx={{ mb: 4 }}>
                     {[
                       'NIS2 & DSGVO compliant',
@@ -2048,7 +2048,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     ))}
                   </Stack>
 
-                  {/* Pricing Tiers */}
+          
                   <Box
                     sx={{
                       mb: 4,
@@ -2097,7 +2097,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     </Stack>
                   </Box>
 
-                  {/* CTA Button */}
+              
                   <Button
                     component={Link}
                   href="/comasy#demo-form"
@@ -2179,14 +2179,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       </Box>
                     </Box> */}
                   {/* </Box>  */}
-                </Box>
-              </Grid>
-            </Grid>
-          </Container>
-        </Box>
+                {/* </Box> */}
+              {/* </Grid> */}
+            {/* </Grid> */}
+          {/* </Container> */}
+        {/* </Box>  */}
 
         {/* Education (B2E Section) */}
-        <Box
+        {/* <Box
           sx={{
          
             py: { xs: 8, md: 12 },
@@ -2243,7 +2243,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             </Box>
 
             {/* Features Grid */}
-            <Grid container spacing={4} sx={{ mb: 6 }}>
+            {/* <Grid container spacing={4} sx={{ mb: 6 }}>
               {[
                 { icon: '🎓', title: 'Teacher Handbook', description: 'Comprehensive guide for educators' },
                 { icon: '🧩', title: 'Lesson Plans', description: 'Ready-to-use curriculum materials' },
@@ -2300,10 +2300,10 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   </Box>
                 </Grid>
               ))}
-            </Grid>
+            </Grid> */}
 
             {/* CTA Button */}
-            <Box
+            {/* <Box
               sx={{
                 textAlign: 'center',
                 position: 'relative',
@@ -2354,8 +2354,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
 Empowering individuals, organizations, and compliance teams with interactive scam awareness and behavior documentation.
 
               </Typography>
-          </Container>
-        </Box>
+          </Container> */}
+        {/* </Box>  */}
 
         {/* <Box sx={{ py: 10, backgroundColor: '#E9F4FF' }}>
           <Container maxWidth="lg">
@@ -2549,7 +2549,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
         </Box> */}
 
       {/* Trusted by Families, Companies & Schools - Testimonials Section */}
-      <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#E9F4FF' }}>
+      {/* <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#E9F4FF' }}>
         <Container maxWidth="lg">
           <Box data-aos="zoom-in" data-aos-duration="800" sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
             <Typography
@@ -2577,7 +2577,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
           </Box>
 
           {/* B2C Testimonials (Families) */}
-          <Box sx={{ mb: 6 }}>
+          {/* <Box sx={{ mb: 6 }}>
             <Typography
               variant="h4"
               sx={{
@@ -2700,10 +2700,10 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 </Box>
               </Grid>
             </Grid>
-          </Box>
+          </Box> */}
 
           {/* B2B Testimonials (Companies) */}
-          <Box sx={{ mb: 6 }}>
+          {/* <Box sx={{ mb: 6 }}>
             <Typography
               variant="h4"
               sx={{
@@ -2826,10 +2826,10 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 </Box>
               </Grid>
             </Grid>
-          </Box>
+          </Box> */}
 
           {/* B2E Testimonials (Schools) */}
-          <Box sx={{ mb: 6 }}>
+          {/* <Box sx={{ mb: 6 }}>
             <Typography
               variant="h4"
               sx={{
@@ -2952,10 +2952,10 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 </Box>
               </Grid>
             </Grid>
-          </Box>
+          </Box> */}
 
           {/* CTA Row - 3 Buttons */}
-          <Box
+          {/* <Box
             sx={{
               display: 'flex',
               flexDirection: { xs: 'column', md: 'row' },
@@ -3026,8 +3026,8 @@ Empowering individuals, organizations, and compliance teams with interactive sca
               Request School Demo
             </Button>
           </Box>
-        </Container>
-      </Box>
+        </Container> */}
+      {/* </Box>  */}
 
       <Box  data-aos="zoom-in" data-aos-duration="800" data-aos-delay="100" sx={{ py: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB' }}>
         <Container
