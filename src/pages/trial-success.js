@@ -87,53 +87,83 @@ export default function TrialSuccessPage() {
       <Box
         component="main"
         sx={{
-          pt: { xs: 20, md: 20 },
+          pt: { xs: 12, sm: 14, md: 12 },
           minHeight: '100vh',
           height: '100%',
           backgroundColor: '#F5F8FB',
           display: 'flex',
           alignItems: 'center',
-          py: 8,
+          justifyContent: 'center',
+          py: { xs: 4, sm: 6, md: 4 },
+          px: { xs: 2, sm: 3, md: 2 },
         }}
       >
-        <Container maxWidth="md">
-          <Card sx={{ boxShadow: '0 8px 32px rgba(0,0,0,0.1)', borderRadius: 3 }}>
-            <CardContent sx={{ p: 6, textAlign: 'center' }}>
-              <Stack spacing={4} alignItems="center">
+        <Container 
+          maxWidth="sm"
+          sx={{
+            width: { xs: '100%', sm: '500px', md: '450px' },
+            maxWidth: { xs: '100%', sm: '500px', md: '450px' },
+          }}
+        >
+          <Card 
+            sx={{ 
+              boxShadow: '0 8px 32px rgba(0,0,0,0.1)', 
+              borderRadius: 3,
+              width: '100%',
+              maxWidth: { xs: '100%', sm: '500px', md: '450px' },
+            }}
+          >
+            <CardContent 
+              sx={{ 
+                p: { xs: 3, sm: 4, md: 3.5 },
+                textAlign: 'center',
+              }}
+            >
+              <Stack spacing={2.5} alignItems="center">
                 <CheckCircleIcon
                   sx={{
-                    fontSize: 80,
+                    fontSize: { xs: 50, sm: 60, md: 55 },
                     color: '#4caf50',
                   }}
                 />
 
                 <Box>
                   <Typography
-                    variant="h4"
+                    variant="h5"
                     sx={{
                       fontWeight: 700,
                       color: '#063C5E',
-                      mb: 2,
+                      mb: 1,
+                      fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.4rem' },
                     }}
                   >
                     Free Trial Activated!
                   </Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    Your 7-day free trial has been activated. Use the code below to access the game.
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.875rem' } }}
+                  >
+                    Your 14-day free trial has been activated. Use the code below to access the game.
                   </Typography>
                 </Box>
 
                 <Box
                   sx={{
-                    p: 3,
+                    p: { xs: 2, sm: 2.5, md: 2 },
                     backgroundColor: '#F5F8FB',
                     borderRadius: 2,
                     border: '2px dashed #0B7897',
                     width: '100%',
-                    maxWidth: 500,
+                    maxWidth: { xs: '100%', sm: '400px', md: '380px' },
                   }}
                 >
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary" 
+                    gutterBottom
+                    sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' } }}
+                  >
                     Your Trial Code
                   </Typography>
                   <Box
@@ -141,23 +171,25 @@ export default function TrialSuccessPage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: 2,
+                      gap: 1.5,
                       mt: 1,
                     }}
                   >
                     <Typography
-                      variant="h3"
+                      variant="h5"
                       sx={{
                         fontWeight: 700,
                         color: '#0B7897',
                         fontFamily: 'monospace',
-                        letterSpacing: 2,
+                        letterSpacing: 1.5,
+                        fontSize: { xs: '1.25rem', sm: '1.5rem', md: '1.4rem' },
                       }}
                     >
                       {code}
                     </Typography>
                     <IconButton
                       onClick={handleCopyCode}
+                      size="small"
                       sx={{
                         color: '#0B7897',
                         '&:hover': {
@@ -165,11 +197,11 @@ export default function TrialSuccessPage() {
                         },
                       }}
                     >
-                      <ContentCopyIcon />
+                      <ContentCopyIcon sx={{ fontSize: { xs: 18, sm: 20, md: 19 } }} />
                     </IconButton>
                   </Box>
                   {copied && (
-                    <Alert severity="success" sx={{ mt: 2 }}>
+                    <Alert severity="success" sx={{ mt: 1.5, fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
                       Code copied to clipboard!
                     </Alert>
                   )}
@@ -180,28 +212,55 @@ export default function TrialSuccessPage() {
                     sx={{
                       width: '100%',
                       textAlign: 'left',
-                      p: 2,
+                      p: { xs: 1.5, sm: 2, md: 1.5 },
                       backgroundColor: '#F5F8FB',
                       borderRadius: 2,
                     }}
                   >
-                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                    <Typography 
+                      variant="subtitle2" 
+                      sx={{ 
+                        fontWeight: 600, 
+                        mb: 0.5,
+                        fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.8rem' }
+                      }}
+                    >
                       Trial Details
                     </Typography>
-                    <Stack spacing={1}>
+                    <Stack spacing={0.5}>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' } }}
+                        >
                           Seats Available:
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' }
+                          }}
+                        >
                           {trialData.remainingSeats} / 2
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography 
+                          variant="body2" 
+                          color="text.secondary"
+                          sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' } }}
+                        >
                           Expires:
                         </Typography>
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        <Typography 
+                          variant="body2" 
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' }
+                          }}
+                        >
                           {new Date(trialData.expiresAt).toLocaleDateString()}
                         </Typography>
                       </Box>
@@ -209,24 +268,34 @@ export default function TrialSuccessPage() {
                   </Box>
                 )}
 
-                <Alert severity="info" sx={{ width: '100%' }}>
+                <Alert 
+                  severity="info" 
+                  sx={{ 
+                    width: '100%',
+                    fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' },
+                    '& .MuiAlert-message': {
+                      fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.75rem' },
+                    }
+                  }}
+                >
                   {copied 
                     ? 'Code copied! Redirecting to game page...' 
-                    : 'Click the copy button to copy the code and access the game. Share this code with up to 2 people. They can use it to access the demo trial for 7 days.'}
+                    : 'Click the copy button to copy the code and access the game. You can share this code with 1 person. They can use it to access the demo trial for 14 days.'}
                 </Alert>
 
                 {!copied && (
-                  <Stack spacing={2} sx={{ width: '100%', maxWidth: 400 }}>
+                  <Stack spacing={1.5} sx={{ width: '100%', maxWidth: { xs: '100%', sm: '350px', md: '320px' } }}>
                     <Button
                       variant="contained"
                       fullWidth
-                      size="large"
+                      size="medium"
                       onClick={handleCopyCode}
                       sx={{
                         backgroundColor: '#0B7897',
                         color: 'white',
                         fontWeight: 700,
-                        py: 1.5,
+                        py: { xs: 1, sm: 1.25, md: 1.1 },
+                        fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.875rem' },
                         '&:hover': {
                           backgroundColor: '#063C5E',
                         },
@@ -237,10 +306,13 @@ export default function TrialSuccessPage() {
                     <Button
                       variant="outlined"
                       fullWidth
+                      size="medium"
                       onClick={() => router.push('/packages')}
                       sx={{
                         borderColor: '#0B7897',
                         color: '#0B7897',
+                        fontSize: { xs: '0.875rem', sm: '0.9rem', md: '0.875rem' },
+                        py: { xs: 1, sm: 1.25, md: 1.1 },
                         '&:hover': {
                           borderColor: '#063C5E',
                           backgroundColor: 'rgba(11, 120, 151, 0.1)',

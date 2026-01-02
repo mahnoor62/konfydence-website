@@ -20,7 +20,7 @@ const stripHtmlTags = (html) => {
     .trim();
 };
 
-export default function ProductCard({ product, delay = 0, hidePrice = false, buttonText = 'Buy Now' }) {
+export default function ProductCard({ product, delay = 0, hidePrice = false, buttonText = 'Buy Now', limitDescriptionLines = false }) {
   const router = useRouter();
   const { user: authUser, getAuthToken } = useAuth();
   const [customPackageDialogOpen, setCustomPackageDialogOpen] = useState(false);
@@ -232,7 +232,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
       data-aos-duration="800"
       data-aos-delay={delay}
       sx={{
-        height: '100%',
+        height: limitDescriptionLines ? { xs: '100%', md: '660px' } : '100%',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
@@ -272,7 +272,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
           }}
         />
       </Box>
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: limitDescriptionLines ? 1 : 'none', minHeight: limitDescriptionLines ? 0 : 'auto' }}>
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {product.badges?.filter((badge) => {
             // Only show approved badges - no third-party logos without written permission
@@ -340,13 +340,34 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
           color="text.secondary" 
           sx={{ 
             mb: 3, 
-            flexGrow: 1,
             display: '-webkit-box',
-            WebkitLineClamp: 2,
+            WebkitLineClamp: limitDescriptionLines ? (() => {
+              const productType = getProductType();
+              if (productType === 'B2C') return 4;
+              if (productType === 'B2B') return 5;
+              if (productType === 'B2E') return 5;
+              return 2; // Default
+            })() : 2, // Default 2 lines for product pages
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             lineHeight: 1.6,
+            flex: limitDescriptionLines ? 1 : 'none', // Take available space to fill card height only on homepage
+            minHeight: limitDescriptionLines ? (() => {
+              const productType = getProductType();
+              if (productType === 'B2B' || productType === 'B2E') {
+                return { xs: 'auto', md: '8em' }; // 5 lines * 1.6 = 8em
+              }
+              return { xs: 'auto', md: '6.4em' }; // 4 lines * 1.6 = 6.4em for B2C
+            })() : 'auto',
+            maxHeight: limitDescriptionLines ? (() => {
+              const productType = getProductType();
+              if (productType === 'B2B' || productType === 'B2E') {
+                return { xs: 'none', md: '8em' }; // Max 5 lines
+              }
+              return { xs: 'none', md: '6.4em' }; // Max 4 lines for B2C
+            })() : 'none',
+            wordBreak: 'break-word',
           }}
         >
           {stripHtmlTags(product.description)}
@@ -405,33 +426,33 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                 }}
               >
                 {/* Request Demo Button */}
-              <Button
-                variant="contained"
-                component={Link}
+                {/* <Button
+                  variant="contained"
+                  component={Link}
                   href={`/contact?topic=${getContactTopic()}`}
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-                sx={{
-                  backgroundColor: '#00A4E8',
-                  color: 'white',
-                  fontWeight: 700,
-                  borderRadius: 2,
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                  sx={{
+                    backgroundColor: '#00A4E8',
+                    color: 'white',
+                    fontWeight: 700,
+                    borderRadius: 2,
                     px: { xs: 3, md: 2 },
                     py: { xs: 1.5, md: 1 },
                     fontSize: { xs: '1rem', md: '0.875rem' },
                     width: { xs: '100%', md: '50%' },
                     flex: { xs: 'none', md: 1 },
-                  '&:hover': {
-                    backgroundColor: '#0088C7',
+                    '&:hover': {
+                      backgroundColor: '#0088C7',
                       transform: 'translateY(-2px)',
                       boxShadow: '0 4px 12px rgba(0, 164, 232, 0.3)',
-                  },
+                    },
                     transition: 'all 0.3s ease',
-                }}
-              >
-                Request Demo
-              </Button>
+                  }}
+                >
+                  Request Demo
+                </Button> */}
 
                 {/* Buy Now / Get Early Access Button for B2B/B2E */}
                 <Button
@@ -449,8 +470,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                     px: { xs: 3, md: 2 },
                     py: { xs: 1.5, md: 1 },
                     fontSize: { xs: '1rem', md: '0.875rem' },
-                    width: { xs: '100%', md: '50%' },
-                    flex: { xs: 'none', md: 1 },
+                    width: '100%',
                     '&:hover': {
                       borderColor: '#052A42',
                       backgroundColor: '#E8F4F8',

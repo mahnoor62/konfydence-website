@@ -562,6 +562,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           style={{
                             color: 'white',
                             textDecoration: 'underline',
+                            fontFamily:'Poppins', 
                             fontSize: '0.95rem',
                             fontWeight: 500,
                           }}
@@ -849,6 +850,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         textDecoration: 'underline',
                         fontSize: { xs: '0.95rem', md: '1rem' },
                         fontWeight: 500,
+                        fontFamily: 'Poppins, sans-serif',
                       }}
                     >
                       Understand the Limbic Hijack →
@@ -1155,7 +1157,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
         </Box>
 
         {/* B2C Product Hero - Scam Survival Kit */}
-        <Box sx={{ my: { xs: 8, md: 20  }, mt: { xs: 12, md: 30 }, position: 'relative', overflow: 'visible' }}>
+        {/* <Box sx={{ my: { xs: 8, md: 20  }, mt: { xs: 12, md: 30 }, position: 'relative', overflow: 'visible' }}>
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -1309,10 +1311,10 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               </Grid>
             </Grid>
           </Container>
-        </Box>
+        </Box> */}
 
         {/* B2B/B2E Flow Explanation */}
-        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'white' }}>
+        {/* <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'white' }}>
           <Container maxWidth="lg">
             <Box data-aos="zoom-in" data-aos-duration="800" sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
               <Typography
@@ -1444,7 +1446,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               </Grid>
             </Box>
           </Container>
-        </Box>
+        </Box> */}
 
         {/* Product Teasers Section */}
         <Box sx={{ py: { xs: 8, md: 12 }, position: 'relative', overflow: 'hidden', backgroundColor: 'white' }}>
@@ -1539,9 +1541,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         Family
                       </Typography>
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         sx={{
-                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          // fontSize: { xs: '1.75rem', md: '2rem' },
                           fontWeight: 700,
                           color: '#063C5E',
                           mb: 2,
@@ -1556,7 +1558,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           color: 'text.secondary',
                           mb: 4,
                           lineHeight: 1.7,
-                          flex: 1,
+                          // bgcolor:'red',
+                          height: { md: '200px' },
                         }}
                       >
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
@@ -1564,7 +1567,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       
                       {/* Carousel of Cards */}
                       {uniqueB2C.length > 0 && (
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{ mb: 4}}>
                           <Swiper
                             modules={[Pagination, Navigation]}
                             spaceBetween={16}
@@ -1578,10 +1581,12 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             {uniqueB2C.map((product, index) => (
                               <SwiperSlide key={product._id || index}>
                                 <ProductCard 
+                                // sx={{ height:'100%', minHeight:'600px' }}
                                   product={product} 
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
+                                  limitDescriptionLines={true}
                                 />
                               </SwiperSlide>
                             ))}
@@ -1652,9 +1657,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         Schools & Universities
                       </Typography>
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         sx={{
-                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          // fontSize: { xs: '1.75rem', md: '2rem' },
                           fontWeight: 700,
                           color: '#063C5E',
                           mb: 2,
@@ -1669,7 +1674,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           color: 'text.secondary',
                           mb: 4,
                           lineHeight: 1.7,
-                          flex: 1,
+                          height: { md: '200px' },
+                          // bgcolor:'red',
                         }}
                       >
                         Quick classroom activities and workshops teach young people to spot pressure tricks early. Perfect for student clubs, orientation weeks, or leadership training—easy for teachers, engaging for students.
@@ -1685,6 +1691,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
+                                  limitDescriptionLines={true}
                                 />
                               </Grid>
                             ))}
@@ -1755,9 +1762,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         Businesses & Organizations
                       </Typography>
                       <Typography
-                        variant="h3"
+                        variant="h4"
                         sx={{
-                          fontSize: { xs: '1.75rem', md: '2rem' },
+                          // fontSize: { xs: '1.75rem', md: '2rem' },
                           fontWeight: 700,
                           color: '#063C5E',
                           mb: 2,
@@ -1772,7 +1779,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           color: 'text.secondary',
                           mb: 4,
                           lineHeight: 1.7,
-                          flex: 1,
+                          height: {  md: '200px' },
                         }}
                       >
                         Go beyond check-box training. Our simulations prove your team can handle real pressure—with reports ready for auditors. NIS2-ready, fun, and effective.
@@ -1788,6 +1795,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
+                                  limitDescriptionLines={true}
                                 />
                               </Grid>
                             ))}

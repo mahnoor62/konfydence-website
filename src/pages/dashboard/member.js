@@ -34,6 +34,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
@@ -41,6 +42,8 @@ import BusinessIcon from '@mui/icons-material/Business';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditIcon from '@mui/icons-material/Edit';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -69,6 +72,7 @@ export default function MemberDashboardPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [profileSubmitting, setProfileSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [showPassword, setShowPassword] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -945,6 +949,23 @@ export default function MemberDashboardPage() {
                         <Typography variant="body2">
                           {user.role === 'b2b_member' ? 'Business Member' : 'Education Member'}
                         </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="caption" color="text.secondary">
+                          Password
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace', flex: 1 }}>
+                            {showPassword ? (user.password || '••••••••') : '••••••••'}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowPassword(!showPassword)}
+                            sx={{ color: '#0B7897' }}
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </Box>
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary">

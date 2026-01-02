@@ -27,7 +27,7 @@ const navItems = [
   { label: 'CoMaSy', href: '/comasy' },
   { label: 'Education', href: '/education' },
   { label: 'Resource Hub', href: '/resources' },
-  { label: 'SsKit-family', href: '/sskit-family' },
+  { label: 'Shop', href: '/sskit-family' },
   { label: 'Blog', href: '/blog' },
   { label: 'About', href: '/about' },
   { label: 'Contact', href: '/contact' },

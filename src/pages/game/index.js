@@ -122,7 +122,8 @@ const CodeVerificationDialog = ({
   setSeatsAvailable,
   setCodeVerified,
   setShowCodeDialog,
-  allowCancel = false // New prop to allow cancel button to close dialog
+  allowCancel = false, // New prop to allow cancel button to close dialog
+  codeVerified = false // Add codeVerified prop to check if code is already verified
 }) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -173,35 +174,293 @@ const CodeVerificationDialog = ({
     }
 
     try {
-      // First check if it's a trial code (FreeTrial table)
-      let isTrialCode = false;
+      // CRITICAL: Check purchase code FIRST (Transaction table) - prioritize purchased users
+      // If user has purchased, they should use purchase code, not demo code
+      let isPurchaseCode = false;
+      let purchaseCodeExists = false; // Track if code exists in transaction table (even if invalid)
       try {
-        // Pass userId in query if user is logged in to check if they already played
-        const userId = user?._id || user?.id || null;
-        const checkUrl = userId 
-          ? `${API_URL}/free-trial/check-code/${codeToVerify}?userId=${userId}`
-          : `${API_URL}/free-trial/check-code/${codeToVerify}`;
-        const checkResponse = await axios.get(checkUrl);
+        const purchaseCheckResponse = await axios.get(`${API_URL}/payments/check-purchase-code/${codeToVerify}`);
         
-        if (checkResponse.data.valid) {
-          // It's a valid trial code - process it
-          isTrialCode = true;
-          const trial = checkResponse.data.trial;
+        // Check if code exists in transaction table (even if valid: false)
+        // If response has transaction-related fields (seatsFull, isExpired, etc.), it's a purchase code
+        purchaseCodeExists = purchaseCheckResponse.data.seatsFull !== undefined || 
+                            purchaseCheckResponse.data.isExpired !== undefined ||
+                            purchaseCheckResponse.data.transaction !== undefined ||
+                            purchaseCheckResponse.data.userSeatUsed !== undefined ||
+                            (purchaseCheckResponse.data.valid === false && purchaseCheckResponse.data.message && 
+                             !purchaseCheckResponse.data.message.includes('Invalid code'));
+        
+        // Check if user has already used their seat (before checking valid)
+        if (purchaseCheckResponse.data.userSeatUsed || 
+            (purchaseCheckResponse.data.valid === false && purchaseCheckResponse.data.message?.includes('already used your seat'))) {
+          setError('You have already used your seat. You cannot play the game again.');
+          setVerifying(false);
+          return;
+        }
+        
+        if (purchaseCheckResponse.data.valid) {
+          // It's a valid purchase code - process it (ignore any demo codes)
+          isPurchaseCode = true;
+          const transaction = purchaseCheckResponse.data.transaction;
           
-          // Check if user already played - show error in dialog but keep dialog open
-          if (checkResponse.data.alreadyPlayed || checkResponse.data.seatsFinished) {
-            setError('You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
+          // Check package type - only allow digital and digital_physical packages
+          const packageType = transaction.packageType || 'standard';
+          if (packageType === 'physical') {
+            setError('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
             setVerifying(false);
-            // Keep dialog open so user can try another code
             return;
           }
           
-          // Check if seats are available before proceeding - show error in dialog but keep dialog open
-          if (checkResponse.data.seatsFull || trial.remainingSeats <= 0) {
-            const maxSeats = trial.maxSeats || 2;
-            setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
+          // Check if expired first
+          if (purchaseCheckResponse.data.isExpired) {
+            setError('Purchase code has expired. You cannot play the game.');
             setVerifying(false);
-            // Keep dialog open so user can try another code
+            return;
+          }
+          
+          // Check if user has used their seat but seats are still available
+          if (purchaseCheckResponse.data.userSeatUsed && !purchaseCheckResponse.data.seatsFull) {
+            const remainingSeats = purchaseCheckResponse.data.remainingSeats || 0;
+            setError(`You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`);
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if all seats are used
+          if (purchaseCheckResponse.data.seatsFull || !transaction.seatsAvailable || transaction.remainingSeats <= 0) {
+            setError('All seats have been used.');
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if user already played and seats finished
+          if (purchaseCheckResponse.data.alreadyPlayed || purchaseCheckResponse.data.seatsFinished) {
+            // Check if it's a user-specific seat issue (user has used their own seat)
+            if (purchaseCheckResponse.data.userSeatUsed || purchaseCheckResponse.data.message?.includes('already used your seat')) {
+              setError('You have already used your seat. You cannot play the game again.');
+            } else {
+              setError('All seats have been used.');
+            }
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if user's seat has been used (from transaction data)
+          if (purchaseCheckResponse.data.transaction?.userSeatUsed) {
+            setError('You have already used your seat. You cannot play the game again.');
+            setVerifying(false);
+            return;
+          }
+          
+          if (user) {
+            const token = localStorage.getItem('token');
+            try {
+              const useResponse = await axios.post(
+                `${API_URL}/payments/use-purchase-code`,
+                { code: codeToVerify },
+                {
+                  headers: {
+                    Authorization: `Bearer ${token}`,
+                  },
+                }
+              ).catch((error) => {
+                // Handle error if user has already used their seat
+                if (error.response?.data?.userSeatUsed || 
+                    error.response?.data?.alreadyPlayed ||
+                    error.response?.data?.error?.includes('already used your seat')) {
+                  setError('You have already used your seat. You cannot play the game again.');
+                  setVerifying(false);
+                  throw error; // Re-throw to prevent further processing
+                }
+                throw error; // Re-throw other errors
+              });
+
+              // Store transaction info for seats display
+              const transactionData = useResponse.data.transaction;
+              
+              // Check package type again (double check from use-purchase-code response)
+              const packageType = transactionData.packageType || 'standard';
+              if (packageType === 'physical') {
+                setError('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
+                setVerifying(false);
+                return;
+              }
+              
+              const remainingSeats = transactionData.remainingSeats || (transactionData.maxSeats - transactionData.usedSeats);
+              const hasSeats = remainingSeats > 0;
+              
+              // Check expiry
+              const endDate = transactionData.endDate ? new Date(transactionData.endDate) : null;
+              const isExpired = endDate ? new Date() > endDate : false;
+              
+              // Handle gamePlays - it could be an array or a number
+              const gamePlaysCount = Array.isArray(transactionData.gamePlays) 
+                ? transactionData.gamePlays.length 
+                : (typeof transactionData.gamePlays === 'number' ? transactionData.gamePlays : 0);
+              
+              // Store transactionId for progress saving
+              const transactionId = transactionData._id || transactionData.id || null;
+              
+              setTrialInfo({
+                _id: transactionId, // Store transaction ID for progress saving
+                transactionId: transactionId, // Also store as transactionId for clarity
+                maxSeats: transactionData.maxSeats || 5,
+                usedSeats: transactionData.usedSeats || 0,
+                remainingSeats: remainingSeats,
+                codeApplications: transactionData.codeApplications || 0,
+                gamePlays: gamePlaysCount,
+                endDate: endDate,
+                isExpired: isExpired,
+                packageName: transactionData.packageName || 'Package',
+                productId: transactionData.productId || null
+              });
+              
+              setSeatsAvailable(hasSeats && !isExpired);
+              
+              // Only save to sessionStorage if seats available
+              if (hasSeats && !isExpired) {
+                sessionStorage.setItem('codeVerified', 'true');
+                sessionStorage.setItem('codeType', 'purchase');
+                sessionStorage.setItem('code', codeToVerify);
+                sessionStorage.setItem('transactionData', JSON.stringify(transactionData));
+                // Clear any demo/trial data from sessionStorage
+                sessionStorage.removeItem('trialData');
+                // Save packageId and productId for fetching cards
+                if (transactionData.packageId) {
+                  const packageId = transactionData.packageId._id || transactionData.packageId;
+                  sessionStorage.setItem('packageId', packageId.toString());
+                }
+                if (transactionData.productId) {
+                  const productId = transactionData.productId._id || transactionData.productId;
+                  sessionStorage.setItem('productId', productId.toString());
+                }
+                setCodeVerified(true);
+                setShowCodeDialog(false);
+                // Call onVerified callback to notify parent component
+                if (onVerified) {
+                  onVerified();
+                }
+              } else {
+                // Seats full or expired - show error but don't verify
+                if (isExpired) {
+                  setError('Purchase code has expired. You cannot play the game.');
+                } else if (!hasSeats) {
+                  setError('All seats have been used.');
+                }
+                setVerifying(false);
+              }
+              return;
+            } catch (useErr) {
+              // Show specific error messages from backend
+              console.error('Error using purchase code:', useErr.response?.data || useErr.message);
+              
+              const errorData = useErr.response?.data || {};
+              let errorMsg = errorData.error || 'Cannot use this purchase code';
+              
+              // Check for specific error messages from backend
+              if (errorData.error && errorData.error.includes('already completed')) {
+                // User has already completed all levels - show the exact error message
+                errorMsg = errorData.error;
+              } else if (errorData.isExpired || (errorData.error && errorData.error.includes('expired'))) {
+                errorMsg = 'Purchase code has expired. You cannot play the game.';
+              } else if (errorData.userSeatUsed && !errorData.seatsFull) {
+                const remainingSeats = errorData.remainingSeats || 0;
+                errorMsg = `You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`;
+              } else if (errorData.seatsFull || errorData.alreadyPlayed || errorData.seatsFinished || errorData.error?.includes('seats')) {
+                errorMsg = errorData.error || 'All seats have been used.';
+              } else if (useErr.response?.status === 404) {
+                errorMsg = 'Invalid purchase code. Please check and try again.';
+              } else if (useErr.response?.status === 401) {
+                errorMsg = 'Authentication failed. Please login again.';
+              } else if (useErr.response?.status === 403) {
+                errorMsg = errorData.error || 'You do not have permission to use this code.';
+              } else if (useErr.response?.status === 500) {
+                errorMsg = 'Server error. Please try again later.';
+              }
+              
+              setError(errorMsg);
+              setVerifying(false);
+              return;
+            }
+          } else {
+            setError('Please login to use this purchase code');
+            router.push(`/login?redirect=${encodeURIComponent('/game')}`);
+            setVerifying(false);
+            return;
+          }
+        } else if (purchaseCodeExists) {
+          // Code exists in transaction table but is invalid (seats full, expired, etc.)
+          // Show appropriate error and don't check trial code
+          const errorData = purchaseCheckResponse.data || {};
+          
+          if (errorData.isExpired) {
+            setError('Purchase code has expired. You cannot play the game.');
+          } else if (errorData.seatsFull) {
+            setError(errorData.message || 'All seats have been used. You cannot play the game.');
+          } else if (errorData.message) {
+            setError(errorData.message);
+          } else {
+            setError('This purchase code is not valid. Please check and try again.');
+          }
+          setVerifying(false);
+          return;
+        }
+      } catch (purchaseErr) {
+        // Purchase code not found (404) or network error - continue to check trial code
+        // Only check trial if it's a 404 (code not found in transaction table)
+        if (purchaseErr.response?.status === 404) {
+          console.log('Purchase code not found in transaction table, will check trial code');
+        } else {
+          // Network error or other error - show error and don't check trial
+          console.error('Error checking purchase code:', purchaseErr);
+          setError('Error verifying code. Please try again.');
+          setVerifying(false);
+          return;
+        }
+      }
+      
+      // If not a purchase code (and code doesn't exist in transaction table), check if it's a trial code (FreeTrial table)
+      if (!isPurchaseCode && !purchaseCodeExists) {
+        let isTrialCode = false;
+        try {
+          // Pass userId in query if user is logged in to check if they already played
+          const userId = user?._id || user?.id || null;
+          const checkUrl = userId 
+            ? `${API_URL}/free-trial/check-code/${codeToVerify}?userId=${userId}`
+            : `${API_URL}/free-trial/check-code/${codeToVerify}`;
+          const checkResponse = await axios.get(checkUrl);
+          
+          if (checkResponse.data.valid) {
+            // It's a valid trial code - process it
+            isTrialCode = true;
+            const trial = checkResponse.data.trial;
+          
+          // Check if expired first
+          if (checkResponse.data.isExpired) {
+            setError('Demo has expired. You cannot play the game.');
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if user has used their seat but seats are still available
+          if (checkResponse.data.userSeatUsed && !checkResponse.data.seatsFull) {
+            const remainingSeats = checkResponse.data.remainingSeats || 0;
+            setError(`You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`);
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if all seats are used
+          if (checkResponse.data.seatsFull) {
+            setError('All seats have been used.');
+            setVerifying(false);
+            return;
+          }
+          
+          // Check if user already played and seats finished
+          if (checkResponse.data.alreadyPlayed || checkResponse.data.seatsFinished) {
+            setError('All seats have been used.');
+            setVerifying(false);
             return;
           }
           
@@ -231,8 +490,9 @@ const CodeVerificationDialog = ({
               const remainingSeats = trial.remainingSeats || (trial.maxSeats - trial.usedSeats);
               const hasSeats = remainingSeats > 0;
               
-              // Check expiry
+              // Check expiry (compare dates, not times)
               const endDate = new Date(trial.endDate || trial.expiresAt);
+              endDate.setHours(23, 59, 59, 999); // Set to end of day
               const isExpired = new Date() > endDate;
               
               // Handle gamePlays - it could be an array or a number
@@ -260,7 +520,14 @@ const CodeVerificationDialog = ({
                 sessionStorage.setItem('codeVerified', 'true');
                 sessionStorage.setItem('codeType', 'trial');
                 sessionStorage.setItem('code', codeToVerify);
-                sessionStorage.setItem('trialData', JSON.stringify(trial));
+                // Store trial data including isDemo flag and productId for easy tracking
+                const productId = trial.productId?._id || trial.productId || null;
+                sessionStorage.setItem('trialData', JSON.stringify({
+                  ...trial,
+                  isDemo: trial.isDemo || false, // Include isDemo flag from API
+                  targetAudience: trial.targetAudience || null, // Store targetAudience
+                  productId: productId // Store productId for loading product cards
+                }));
                 // Save packageId and productId for fetching cards
                 if (trial.packageId) {
                   const packageId = trial.packageId._id || trial.packageId;
@@ -272,13 +539,23 @@ const CodeVerificationDialog = ({
                 }
                 setCodeVerified(true);
                 setShowCodeDialog(false);
+                // Call onVerified callback to notify parent component
+                if (onVerified) {
+                  onVerified();
+                }
               } else {
               // Seats full or expired - show error but don't verify
               if (isExpired) {
-                setError('Free trial has expired. You cannot play the game.');
-              } else {
-                const maxSeats = trial.maxSeats || 2;
-                setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
+                setError('Demo has expired. You cannot play the game.');
+              } else if (!hasSeats) {
+                // Check if user used their seat or all seats used
+                const errorData = useResponse.data?.error || {};
+                if (errorData.userSeatUsed && !errorData.seatsFull) {
+                  const remainingSeats = errorData.remainingSeats || 0;
+                  setError(`You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`);
+                } else {
+                  setError('All seats have been used.');
+                }
               }
                 setVerifying(false);
               }
@@ -292,13 +569,13 @@ const CodeVerificationDialog = ({
               let errorMsg = errorData.error || 'Cannot use this trial code';
               
               // Special handling for specific errors
-              if (errorData.alreadyPlayed || errorData.seatsFinished || errorData.error?.includes('seats finish')) {
-                errorMsg = errorData.error || 'You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.';
-              } else if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
-                const maxSeats = errorData.maxSeats || trial?.maxSeats || 2;
-                errorMsg = errorData.error || `You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`;
-              } else if (errorData.error && errorData.error.includes('expired')) {
-                errorMsg = 'Free trial has expired. You cannot play the game.';
+              if (errorData.isExpired || (errorData.error && errorData.error.includes('expired'))) {
+                errorMsg = 'Demo has expired. You cannot play the game.';
+              } else if (errorData.userSeatUsed && !errorData.seatsFull) {
+                const remainingSeats = errorData.remainingSeats || 0;
+                errorMsg = `You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`;
+              } else if (errorData.seatsFull || errorData.alreadyPlayed || errorData.seatsFinished || errorData.error?.includes('seats')) {
+                errorMsg = errorData.error || 'All seats have been used.';
               } else if (errorData.error && errorData.error.includes('no longer active')) {
                 errorMsg = 'This trial code is no longer active.';
               } else if (useErr.response?.status === 404) {
@@ -324,22 +601,22 @@ const CodeVerificationDialog = ({
             setVerifying(false);
             return;
           }
-        } else {
-          // Trial code is invalid (valid: false) - check reason before trying purchase code
+          } else {
+            // Trial code is invalid (valid: false) - check reason
           const errorData = checkResponse.data || {};
           
-          // If user already played, show specific message
-          if (errorData.alreadyPlayed || errorData.seatsFinished) {
-            setError('You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
+          // Check errors in order: expired, user seat used, all seats used
+          if (errorData.isExpired) {
+            setError('Demo has expired. You cannot play the game.');
             setVerifying(false);
             return;
-          } else if (errorData.seatsFull) {
-            const maxSeats = errorData.maxSeats || 2;
-            setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
+          } else if (errorData.userSeatUsed && !errorData.seatsFull) {
+            const remainingSeats = errorData.remainingSeats || 0;
+            setError(`You have used all your seats. ${remainingSeats} seat${remainingSeats !== 1 ? 's' : ''} remaining.`);
             setVerifying(false);
             return;
-          } else if (errorData.isExpired) {
-            setError('Free trial has expired. You cannot play the game.');
+          } else if (errorData.seatsFull || errorData.alreadyPlayed || errorData.seatsFinished) {
+            setError('All seats have been used.');
             setVerifying(false);
             return;
           } else if (errorData.message && errorData.message.includes('no longer active')) {
@@ -347,199 +624,20 @@ const CodeVerificationDialog = ({
             setVerifying(false);
             return;
           }
-          // If it's just an invalid trial code (not found), continue to check purchase code
-        }
-        // If trial code is invalid (valid: false and not seats/expiry issue), continue to check purchase code
-      } catch (trialErr) {
-        // Network error or other error checking trial - continue to check purchase code
-        console.log('Trial check error, will check purchase code:', trialErr.message);
-      }
-      
-      // If not a trial code, check if it's a purchase code (Transaction table)
-      if (!isTrialCode) {
-        try {
-          const purchaseCheckResponse = await axios.get(`${API_URL}/payments/check-purchase-code/${codeToVerify}`);
-          
-          if (purchaseCheckResponse.data.valid) {
-            // It's a valid purchase code - check details
-            const transaction = purchaseCheckResponse.data.transaction;
-            
-            // Check package type - only allow digital and digital_physical packages - show error in dialog but keep dialog open
-            const packageType = transaction.packageType || 'standard';
-            if (packageType === 'physical') {
-              setError('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
-              setVerifying(false);
-              // Keep dialog open so user can try another code
-              return;
-            }
-            
-            // Check if user already played - show error in dialog but keep dialog open
-            if (purchaseCheckResponse.data.alreadyPlayed || purchaseCheckResponse.data.seatsFinished) {
-              setError('You have already played the game with this code. Your seats are finished. You cannot play the game with any other seat.');
-              setVerifying(false);
-              // Keep dialog open so user can try another code
-              return;
-            }
-            
-            // Check if seats are available before proceeding - show error in dialog but keep dialog open
-            if (purchaseCheckResponse.data.seatsFull || !transaction.seatsAvailable || transaction.remainingSeats <= 0) {
-              const maxSeats = transaction.maxSeats || 5;
-              setError(`You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`);
-              setVerifying(false);
-              // Keep dialog open so user can try another code
-              return;
-            }
-            
-            // Check if expired - show error in dialog but keep dialog open
-            if (purchaseCheckResponse.data.isExpired) {
-              setError('Purchase code has expired. You cannot play the game.');
-              setVerifying(false);
-              // Keep dialog open so user can try another code
-              return;
-            }
-            
-            if (user) {
-              const token = localStorage.getItem('token');
-              try {
-                const useResponse = await axios.post(
-                  `${API_URL}/payments/use-purchase-code`,
-                  { code: codeToVerify },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                    },
-                  }
-                );
-
-                // Store transaction info for seats display
-                const transactionData = useResponse.data.transaction;
-                
-                // Check package type again (double check from use-purchase-code response)
-                const packageType = transactionData.packageType || 'standard';
-                if (packageType === 'physical') {
-                  setError('This package type is physical. You have purchased physical cards, so online game play is not allowed. Please use your physical cards to play.');
-                  setVerifying(false);
-                  return;
-                }
-                
-                const remainingSeats = transactionData.remainingSeats || (transactionData.maxSeats - transactionData.usedSeats);
-                const hasSeats = remainingSeats > 0;
-                
-                // Check expiry
-                const endDate = transactionData.endDate ? new Date(transactionData.endDate) : null;
-                const isExpired = endDate ? new Date() > endDate : false;
-                
-                // Handle gamePlays - it could be an array or a number
-                const gamePlaysCount = Array.isArray(transactionData.gamePlays) 
-                  ? transactionData.gamePlays.length 
-                  : (typeof transactionData.gamePlays === 'number' ? transactionData.gamePlays : 0);
-                
-                // Store transactionId for progress saving
-                const transactionId = transactionData._id || transactionData.id || null;
-                
-                setTrialInfo({
-                  _id: transactionId, // Store transaction ID for progress saving
-                  transactionId: transactionId, // Also store as transactionId for clarity
-                  maxSeats: transactionData.maxSeats || 5,
-                  usedSeats: transactionData.usedSeats || 0,
-                  remainingSeats: remainingSeats,
-                  codeApplications: transactionData.codeApplications || 0,
-                  gamePlays: gamePlaysCount,
-                  endDate: endDate,
-                  isExpired: isExpired,
-                  packageName: transactionData.packageName || 'Package',
-                  productId: transactionData.productId || null
-                });
-                
-                setSeatsAvailable(hasSeats && !isExpired);
-                
-                // Only save to sessionStorage if seats available
-                if (hasSeats && !isExpired) {
-                  sessionStorage.setItem('codeVerified', 'true');
-                  sessionStorage.setItem('codeType', 'purchase');
-                  sessionStorage.setItem('code', codeToVerify);
-                  sessionStorage.setItem('transactionData', JSON.stringify(transactionData));
-                  // Save packageId and productId for fetching cards
-                  if (transactionData.packageId) {
-                    const packageId = transactionData.packageId._id || transactionData.packageId;
-                    sessionStorage.setItem('packageId', packageId.toString());
-                  }
-                  if (transactionData.productId) {
-                    const productId = transactionData.productId._id || transactionData.productId;
-                    sessionStorage.setItem('productId', productId.toString());
-                  }
-                  setCodeVerified(true);
-                  setShowCodeDialog(false);
-                } else {
-                  // Seats full or expired - show error but don't verify
-                  if (isExpired) {
-                    setError('Purchase code has expired. You cannot play the game.');
-                  } else {
-                    setError('All seats have been used. You cannot play the game.');
-                  }
-                  setVerifying(false);
-                }
-                return;image.png
-              } catch (useErr) {
-                const errorData = useErr.response?.data || {};
-                let errorMsg = errorData.error || 'Cannot use this purchase code';
-                
-                // Special handling for specific errors
-                if (errorData.alreadyPlayed || errorData.error?.includes('already played')) {
-                  errorMsg = errorData.error || 'You have already played the game with this code. Each seat can only be used once.';
-                } else if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
-                  const maxSeats = errorData.maxSeats || 5;
-                  errorMsg = errorData.error || `You have only ${maxSeats} seat${maxSeats > 1 ? 's' : ''}. Your seats are completed.`;
-                } else if (errorData.error && errorData.error.includes('expired')) {
-                  errorMsg = 'Purchase code has expired. You cannot play the game.';
-                } else if (useErr.response?.status === 404) {
-                  errorMsg = 'Invalid code. Please check and try again.';
-                } else if (useErr.response?.status === 401) {
-                  errorMsg = 'Authentication failed. Please login again.';
-                } else if (useErr.response?.status === 403) {
-                  // Show backend error message for 403 (member validation errors)
-                  errorMsg = errorData.error || 'You do not have permission to use this code.';
-                }
-                
-                setError(errorMsg);
-                setVerifying(false);
-                return;
-              }
-            } else {
-              setError('Please login to verify your purchase code');
-              router.push(`/login?redirect=${encodeURIComponent('/game')}`);
-              setVerifying(false);
-              return;
-            }
-          } else {
-            // Purchase code check returned valid: false - check the reason
-            const errorData = purchaseCheckResponse.data || {};
-            
-            // Show specific error message from API
-            if (errorData.seatsFull) {
-              setError('All seats have been used. You cannot play the game.');
-            } else if (errorData.isExpired) {
-              setError('Purchase code has expired. You cannot play the game.');
-            } else {
-              // Generic invalid code message
-              setError(errorData.message || 'Invalid code');
-            }
-            setVerifying(false);
-            return;
-          }
-        } catch (purchaseErr) {
-          // Network error or other error checking purchase code
-          console.error('Error checking purchase code:', purchaseErr);
-          
-          // Check if it's a 404 or actual error
-          if (purchaseErr.response?.status === 404 || purchaseErr.response?.status === 400) {
-            setError('Invalid code. Please enter a valid trial code or purchase code.');
-          } else {
-            setError('Error verifying code. Please try again.');
-          }
+          // If it's just an invalid trial code (not found), show error
+          setError('Invalid code. Please enter a valid trial code or purchase code.');
           setVerifying(false);
           return;
         }
+        // If trial code is invalid (valid: false and not seats/expiry issue), show error
+      } catch (trialErr) {
+        // Network error or other error checking trial
+        console.log('Trial check error:', trialErr.message);
+        // If trial check fails, show error (purchase code was already checked first)
+        setError('Invalid code. Please enter a valid trial code or purchase code.');
+        setVerifying(false);
+        return;
+      }
       }
     } catch (err) {
       console.error('Error verifying code:', err);
@@ -565,7 +663,8 @@ const CodeVerificationDialog = ({
 
   // Force open if forceOpen is true, but allow closing if user clicked cancel
   // If user cancelled, always close the dialog regardless of other props
-  const dialogOpen = userCancelled ? false : (forceOpen ? true : (open && !userCancelled));
+  // Also close if code is verified (to prevent reopening)
+  const dialogOpen = userCancelled ? false : (codeVerified ? false : (forceOpen ? true : (open && !userCancelled)));
 
   return (
     <Dialog 
@@ -649,9 +748,63 @@ const CodeVerificationDialog = ({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} sx={{ mt: 2 }}>
-        <Typography variant="body1" color="text.secondary" sx={{fontWeight:600}}>
-          Code forgotton?Check the email you recieved after purchase/demo request.
-          </Typography>
+        {/* Only show "Code forgotten?" line for purchased users, not demo/trial users */}
+        {(() => {
+          // Check if we're in browser (not SSR)
+          if (typeof window === 'undefined') {
+            return null;
+          }
+          
+          // Check code type - only show for purchase codes, not trial codes
+          const codeType = sessionStorage.getItem('codeType');
+          
+          // If code type is 'trial', it's a demo/trial code - don't show the line
+          if (codeType === 'trial') {
+            return null;
+          }
+          
+          // Check if user is a demo user by checking trialData
+          // Demo users (B2C, B2B, B2E) have isDemo=true or targetAudience in trialData
+          let isDemoUser = false;
+          const trialDataStr = sessionStorage.getItem('trialData');
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              // Check isDemo field first (more reliable), fallback to targetAudience
+              // Demo users have isDemo=true or targetAudience (B2C, B2B, B2E)
+              if (trialData.isDemo === true || trialData.targetAudience) {
+                isDemoUser = true;
+              }
+            } catch (e) {
+              // If parsing fails, assume not demo user
+            }
+          }
+          
+          // If it's a demo user, don't show the line
+          if (isDemoUser) {
+            return null;
+          }
+          
+          // Check if transactionData exists (purchase user)
+          const transactionDataStr = sessionStorage.getItem('transactionData');
+          const hasTransactionData = transactionDataStr && transactionDataStr !== 'null' && transactionDataStr !== 'undefined';
+          
+          // Show "Code forgotten?" line for purchase users:
+          // 1. If codeType is 'purchase' (already verified as purchase)
+          // 2. OR if transactionData exists in sessionStorage (purchase user verified before)
+          // 3. OR if codeType is not set AND user is NOT a demo user (default: assume purchase user)
+          // Hide it only if we're sure it's a demo user (codeType === 'trial' or isDemoUser === true)
+          if (codeType === 'purchase' || hasTransactionData || (!codeType && !isDemoUser)) {
+            return (
+              <Typography variant="body1" color="text.secondary" sx={{fontWeight:600}}>
+                Code forgotten? Check the email you received after purchase/demo request.
+              </Typography>
+            );
+          }
+          
+          // Don't show for demo users
+          return null;
+        })()}
           <Typography variant="body1" color="text.secondary">
             Please enter your code to access the game. If you have a free trial, enter your trial code. If you made a purchase, enter the code you received after payment.
           </Typography>
@@ -744,12 +897,13 @@ const CodeVerificationDialog = ({
           variant="contained"
           disabled={verifying || !trialCode.trim()}
           sx={{
-            backgroundColor: '#0B7897',
+            backgroundColor: '#000B3D',
             color: 'white',
             fontWeight: 700,
             px: 4,
             '&:hover': {
-              backgroundColor: '#063C5E',
+              backgroundColor: '#000B3D',
+              color:'white'
             },
           }}
         >
@@ -794,11 +948,16 @@ export default function GamePage() {
   const [showCodeDialog, setShowCodeDialog] = useState(true); // Always start with true to show dialog on load
   const [mounted, setMounted] = useState(false);
   // IMPORTANT: Always start with 'landing' - don't allow game to start without code verification
-  const [gameState, setGameState] = useState('landing'); // landing, levelSelect, game, summary
+  const [gameState, setGameState] = useState('landing'); // landing, demoCardSelect, levelSelect, game, summary
   const [selectedLevel, setSelectedLevel] = useState(null);
   const [resumeLevel, setResumeLevel] = useState(null); // Store resume level from query parameter
   const [availableLevels, setAvailableLevels] = useState([]); // Track which levels are available - start empty until checked
   const [checkingLevels, setCheckingLevels] = useState(false); // Track if we're checking levels
+  const [demoCompletedLevels, setDemoCompletedLevels] = useState([]); // Track completed levels for demo users
+  const [isDemoUser, setIsDemoUser] = useState(false); // Track if current user is demo user
+  const [demoTargetAudience, setDemoTargetAudience] = useState(null); // Track demo target audience
+  const [demoCards, setDemoCards] = useState([]); // Store demo cards for slider display
+  const [currentCardSliderIndex, setCurrentCardSliderIndex] = useState(0); // Current card in slider
   const [scenarios, setScenarios] = useState([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -815,6 +974,78 @@ export default function GamePage() {
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
   const [errorModal, setErrorModal] = useState({ open: false, message: '', title: 'Error' }); // Error modal state
+  const [questionTimer, setQuestionTimer] = useState(180); // 3 minutes = 180 seconds
+  const [timerInterval, setTimerInterval] = useState(null); // Store interval ID
+
+  // Auto-submit function when timer expires
+  const handleTimerExpire = useCallback(() => {
+    if (isCardLocked || !scenarios[currentCardIndex]) return;
+    
+    const currentScenario = scenarios[currentCardIndex];
+    
+    // Auto-submit with score 0 (no answer selected)
+    setSelectedAnswer(null);
+    setIsCardLocked(true);
+    
+    // Record answer with 0 points (time expired)
+    setAnswerHistory(prev => [...prev, {
+      cardIndex: currentCardIndex,
+      questionId: currentScenario.id,
+      cardId: currentScenario.cardId,
+      cardTitle: currentScenario.cardTitle,
+      questionTitle: currentScenario.title,
+      questionDescription: currentScenario.description,
+      answerIndex: null, // No answer selected
+      selectedAnswerText: 'Time Expired - 0 Score',
+      selectedAnswerScoring: 0,
+      isCorrect: false,
+      points: 0, // Score 0 for time expired
+      maxPoints: currentScenario.answers.length > 0 
+        ? Math.max(...currentScenario.answers.map(a => a.scoring || 0))
+        : 0
+    }]);
+    
+    // Show feedback after short delay
+    setTimeout(() => {
+      setShowFeedback(true);
+    }, 500);
+  }, [isCardLocked, scenarios, currentCardIndex]);
+
+  // Start timer when question appears (gameState is 'game' and currentCardIndex changes)
+  useEffect(() => {
+    // Only start timer when in game state and question is available
+    if (gameState === 'game' && scenarios.length > 0 && scenarios[currentCardIndex] && !isCardLocked) {
+      // Clear any existing timer
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        setTimerInterval(null);
+      }
+      
+      // Reset timer to 180 seconds
+      setQuestionTimer(180);
+      
+      // Start countdown timer
+      const interval = setInterval(() => {
+        setQuestionTimer(prev => {
+          if (prev <= 1) {
+            // Timer expired - auto-submit
+            clearInterval(interval);
+            setTimerInterval(null);
+            handleTimerExpire();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      
+      setTimerInterval(interval);
+      
+      // Cleanup on unmount or when question changes
+      return () => {
+        clearInterval(interval);
+      };
+    }
+  }, [gameState, currentCardIndex, scenarios.length, isCardLocked, handleTimerExpire]);
 
   // Mark component as mounted (client-side only)
   // Check for resume query parameter
@@ -835,9 +1066,19 @@ export default function GamePage() {
     // Mark as mounted
     setMounted(true);
 
-    // Check if user has a referrer and try to use their code
+    // Check if user has a referrer and try to use their code, or check for demo code
     const checkReferrerCode = async () => {
       if (!user || !mounted) return;
+      
+      // First check for demo code in query params
+      if (router.isReady && router.query.demoCode) {
+        const demoCode = router.query.demoCode;
+        console.log('✅ Found demo code in URL, auto-verifying:', demoCode);
+        await verifyCode(demoCode, true); // Pass true to indicate it's auto-verification
+        // Remove demoCode from URL to clean it up
+        router.replace('/game', undefined, { shallow: true });
+        return; // Exit early if demo code was used
+      }
       
       try {
         const token = localStorage.getItem('token');
@@ -874,7 +1115,10 @@ export default function GamePage() {
       setGameState('landing');
     };
 
-    checkReferrerCode();
+    // Only check referrer/demo code if router is ready
+    if (router.isReady) {
+      checkReferrerCode();
+    }
     
     // Then check sessionStorage in background (but don't auto-verify)
     if (typeof window !== 'undefined') {
@@ -978,6 +1222,61 @@ export default function GamePage() {
     // State is already updated in verifyCode function
   };
 
+  // Static array of demo card images from public/images folder
+  const demoCardImages = [
+    '/images/1Bank.png',
+    '/images/2delivery.png',
+    '/images/5lottery.png',
+    '/images/7friend.png',
+    '/images/15grandchild.png'
+  ];
+
+  // Load demo cards for slider display - use static images array
+  const loadDemoCardsForSlider = useCallback(async () => {
+    try {
+      // Get target audience from trialData
+      const trialDataStr = typeof window !== 'undefined' ? sessionStorage.getItem('trialData') : null;
+      let targetAudience = null;
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          targetAudience = trialData.targetAudience; // B2C, B2B, or B2E
+        } catch (e) {
+          console.error('Error parsing trialData for targetAudience:', e);
+        }
+      }
+      
+      if (!targetAudience) {
+        console.error('Target audience not found for demo cards');
+        return;
+      }
+      
+      // Limit images based on target audience
+      // B2C: 30 cards maximum, B2B/B2E: 90 cards maximum
+      let cardLimit = 30; // Default for B2C
+      if (targetAudience === 'B2B' || targetAudience === 'B2E') {
+        cardLimit = 90; // B2B/B2E get 90 cards maximum
+      }
+      
+      // Use static images array, limit to cardLimit
+      const limitedImages = demoCardImages.slice(0, Math.min(cardLimit, demoCardImages.length));
+      
+      // Convert images to card-like objects for consistency
+      const cards = limitedImages.map((imagePath, index) => ({
+        _id: `demo-card-${index}`,
+        cardId: `demo-card-${index}`,
+        cardTitle: `Demo Card ${index + 1}`,
+        imagePath: imagePath
+      }));
+      
+      setDemoCards(cards);
+      console.log(`✅ Loaded ${cards.length} demo card images for slider (${targetAudience})`);
+    } catch (error) {
+      console.error('Error loading demo cards for slider:', error);
+      setDemoCards([]);
+    }
+  }, []);
+
   const startGame = useCallback(async () => {
     // CRITICAL: Don't allow game to start without code verification
     if (!codeVerified) {
@@ -987,11 +1286,32 @@ export default function GamePage() {
       return;
     }
     
+    // Check if user is demo user FIRST (before productId check)
+    const demoCodeType = sessionStorage.getItem('codeType');
+    let isDemo = false;
+    let targetAudience = null;
+    
+    if (demoCodeType === 'trial') {
+      const trialDataStr = sessionStorage.getItem('trialData');
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          if (trialData.targetAudience) {
+            isDemo = true;
+            targetAudience = trialData.targetAudience;
+          }
+        } catch (e) {
+          console.error('Error parsing trialData for demo check:', e);
+        }
+      }
+    }
+    
     // Double-check sessionStorage to ensure code is actually verified
+    // For demo users, skip productId/packageId check
     const codeVerifiedStorage = sessionStorage.getItem('codeVerified') === 'true';
     const productId = sessionStorage.getItem('productId');
     const packageId = sessionStorage.getItem('packageId');
-    const isActuallyVerified = codeVerifiedStorage && (productId || packageId);
+    const isActuallyVerified = isDemo ? codeVerifiedStorage : (codeVerifiedStorage && (productId || packageId));
     
     if (!isActuallyVerified) {
       console.log('🚫 Game start blocked - code verification check failed');
@@ -1099,18 +1419,41 @@ export default function GamePage() {
         console.error('Error starting purchase game play:', error);
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
+        // Check if this is a demo user - skip "No Cards Available" modal for demo users
+        const isDemoUser = (() => {
+          const codeType = sessionStorage.getItem('codeType');
+          if (codeType === 'trial') {
+            const trialDataStr = sessionStorage.getItem('trialData');
+            if (trialDataStr) {
+              try {
+                const trialData = JSON.parse(trialDataStr);
+                return !!(trialData.targetAudience);
+              } catch (e) {
+                return false;
+              }
+            }
+          }
+          return false;
+        })();
+        
         if (errorData.noCardsAvailable || errorData.error?.includes('No cards are available')) {
-          // Show error modal - cards not available
-          setErrorModal({
-            open: true,
-            title: 'No Cards Available',
-            message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
-          });
-          setShowCodeDialog(true);
-          setCodeVerified(false);
-          sessionStorage.removeItem('codeVerified');
-          sessionStorage.removeItem('codeType');
-          return;
+          // Skip "No Cards Available" modal for demo users - they use demo cards directly
+          if (isDemoUser) {
+            console.log('🎮 Demo user - skipping "No Cards Available" modal, will load demo cards directly');
+            // Continue to demo card loading (handled later in the function)
+          } else {
+            // Show error modal - cards not available (only for non-demo users)
+            setErrorModal({
+              open: true,
+              title: 'No Cards Available',
+              message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
+            });
+            setShowCodeDialog(true);
+            setCodeVerified(false);
+            sessionStorage.removeItem('codeVerified');
+            sessionStorage.removeItem('codeType');
+            return;
+          }
         }
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
           // Show error in code verification dialog instead of separate modal
@@ -1196,18 +1539,38 @@ export default function GamePage() {
         console.error('Error starting trial game play:', error);
         console.error('Error details:', error.response?.data || error.message);
         const errorData = error.response?.data || {};
+        // Check if this is a demo user - skip "No Cards Available" modal for demo users
+        const isDemoUser = (() => {
+          const trialDataStr = sessionStorage.getItem('trialData');
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              return !!(trialData.targetAudience);
+            } catch (e) {
+              return false;
+            }
+          }
+          return false;
+        })();
+        
         if (errorData.noCardsAvailable || errorData.error?.includes('No cards are available')) {
-          // Show error modal - cards not available
-          setErrorModal({
-            open: true,
-            title: 'No Cards Available',
-            message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
-          });
-          setShowCodeDialog(true);
-          setCodeVerified(false);
-          sessionStorage.removeItem('codeVerified');
-          sessionStorage.removeItem('codeType');
-          return;
+          // Skip "No Cards Available" modal for demo users - they use demo cards directly
+          if (isDemoUser) {
+            console.log('🎮 Demo user - skipping "No Cards Available" modal, will load demo cards directly');
+            // Continue to demo card loading (handled later in the function)
+          } else {
+            // Show error modal - cards not available (only for non-demo users)
+            setErrorModal({
+              open: true,
+              title: 'No Cards Available',
+              message: 'No cards are available for this product/package. Please contact support to add cards before playing the game.'
+            });
+            setShowCodeDialog(true);
+            setCodeVerified(false);
+            sessionStorage.removeItem('codeVerified');
+            sessionStorage.removeItem('codeType');
+            return;
+          }
         }
         if (errorData.seatsFull || errorData.error?.includes('seats are completed')) {
           // Show error in code verification dialog instead of separate modal
@@ -1250,15 +1613,394 @@ export default function GamePage() {
         return;
     }
     
-    // Only proceed to level selection if we got here successfully
+    // Use the demo check we already did at the start of the function
+    // If not set yet, check again
+    if (!isDemo) {
+      const demoCodeType = sessionStorage.getItem('codeType');
+      if (demoCodeType === 'trial') {
+        const trialDataStr = sessionStorage.getItem('trialData');
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            if (trialData.targetAudience) {
+              isDemo = true;
+              targetAudience = trialData.targetAudience;
+            }
+          } catch (e) {
+            console.error('Error parsing trialData for demo check:', e);
+          }
+        }
+      }
+    }
+    
+    // Set demo user state
+    setIsDemoUser(isDemo);
+    setDemoTargetAudience(targetAudience);
+    
+    // For demo users, check completed levels from localStorage AND backend
+    if (isDemo) {
+      // First, load from localStorage (for quick access)
+      const storedCompletedLevels = localStorage.getItem(`demoCompletedLevels_${targetAudience}`);
+      if (storedCompletedLevels) {
+        try {
+          const completed = JSON.parse(storedCompletedLevels);
+          setDemoCompletedLevels(completed);
+          console.log(`🎮 Demo user (${targetAudience}) - Completed levels from localStorage:`, completed);
+        } catch (e) {
+          console.error('Error parsing completed levels:', e);
+        }
+      }
+      
+      // Also fetch from backend GameProgress to ensure accuracy
+      if (user && targetAudience) {
+        try {
+          const token = localStorage.getItem('token');
+          if (token) {
+            const progressResponse = await axios.get(`${API_URL}/game-progress/user`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            
+            if (progressResponse.data) {
+              const progress = progressResponse.data;
+              
+              // Extract completed levels from the response structure
+              // The API returns level1Stats, level2Stats, level3Stats with completedAt
+              const completedLevels = [];
+              
+              if (progress.level1Stats && progress.level1Stats.completedAt) {
+                completedLevels.push(1);
+              }
+              if (progress.level2Stats && progress.level2Stats.completedAt) {
+                completedLevels.push(2);
+              }
+              if (progress.level3Stats && progress.level3Stats.completedAt) {
+                completedLevels.push(3);
+              }
+              
+              if (completedLevels.length > 0) {
+                setDemoCompletedLevels(completedLevels);
+                // Update localStorage with backend data
+                localStorage.setItem(`demoCompletedLevels_${targetAudience}`, JSON.stringify(completedLevels));
+                console.log(`🎮 Demo user (${targetAudience}) - Completed levels from backend:`, completedLevels);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching completed levels from backend:', error);
+          // Continue with localStorage data if backend fetch fails
+        }
+      }
+    }
+    
+    // For ALL users (demo and regular), show level selection
+    // Demo users will see restricted levels based on targetAudience
+    // B2C: Only Level 1
+    // B2B/B2E: Sequential unlock (Level 1 -> Level 2 -> Level 3)
     setGameState('levelSelect');
-  }, [codeVerified, seatsAvailable, trialInfo, user]);
+  }, [codeVerified, seatsAvailable, trialInfo, user, loadDemoCardsForSlider]);
+
+  // Load demo cards directly (skip level selection)
+  const loadDemoCards = useCallback(async (cardLimit) => {
+    try {
+      setGameState('loading');
+      
+      // Get target audience from trialData
+      const trialDataStr = sessionStorage.getItem('trialData');
+      let targetAudience = null;
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          targetAudience = trialData.targetAudience; // B2C, B2B, or B2E
+        } catch (e) {
+          console.error('Error parsing trialData for targetAudience:', e);
+        }
+      }
+      
+      if (!targetAudience) {
+        setErrorModal({ 
+          open: true, 
+          message: 'Target audience not found. Please contact support.', 
+          title: 'Error' 
+        });
+        setGameState('landing');
+        return;
+      }
+      
+      // For demo users, fetch product cards if productId available, otherwise fallback to isDemo cards
+      // Get productId from trialData if available
+      let productId = null;
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          productId = trialData.productId || null;
+        } catch (e) {
+          console.error('Error parsing trialData for productId:', e);
+        }
+      }
+      
+      const params = {
+        isDemo: 'true',
+        targetAudience: targetAudience,
+        level: '1' // For B2C, always Level 1; for B2B/B2E, will use level selection
+      };
+      
+      // Add productId if available (so demo users see product cards)
+      if (productId) {
+        params.productId = productId;
+      }
+      
+      console.log(`🎮 Fetching demo cards for ${targetAudience}, limit: ${cardLimit} (max ${targetAudience === 'B2C' ? 30 : 90} cards), productId: ${productId || 'none'}`);
+      
+      // Fetch demo cards (will use product cards if productId provided)
+      const response = await axios.get(`${API_URL}/cards/public/game`, {
+        params: params
+      });
+      
+      console.log('Demo cards API Response:', response.data);
+      
+      if (response.data && response.data.questions && response.data.questions.length > 0) {
+        let questions = response.data.questions;
+        
+        // Limit to cardLimit (30 for B2C, 90 for B2B/B2E) - maximum cards for demo users
+        questions = questions.slice(0, cardLimit);
+        
+        // Transform questions to game format
+        const formattedScenarios = questions.map((q, idx) => {
+          if (!q.answers || q.answers.length === 0) {
+            console.warn(`Question ${idx} has no answers`);
+            return null;
+          }
+          
+          const maxScoring = Math.max(...q.answers.map(a => (a.scoring || 0)));
+          const correctAnswerIndex = q.answers.findIndex(a => (a.scoring || 0) === maxScoring);
+          
+          return {
+            id: q._id?.toString() || `q-${idx}`,
+            cardId: q.cardId?.toString() || null,
+            cardTitle: q.cardTitle || '',
+            title: q.cardTitle || q.title || 'Untitled Question',
+            description: q.description || '',
+            category: q.category || 'General',
+            answers: q.answers.map((a, aIdx) => ({
+              id: a._id?.toString() || `a-${idx}-${aIdx}`,
+              text: a.text || '',
+              isCorrect: aIdx === correctAnswerIndex,
+              scoring: a.scoring || 0
+            })),
+            feedback: q.feedback || 'Thank you for your answer!',
+            correctAnswerIndex: correctAnswerIndex
+          };
+        }).filter(Boolean);
+        
+        if (formattedScenarios.length === 0) {
+          // For demo users, try to load cards anyway (don't show error modal)
+          // This allows demo users to proceed even if API returns no cards
+          console.warn('⚠️ No demo cards found, but continuing for demo user');
+          setGameState('landing');
+          return;
+        }
+        
+        console.log(`✅ Loaded ${formattedScenarios.length} demo cards (limit: ${cardLimit})`);
+        setScenarios(formattedScenarios);
+        setGameState('game');
+        setCurrentCardIndex(0);
+        setScore(0);
+        setAnswerHistory([]);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        setIsCardLocked(false);
+        setSelectedLevel(null); // No level for demo users
+      } else {
+        // For demo users, don't show error modal - just go back to landing
+        console.warn('⚠️ No demo cards found in API response, but continuing for demo user');
+        setGameState('landing');
+      }
+    } catch (error) {
+      console.error('Error loading demo cards:', error);
+      // For demo users, don't show error modal - just log and go back to landing
+      console.warn('⚠️ Error loading demo cards, but continuing for demo user:', error.message);
+      setGameState('landing');
+    }
+  }, [API_URL]);
 
   const selectLevel = useCallback(async (level, isFromNextLevel = false) => {
+    // CRITICAL: Check if level is locked for B2B/B2E demo users before allowing selection
+    if (isDemoUser && (demoTargetAudience === 'B2B' || demoTargetAudience === 'B2E')) {
+      // Level 1 is always available
+      if (level === 1) {
+        // Allow Level 1
+      } else if (level === 2) {
+        // Level 2 requires Level 1 completion
+        if (!demoCompletedLevels.includes(1)) {
+          console.warn('⚠️ Level 2 is locked - Complete Level 1 first');
+          setErrorModal({ 
+            open: true, 
+            message: 'Level 2 is locked. Please complete Level 1 first.', 
+            title: 'Level Locked' 
+          });
+          return;
+        }
+      } else if (level === 3) {
+        // Level 3 requires Level 1 and 2 completion
+        if (!demoCompletedLevels.includes(1) || !demoCompletedLevels.includes(2)) {
+          console.warn('⚠️ Level 3 is locked - Complete Level 1 and 2 first');
+          setErrorModal({ 
+            open: true, 
+            message: 'Level 3 is locked. Please complete Level 1 and Level 2 first.', 
+            title: 'Level Locked' 
+          });
+          return;
+        }
+      }
+    }
+    
     setSelectedLevel(level);
     setGameState('loading'); // Show loading state
     
     try {
+      // Check if this is a demo user
+      const codeType = sessionStorage.getItem('codeType');
+      let isDemo = false;
+      let targetAudience = null;
+      
+      if (codeType === 'trial') {
+        const trialDataStr = sessionStorage.getItem('trialData');
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            if (trialData.targetAudience) {
+              isDemo = true;
+              targetAudience = trialData.targetAudience;
+            }
+          } catch (e) {
+            console.error('Error parsing trialData:', e);
+          }
+        }
+      }
+      
+      // For demo users, fetch demo cards with limits based on target audience
+      if (isDemo) {
+        // Get productId from trialData if available (for demo users to see product cards)
+        const trialDataStr = sessionStorage.getItem('trialData');
+        let productId = null;
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            productId = trialData.productId || null;
+          } catch (e) {
+            console.error('Error parsing trialData for productId:', e);
+          }
+        }
+        
+        const params = {
+          isDemo: 'true',
+          targetAudience: targetAudience,
+          level: level.toString() // Pass level to get cards for this level
+        };
+        
+        // Add productId if available (so demo users see product cards)
+        if (productId) {
+          params.productId = productId;
+        }
+        
+        // Card limits: B2C = 30 max, B2B/B2E = 90 max total
+        const maxCardsPerLevel = targetAudience === 'B2C' ? 30 : 30; // 30 per level, but B2B/B2E can have multiple levels up to 90 total
+        const totalMaxCards = targetAudience === 'B2C' ? 30 : 90;
+        
+        console.log(`🎮 Demo user (${targetAudience}) - Loading Level ${level} cards (max ${totalMaxCards} total)...`);
+        
+        const response = await axios.get(`${API_URL}/cards/public/game`, {
+          params
+        });
+        
+        console.log('Demo cards API Response:', response.data);
+        
+        if (response.data && response.data.questions && response.data.questions.length > 0) {
+          let questions = response.data.questions;
+          
+          // Limit cards per level: B2C gets 30 max, B2B/B2E gets 30 per level (up to 90 total across all levels)
+          questions = questions.slice(0, maxCardsPerLevel);
+          
+          // Transform questions to game format
+          const formattedScenarios = questions.map((q, idx) => {
+            if (!q.answers || q.answers.length === 0) {
+              console.warn(`Question ${idx} has no answers`);
+              return null;
+            }
+            
+            const maxScoring = Math.max(...q.answers.map(a => (a.scoring || 0)));
+            const correctAnswerIndex = q.answers.findIndex(a => (a.scoring || 0) === maxScoring);
+            
+            return {
+              id: q._id?.toString() || `q-${idx}`,
+              cardId: q.cardId?.toString() || null,
+              cardTitle: q.cardTitle || '',
+              title: q.cardTitle || q.title || 'Untitled Question',
+              description: q.description || '',
+              category: q.category || 'General',
+              answers: q.answers.map((a, aIdx) => ({
+                id: a._id?.toString() || `a-${idx}-${aIdx}`,
+                text: a.text || '',
+                isCorrect: aIdx === correctAnswerIndex,
+                scoring: a.scoring || 0
+              })),
+              feedback: q.feedback || 'Thank you for your answer!',
+              correctAnswerIndex: correctAnswerIndex
+            };
+          }).filter(Boolean);
+          
+          if (formattedScenarios.length === 0) {
+            // For demo users, don't show error modal - just go back to level select
+            console.warn('⚠️ No demo cards found for this level, but continuing for demo user');
+            setGameState('levelSelect');
+            setSelectedLevel(null);
+            return;
+          }
+          
+          console.log(`✅ Loaded ${formattedScenarios.length} demo cards for Level ${level}`);
+          setScenarios(formattedScenarios);
+          setGameState('game');
+          setCurrentCardIndex(0);
+          setScore(0);
+          setAnswerHistory([]);
+          setSelectedAnswer(null);
+          setShowFeedback(false);
+          setIsCardLocked(false);
+          return;
+        } else {
+          // For demo users, check if productId was provided
+          // If productId was provided but no cards found, show error
+          const trialDataStr = sessionStorage.getItem('trialData');
+          let hasProductId = false;
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              if (trialData.productId) {
+                hasProductId = true;
+              }
+            } catch (e) {
+              console.error('Error parsing trialData:', e);
+            }
+          }
+          
+          if (hasProductId) {
+            // Product has no cards for this level - show error
+            setErrorModal({ 
+              open: true, 
+              message: `No cards are available for this product/package at Level ${level}. Please contact support to add cards before playing the game.`, 
+              title: 'No Cards Available' 
+            });
+          } else {
+            // No productId - fallback to demo cards (shouldn't happen but handle gracefully)
+            console.warn('⚠️ No demo cards found in API response for this level, but continuing for demo user');
+          }
+          setGameState('levelSelect');
+          setSelectedLevel(null);
+          return;
+        }
+      }
+      
+      // Regular users - use product/package logic
       // Get productId and packageId from sessionStorage if available
       // Priority: productId > packageId
       const productId = sessionStorage.getItem('productId');
@@ -1414,6 +2156,12 @@ export default function GamePage() {
   const handleAnswerClick = useCallback((answerIndex) => {
     if (isCardLocked || !scenarios[currentCardIndex]) return;
     
+    // Clear timer when answer is clicked
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    
     const currentScenario = scenarios[currentCardIndex];
     const selectedAnswerObj = currentScenario.answers[answerIndex];
     
@@ -1452,7 +2200,7 @@ export default function GamePage() {
     setTimeout(() => {
       setShowFeedback(true);
     }, 500);
-  }, [isCardLocked, scenarios, currentCardIndex]);
+  }, [isCardLocked, scenarios, currentCardIndex, timerInterval]);
 
   const saveGameProgress = useCallback(async (levelNum, levelScore, levelAnswerHistory, levelScenarios) => {
     try {
@@ -1631,6 +2379,27 @@ export default function GamePage() {
         riskLevel = 'Cautious';
       }
 
+      // Check if this is a demo play (for tracking purposes only)
+      // CRITICAL: Demo users MUST save progress so backend can verify all levels are completed
+      const codeType = sessionStorage.getItem('codeType');
+      let isDemo = false;
+      if (codeType === 'trial') {
+        // Check if trialData has targetAudience (demo indicator)
+        const trialDataStr = sessionStorage.getItem('trialData');
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            // If targetAudience exists, it's a demo (B2C, B2B, B2E)
+            isDemo = !!(trialData.targetAudience);
+          } catch (e) {
+            console.error('Error parsing trialData for isDemo:', e);
+          }
+        }
+      }
+      
+      // NOTE: We no longer skip progress saving for demo users
+      // Demo users need to save progress so backend can verify all levels are completed
+
       // Save one entry per user per level with cards array (only productId and userId)
       try {
         const progressData = {
@@ -1642,7 +2411,8 @@ export default function GamePage() {
           correctAnswers: correctAnswers,
           totalQuestions: totalQuestions,
           percentageScore: percentageScore,
-          riskLevel: riskLevel
+          riskLevel: riskLevel,
+          isDemo: isDemo
         };
 
         console.log(`📤 Sending progress data to API:`, {
@@ -1706,14 +2476,37 @@ export default function GamePage() {
   }, [user, trialInfo, API_URL]);
 
   const nextCard = useCallback(async () => {
+    // Clear timer when moving to next card
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    
     if (currentCardIndex < scenarios.length - 1) {
       setCurrentCardIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowFeedback(false);
       setIsCardLocked(false);
+      setQuestionTimer(180); // Reset timer for next question
     } else {
-      // Game complete - save progress before showing summary
-      // This ensures progress is saved for ANY level that is completed
+      // Game complete
+      // Check if this is a demo user
+      const codeType = sessionStorage.getItem('codeType');
+      let isDemoUser = false;
+      if (codeType === 'trial') {
+        const trialDataStr = sessionStorage.getItem('trialData');
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            isDemoUser = !!(trialData.targetAudience);
+          } catch (e) {
+            console.error('Error parsing trialData:', e);
+          }
+        }
+      }
+      
+      // Save progress for all users (including demo users)
+      // Demo users MUST save progress so backend can verify all levels are completed
       if (selectedLevel && answerHistory.length > 0) {
         try {
           console.log(`💾 Saving progress for level ${selectedLevel} with ${answerHistory.length} answers`);
@@ -1736,6 +2529,118 @@ export default function GamePage() {
           
           await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
           console.log(`✅ Progress saved successfully for level ${selectedLevel}`);
+          
+          // For demo users, check if all required levels are completed AFTER saving progress
+          // Backend will verify using GameProgress records
+          if (isDemoUser) {
+            // Get target audience
+            let targetAudience = 'B2C';
+            const trialDataStr = sessionStorage.getItem('trialData');
+            if (trialDataStr) {
+              try {
+                const trialData = JSON.parse(trialDataStr);
+                targetAudience = trialData.targetAudience || 'B2C';
+              } catch (e) {
+                console.error('Error parsing trialData:', e);
+              }
+            }
+            
+            // Check if this was the last required level
+            // B2C: Level 1 is the last required
+            // B2B/B2E: Level 3 is the last required
+            let shouldIncrementSeat = false;
+            
+            if (targetAudience === 'B2C' && selectedLevel === 1) {
+              // B2C: Level 1 completed
+              shouldIncrementSeat = true;
+            } else if ((targetAudience === 'B2B' || targetAudience === 'B2E') && selectedLevel === 3) {
+              // B2B/B2E: Level 3 completed - backend will verify all 3 levels are in GameProgress
+              shouldIncrementSeat = true;
+            }
+            
+            if (shouldIncrementSeat) {
+              try {
+                const token = localStorage.getItem('token');
+                const code = sessionStorage.getItem('code');
+                if (token && code) {
+                  // Add a small delay to ensure GameProgress is saved in database
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  
+                  console.log(`🎮 Demo user (${targetAudience}) completed level ${selectedLevel} - calling increment API...`);
+                  // Call API to increment seat - backend will verify all required levels are completed
+                  // Backend will prevent duplicate increments if user has already completed
+                  try {
+                    await axios.post(
+                      `${API_URL}/free-trial/increment-seat-on-completion`,
+                      { code },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
+                    console.log('✅ Seat incremented for demo user');
+                  } catch (incrementError) {
+                    // If error is "already completed", that's expected for "Play Again" scenario
+                    if (incrementError.response?.data?.alreadyPlayed || incrementError.response?.data?.seatsFinished) {
+                      console.log(`ℹ️ Demo user (${targetAudience}) has already completed - seat not incremented (this is expected for "Play Again")`);
+                    } else {
+                      console.error('Error incrementing seat for demo user:', incrementError);
+                      console.error('Error details:', incrementError.response?.data || incrementError.message);
+                    }
+                    // Don't block showing summary - user can still see results
+                  }
+                }
+              } catch (error) {
+                console.error('Error in seat increment flow:', error);
+                // Don't block showing summary
+              }
+            }
+          } else {
+            // For purchase users, check if all 3 levels are completed
+            // Purchase users must complete ALL 3 levels before seat is incremented
+            if (selectedLevel === 3) {
+              try {
+                const token = localStorage.getItem('token');
+                const code = sessionStorage.getItem('code');
+                if (token && code) {
+                  // Add a small delay to ensure GameProgress is saved in database
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  
+                  console.log(`💰 Purchase user completed level 3 - calling increment API...`);
+                  // Call API to increment seat - backend will verify all 3 levels are completed
+                  try {
+                    await axios.post(
+                      `${API_URL}/payments/increment-seat-on-completion`,
+                      { code },
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                        },
+                      }
+                    );
+                    console.log('✅ Seat incremented for purchase user');
+                  } catch (incrementError) {
+                    // If error is "already completed", that's expected for "Play Again" scenario
+                    if (incrementError.response?.data?.alreadyPlayed || incrementError.response?.data?.seatsFinished) {
+                      console.log(`ℹ️ Purchase user has already completed - seat not incremented (this is expected for "Play Again")`);
+                    } else if (incrementError.response?.data?.levelsNotCompleted) {
+                      console.log(`⏳ Purchase user - Not all 3 levels completed yet. Backend will verify.`);
+                    } else {
+                      console.error('Error incrementing seat for purchase user:', incrementError);
+                      console.error('Error details:', incrementError.response?.data || incrementError.message);
+                    }
+                    // Don't block showing summary - user can still see results
+                  }
+                }
+              } catch (error) {
+                console.error('Error in seat increment flow:', error);
+                // Don't block showing summary
+              }
+            } else {
+              console.log(`⏳ Purchase user - Not all 3 levels completed yet. Current: ${selectedLevel}`);
+            }
+          }
         } catch (error) {
           console.error(`❌ Error saving progress for level ${selectedLevel}:`, error);
           console.error('Error details:', error.response?.data || error.message);
@@ -1762,7 +2667,78 @@ export default function GamePage() {
   }, []);
 
   const nextLevel = useCallback(async () => {
-    // Save current level completion
+    // Check if this is a demo user
+    const codeType = sessionStorage.getItem('codeType');
+    let isDemo = false;
+    let targetAudience = null;
+    
+    if (codeType === 'trial') {
+      const trialDataStr = sessionStorage.getItem('trialData');
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          if (trialData.targetAudience) {
+            isDemo = true;
+            targetAudience = trialData.targetAudience;
+          }
+        } catch (e) {
+          console.error('Error parsing trialData:', e);
+        }
+      }
+    }
+    
+    // For demo users, mark level as completed and unlock next level
+    if (isDemo && selectedLevel) {
+      // Mark current level as completed
+      setDemoCompletedLevels(prev => {
+        if (!prev.includes(selectedLevel)) {
+          const updated = [...prev, selectedLevel];
+          // Save to localStorage
+          localStorage.setItem(`demoCompletedLevels_${targetAudience}`, JSON.stringify(updated));
+          console.log(`✅ Demo user (${targetAudience}) - Level ${selectedLevel} completed. Completed levels:`, updated);
+          return updated;
+        }
+        return prev;
+      });
+      
+      // For B2C: Only Level 1, so go back to level selection after completion
+      if (targetAudience === 'B2C') {
+        setGameState('levelSelect');
+        setSelectedLevel(null);
+        setScenarios([]);
+        setCurrentCardIndex(0);
+        setScore(0);
+        setAnswerHistory([]);
+        setSelectedAnswer(null);
+        setShowFeedback(false);
+        setIsCardLocked(false);
+        return;
+      }
+      
+      // For B2B/B2E: Move to next level if available
+      if (targetAudience === 'B2B' || targetAudience === 'B2E') {
+        // If on level 3, go back to level selection
+        if (selectedLevel >= 3) {
+          setGameState('levelSelect');
+          setSelectedLevel(null);
+          setScenarios([]);
+          setCurrentCardIndex(0);
+          setScore(0);
+          setAnswerHistory([]);
+          setSelectedAnswer(null);
+          setShowFeedback(false);
+          setIsCardLocked(false);
+          return;
+        }
+        
+        // Move to next level
+        const nextLevelNum = selectedLevel + 1;
+        selectLevel(nextLevelNum, true);
+        return;
+      }
+    }
+    
+    // Regular users - save progress and move to next level
     if (selectedLevel) {
       // Save progress to backend
       await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
@@ -2053,6 +3029,7 @@ export default function GamePage() {
           }}
           onVerified={handleCodeVerified}
           forceOpen={true}
+          codeVerified={codeVerified}
           setTrialInfo={setTrialInfo}
           setSeatsAvailable={setSeatsAvailable}
           setCodeVerified={setCodeVerified}
@@ -2111,6 +3088,7 @@ export default function GamePage() {
           }}
           onVerified={handleCodeVerified}
           forceOpen={!codeVerified}
+          codeVerified={codeVerified}
           setTrialInfo={setTrialInfo}
           setSeatsAvailable={setSeatsAvailable}
           setCodeVerified={setCodeVerified}
@@ -2136,22 +3114,23 @@ export default function GamePage() {
                 // Also ensure codeVerified is false to show dialog
                 setCodeVerified(false);
               }}
-              sx={{
-                backgroundColor: '#0B7897',
-                color: 'white',
-                fontWeight: 700,
-                px: 4,
-                py: 2,
-                borderRadius: 3,
-                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                fontSize: '1rem',
-                '&:hover': {
-                  backgroundColor: '#063C5E',
-                  boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
-                },
-              }}
-            >
-              Enter Code & Verify to Start
+            sx={{
+              backgroundColor: '#000B3D !important',
+              color: 'white',
+              fontWeight: 700,
+              px: 4,
+              py: 2,
+              borderRadius: 3,
+              boxShadow: '0 4px 15px rgba(0, 11, 61, 0.4)',
+              fontSize: '1rem',
+              '&:hover': {
+                backgroundColor: '#000B3D !important',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(0, 11, 61, 0.6)',
+              },
+            }}
+          >
+            Enter Code & Verify to Start
             </Button>
           </Box>
         )}
@@ -2198,6 +3177,8 @@ export default function GamePage() {
         >
           <Button
             variant="contained"
+            disableElevation
+            className={styles.floatingCodeButton}
             onClick={() => {
               console.log('Floating button clicked - opening dialog');
               // Ensure dialog opens properly
@@ -2206,17 +3187,40 @@ export default function GamePage() {
               setCodeVerified(false);
             }}
             sx={{
-              backgroundColor: '#0B7897',
-              color: 'white',
+              backgroundColor: '#000B3D !important',
+              color: 'white !important',
               fontWeight: 700,
               px: 4,
               py: 2,
               borderRadius: 3,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              boxShadow: '0 4px 15px rgba(0, 11, 61, 0.4)',
               fontSize: '1rem',
+              textTransform: 'none',
+              '&.MuiButton-root': {
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
+              },
+              '&.MuiButton-contained': {
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
+              },
+              '&.MuiButton-containedPrimary': {
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
+              },
               '&:hover': {
-                backgroundColor: '#063C5E',
-                boxShadow: '0 6px 16px rgba(0,0,0,0.2)',
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(0, 11, 61, 0.6)',
+              },
+              '&:focus': {
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
+              },
+              '&:active': {
+                backgroundColor: '#000B3D !important',
+                color: 'white !important',
               },
             }}
           >
@@ -2341,11 +3345,13 @@ export default function GamePage() {
 
         {/* How to Play Screen */}
         {howToPlayScreen && gameState === 'landing' && (
-          <div className={`${styles.screen} ${styles.active}`}>
+          <div className={`${styles.screen} ${styles.active} ${styles.howToPlayScreen}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">How to Play</h2>
-              <div className={styles.instructionsGrid}>
+              
+              {/* Commented out instruction cards */}
+              {/* <div className={styles.instructionsGrid}>
                 <div className={styles.instructionCard} data-aos="zoom-in" data-aos-delay="200">
                   <div className={styles.instructionCardInner}>
                     <div className={styles.instructionCardFront}>
@@ -2406,8 +3412,28 @@ export default function GamePage() {
                     </div>
                   </div>
                 </div>
+              </div> */}
+              
+              {/* Guide Images Section */}
+              <div className={styles.howToPlayImages} data-aos="fade-up" data-aos-delay="200">
+                <div className={styles.guideImageContainer}>
+                  <img 
+                    src="/images/1Bank.png" 
+                    alt="Guide Image 1" 
+                    className={styles.guideImage}
+                  />
+                </div>
+                <div className={styles.guideImageContainer}>
+                  <img 
+                    src="/images/setup.png" 
+                    alt="Guide Image 2" 
+                    className={styles.guideImage}
+                  />
+                </div>
               </div>
+              <div style={{ marginBottom:100 }}>
               <button 
+              // style={{ marginBottom:100 }}
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={() => {
                   setHowToPlayScreen(false);
@@ -2416,21 +3442,189 @@ export default function GamePage() {
               >
                 Got It!
               </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Demo Card Selection Screen (B2C Demo Users) */}
+        {gameState === 'demoCardSelect' && codeVerified && (
+          <div className={`${styles.screen} ${styles.active} ${styles.demoCardSelectScreen}`}>
+            <div className={styles.parallaxBg}></div>
+            <div className={styles.contentContainer}>
+              <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">
+                Welcome to Your Demo Experience
+              </h2>
+              <p className={styles.screenDescription} data-aos="fade-in" data-aos-delay="200">
+                {demoTargetAudience === 'B2C' 
+                  ? 'Explore 30 cybersecurity scenarios designed to enhance your digital safety awareness. Each card presents a real-world situation to help you make safer decisions online.'
+                  : 'Explore 90 cybersecurity scenarios designed to enhance your digital safety awareness. Each card presents a real-world situation to help you make safer decisions online.'
+                }
+              </p>
+              
+              {/* Card Slider - Show 4 images on large screen, only images */}
+              <div className={styles.cardSliderContainer} data-aos="fade-up" data-aos-delay="300">
+                <button 
+                  className={styles.sliderArrow}
+                  onClick={() => {
+                    setCurrentCardSliderIndex(prev => 
+                      prev > 0 ? prev - 1 : (demoCards.length > 0 ? Math.max(0, Math.ceil(demoCards.length / 4) - 1) : 0)
+                    );
+                  }}
+                  aria-label="Previous images"
+                >
+                  ‹
+                </button>
+                
+                <div className={styles.cardSlider}>
+                  {demoCards.length > 0 ? (
+                    <div 
+                      className={styles.cardSliderTrack}
+                      style={{
+                        transform: `translateX(-${currentCardSliderIndex * 25}%)`
+                      }}
+                    >
+                      {demoCards.map((card, index) => {
+                        const cardNumber = index + 1;
+                        const imagePath = card.imagePath || `/images/${cardNumber}.png`;
+                        return (
+                          <div key={card._id || card.cardId || index} className={styles.demoCardSlide}>
+                            <div className={styles.demoCardImage}>
+                              <img 
+                                src={imagePath}
+                                alt={`Card ${cardNumber}`}
+                                onError={(e) => {
+                                  // Fallback: try just number.png
+                                  const fallbackSrc = `/images/${cardNumber}.png`;
+                                  if (e.target.src !== fallbackSrc) {
+                                    e.target.src = fallbackSrc;
+                                  } else {
+                                    // If still fails, hide image and show placeholder
+                                    e.target.style.display = 'none';
+                                    if (e.target.nextSibling) {
+                                      e.target.nextSibling.style.display = 'flex';
+                                    }
+                                  }
+                                }}
+                              />
+                              <div className={styles.demoCardPlaceholder} style={{ display: 'none' }}>
+                                <div className={styles.demoCardIcon}>
+                                  {cardNumber}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className={styles.noCardsMessage}>
+                      <p>Loading images...</p>
+                    </div>
+                  )}
+                </div>
+                
+                <button 
+                  className={styles.sliderArrow}
+                  onClick={() => {
+                    const maxIndex = Math.max(0, Math.ceil(demoCards.length / 4) - 1);
+                    setCurrentCardSliderIndex(prev => 
+                      prev < maxIndex ? prev + 1 : 0
+                    );
+                  }}
+                  aria-label="Next images"
+                >
+                  ›
+                </button>
+              </div>
+              
+              {/* Card Counter */}
+              {demoCards.length > 0 && (
+                <div className={styles.cardCounter} data-aos="fade-in" data-aos-delay="400">
+                  <span>
+                    {Math.min(currentCardSliderIndex * 4 + 1, demoCards.length)} - {Math.min((currentCardSliderIndex + 1) * 4, demoCards.length)} / {demoCards.length}
+                  </span>
+                </div>
+              )}
+              
+              {/* Action Buttons - All 3 in one row on large screen */}
+              <div className={styles.demoActionButtons} data-aos="zoom-in" data-aos-delay="500">
+                <button 
+                  className={`${styles.btn} ${styles.btnPrimary}`}
+                  onClick={async () => {
+                    // Start game with demo cards - limit based on target audience
+                    const cardLimit = demoTargetAudience === 'B2C' ? 30 : 90;
+                    await loadDemoCards(cardLimit);
+                  }}
+                  disabled={demoCards.length === 0}
+                >
+                  Play Game
+                </button>
+                <button 
+                  className={`${styles.btn} ${styles.btnSecondary}`}
+                  onClick={() => setHowToPlayScreen(true)}
+                >
+                  How to Play
+                </button>
+                <button 
+                  className={`${styles.btn} ${styles.btnTertiary}`}
+                  onClick={() => setGameState('landing')}
+                >
+                  Back
+                </button>
+              </div>
             </div>
           </div>
         )}
 
         {/* Level Selection Screen */}
         {gameState === 'levelSelect' && codeVerified && (
-          <div className={`${styles.screen} ${styles.active}`}>
+          <div className={`${styles.screen} ${styles.active} ${styles.levelSelectScreen}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">Choose Your Level</h2>
               <div className={styles.levelsGrid}>
                 {[1, 2, 3].map((level) => {
-                  const isAvailable = availableLevels.includes(level);
-                  // Only disable if not available, don't disable during checking
-                  const isDisabled = !isAvailable && availableLevels.length > 0;
+                  // For demo users, determine availability based on user type and completed levels
+                  let isAvailable = false;
+                  let isDisabled = false;
+                  let disabledMessage = 'Not Available';
+                  let shouldHide = false; // For B2C, hide Level 2 and 3
+                  
+                  if (isDemoUser) {
+                    if (demoTargetAudience === 'B2C') {
+                      // B2C: Only Level 1 is available, hide Level 2 and 3
+                      if (level === 1) {
+                        isAvailable = true;
+                        isDisabled = false;
+                      } else {
+                        shouldHide = true; // Hide Level 2 and 3 for B2C
+                      }
+                    } else if (demoTargetAudience === 'B2B' || demoTargetAudience === 'B2E') {
+                      // B2B/B2E: Sequential unlocking - show all levels but disable based on completion
+                      if (level === 1) {
+                        isAvailable = true; // Level 1 always available
+                        isDisabled = false;
+                      } else if (level === 2) {
+                        isAvailable = demoCompletedLevels.includes(1); // Level 2 available after completing Level 1
+                        isDisabled = !demoCompletedLevels.includes(1);
+                        disabledMessage = 'Complete Level 1 first';
+                      } else if (level === 3) {
+                        isAvailable = demoCompletedLevels.includes(1) && demoCompletedLevels.includes(2); // Level 3 available after completing Level 1 and 2
+                        isDisabled = !(demoCompletedLevels.includes(1) && demoCompletedLevels.includes(2));
+                        disabledMessage = 'Complete Level 1 and 2 first';
+                      }
+                    }
+                  } else {
+                    // Regular users - use existing logic
+                    isAvailable = availableLevels.includes(level);
+                    isDisabled = !isAvailable && availableLevels.length > 0;
+                  }
+                  
+                  // Hide Level 2 and 3 for B2C demo users
+                  if (shouldHide) {
+                    return null;
+                  }
                   
                   return (
                   <div 
@@ -2492,7 +3686,7 @@ export default function GamePage() {
                           textAlign: 'center',
                           padding: '20px'
                         }}>
-                          Not Available
+                          {disabledMessage}
                         </div>
                       </div>
                     )}
@@ -2532,6 +3726,17 @@ export default function GamePage() {
                 <div className={styles.gameHeader}>
                   <div className={styles.progressInfo}>
                     <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
+                  </div>
+                  <div className={styles.timerDisplay} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    fontSize: '18px',
+                    fontWeight: 'bold',
+                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#000B3D'
+                  }}>
+                    <span>⏱️</span>
+                    <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
                   </div>
                   <div className={styles.scoreDisplay}>
                     <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
@@ -2598,7 +3803,11 @@ export default function GamePage() {
                                   {String.fromCharCode(65 + selectedAnswer)} - Score: {currentScenario.answers[selectedAnswer].scoring || 0}
                                 </>
                               ) : (
-                                'No answer selected'
+                                answerHistory.length > 0 && answerHistory[answerHistory.length - 1]?.selectedAnswerText === 'Time Expired - 0 Score' ? (
+                                  '0 Score'
+                                ) : (
+                                  'No answer selected'
+                                )
                               )}
                             </div>
                             {/* Always show highest scoring answer */}
@@ -2657,11 +3866,11 @@ export default function GamePage() {
 
         {/* Summary Screen */}
         {gameState === 'summary' && codeVerified && (
-          <div className={`${styles.screen} ${styles.active}`}>
+          <div className={`${styles.screen} ${styles.active} ${styles.summaryScreen}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.summaryContent}>
-                <h2 className={styles.completionTitle} data-aos="zoom-in" data-aos-delay="100">Cybersecurity Training Complete!</h2>
+                <h2 className={styles.completionTitle} data-aos="zoom-in" data-aos-delay="100" style={{ marginTop: '100px' }}>Cybersecurity Training Complete!</h2>
                 <p className={styles.completionMessage} data-aos="zoom-in" data-aos-delay="200">
                   {percentageScore >= 60 ? (
                     <>Congratulations! You have completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
@@ -2818,61 +4027,34 @@ export default function GamePage() {
                     )}
                   </div>
                   
-                  {/* Demo User Promotional Card */}
-                  {(() => {
-                    const codeType = sessionStorage.getItem('codeType');
-                    const isDemoUser = codeType === 'trial';
-                    if (!isDemoUser) return null;
-                    
-                    return (
-                      <div className={styles.demoPromoCard} data-aos="zoom-in" data-aos-delay="1150">
-                        <div className={styles.demoPromoContent}>
-                          <div className={styles.demoPromoLeft}>
-                            <div className={styles.germanFlagIcon}>
-                              <div className={styles.flagBlack}></div>
-                              <div className={styles.flagRed}>
-                                <span className={styles.madeInGermany}>Made in Germany</span>
-                              </div>
-                              <div className={styles.flagYellow}></div>
-                            </div>
-                            <span className={styles.demoOnlyText}>only for demos</span>
-                          </div>
-                          <div className={styles.demoPromoCenter}>
-                            <h3 className={styles.demoPromoTitle}>
-                              Want to master all 80 scenarios? Get the full Physical Kit & unlimited digital access.
-                            </h3>
-                            <button 
-                              className={styles.demoPromoButton}
-                              onClick={() => router.push('/packages')}
-                            >
-                              Unlock Full Power →
-                            </button>
-                          </div>
-                          <div className={styles.demoPromoRight}>
-                            <div className={styles.kidsLogo}>
-                              <div className={styles.kidsShield}>🛡️</div>
-                              <div className={styles.kidsText}>
-                                <span className={styles.kidsBrand}>Konfydence</span>
-                                <span className={styles.kidsFor}>for Kids</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                  
                   <div className={styles.actionButtons} data-aos="zoom-in" data-aos-delay="1200">
-                    {/* Next Level button - show only if level < 3 and seats available */}
+                    {/* Next Level button - show only if level < 3 and seats available, and NOT B2C demo user */}
                     {(() => {
                       const codeType = sessionStorage.getItem('codeType');
                       const isTrialUser = codeType === 'trial';
                       const seatsUsed = trialInfo?.usedSeats >= 2;
-                      const shouldHideNextLevel = isTrialUser && seatsUsed;
+                      
+                      // Check if B2C demo user
+                      let isB2CDemo = false;
+                      if (isTrialUser) {
+                        const trialDataStr = sessionStorage.getItem('trialData');
+                        if (trialDataStr) {
+                          try {
+                            const trialData = JSON.parse(trialDataStr);
+                            if (trialData.targetAudience === 'B2C') {
+                              isB2CDemo = true;
+                            }
+                          } catch (e) {
+                            console.error('Error parsing trialData:', e);
+                          }
+                        }
+                      }
+                      
+                      const shouldHideNextLevel = (isTrialUser && seatsUsed) || isB2CDemo;
                       
                       // Show Next Level button only if:
                       // 1. Not a trial user, OR
-                      // 2. Trial user but usedSeats < 2
+                      // 2. Trial user but usedSeats < 2 AND not B2C demo
                       // AND selectedLevel < 3
                       if (selectedLevel && selectedLevel < 3 && !shouldHideNextLevel) {
                         return (
@@ -2889,13 +4071,13 @@ export default function GamePage() {
                     })()}
                     
                     {/* Play Again button - Always show */}
-                    <button 
+                    {/* <button 
                       className={`${styles.btn} ${styles.btnPlayAgain}`}
                       onClick={playAgain}
                     >
                       {/* <span className={styles.btnIcon}>▶</span> */}
-                      Play Again
-                    </button>
+                      {/* Play Again */}
+                    {/* </button> */}
                     
                     {/* Join Membership button - Show for trial users with seats used or all levels completed */}
                     {(() => {
@@ -2938,6 +4120,50 @@ export default function GamePage() {
                       Invite a Friend & Earn
                     </button>
                   </div>
+                  
+                  {/* Demo User Promotional Card - Show at bottom after action buttons */}
+                  {(() => {
+                    const codeType = sessionStorage.getItem('codeType');
+                    const isDemoUser = codeType === 'trial';
+                    if (!isDemoUser) return null;
+                    
+                    return (
+                      <div className={styles.demoPromoCard} data-aos="zoom-in" data-aos-delay="1250">
+                        <div className={styles.demoPromoContent}>
+                          <div className={styles.demoPromoLeft}>
+                            <div className={styles.germanFlagIcon}>
+                              <div className={styles.flagBlack}></div>
+                              <div className={styles.flagRed}>
+                                <span className={styles.madeInGermany}>Made in Germany</span>
+                              </div>
+                              <div className={styles.flagYellow}></div>
+                            </div>
+                            <span className={styles.demoOnlyText}>only for demos</span>
+                          </div>
+                          <div className={styles.demoPromoCenter} style={{ marginTop: '20px' }}>
+                            <h3 className={styles.demoPromoTitle}>
+                              Want to master all 80 scenarios? Get the full Physical Kit & unlimited digital access.
+                            </h3>
+                            <button 
+                              className={styles.demoPromoButton}
+                              onClick={() => router.push('/packages')}
+                            >
+                              Unlock Full Power →
+                            </button>
+                          </div>
+                          <div className={styles.demoPromoRight}>
+                            <div className={styles.kidsLogo}>
+                              <div className={styles.kidsShield}>🛡️</div>
+                              <div className={styles.kidsText}>
+                                <span className={styles.kidsBrand}>Konfydence</span>
+                                <span className={styles.kidsFor}>for Kids</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
@@ -3163,7 +4389,7 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
           </DialogActions>
         </Dialog>
       </div>
-      <Footer />
+      <Footer  />
     </>
   );
 }

@@ -23,8 +23,11 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem
+  MenuItem,
+  IconButton,
+  InputAdornment
 } from '@mui/material';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ErrorDisplay from '@/components/ErrorDisplay';
@@ -61,6 +64,13 @@ export default function PackagesPage() {
   const [selectedCategory, setSelectedCategory] = useState('organizations_schools'); // 'organizations_schools', 'families', 'custom'
   const [hasB2BPackages, setHasB2BPackages] = useState(false); // Track if B2B/B2E packages exist
   const [hasUsedFreeTrial, setHasUsedFreeTrial] = useState(false); // Track if user has used free trial
+  const [hasUsedB2CDemo, setHasUsedB2CDemo] = useState(false); // Track if B2C user has used demo
+  const [processingB2CDemo, setProcessingB2CDemo] = useState(false); // Track B2C demo processing
+  const [hasUsedB2BDemo, setHasUsedB2BDemo] = useState(false); // Track if B2B user has used demo
+  const [processingB2BDemo, setProcessingB2BDemo] = useState(false); // Track B2B demo processing
+  const [hasUsedAnyDemo, setHasUsedAnyDemo] = useState(false); // Track if user has used any demo (B2C or B2B)
+  const [demoCodeDialogOpen, setDemoCodeDialogOpen] = useState(false); // Track demo code dialog
+  const [demoCode, setDemoCode] = useState(''); // Store demo code to show in dialog
   const [requestForm, setRequestForm] = useState({
     entityType: '',
     organizationName: '',
@@ -164,6 +174,59 @@ export default function PackagesPage() {
       setHasUsedFreeTrial(false);
     }
   }, [user]);
+
+  // Check if user has used any demo (B2C or B2B)
+  const checkAnyDemoUsage = useCallback(async () => {
+    if (!user) {
+      setHasUsedAnyDemo(false);
+      setHasUsedB2CDemo(false);
+      setHasUsedB2BDemo(false);
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setHasUsedAnyDemo(false);
+        setHasUsedB2CDemo(false);
+        setHasUsedB2BDemo(false);
+        return;
+      }
+
+      // Check both B2C and B2B demos
+      const [b2cResponse, b2bResponse] = await Promise.all([
+        axios.get(`${API_URL}/demos/has-used-demo?targetAudience=B2C`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => ({ data: { hasUsedDemo: false } })),
+        axios.get(`${API_URL}/demos/has-used-demo?targetAudience=B2B`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => ({ data: { hasUsedDemo: false } }))
+      ]);
+
+      const hasB2CDemo = b2cResponse.data.hasUsedDemo || false;
+      const hasB2BDemo = b2bResponse.data.hasUsedDemo || false;
+      const hasAnyDemo = hasB2CDemo || hasB2BDemo;
+
+      setHasUsedB2CDemo(hasB2CDemo);
+      setHasUsedB2BDemo(hasB2BDemo);
+      setHasUsedAnyDemo(hasAnyDemo);
+    } catch (error) {
+      console.error('Error checking demo usage:', error);
+      setHasUsedAnyDemo(false);
+      setHasUsedB2CDemo(false);
+      setHasUsedB2BDemo(false);
+    }
+  }, [user]);
+
+  // Check if B2C user has used demo (kept for backward compatibility)
+  const checkB2CDemoUsage = useCallback(async () => {
+    await checkAnyDemoUsage();
+  }, [checkAnyDemoUsage]);
+
+  // Check if B2B user has used demo (kept for backward compatibility)
+  const checkB2BDemoUsage = useCallback(async () => {
+    await checkAnyDemoUsage();
+  }, [checkAnyDemoUsage]);
 
   // Fetch custom packages
   const fetchCustomPackages = useCallback(async () => {
@@ -314,6 +377,7 @@ export default function PackagesPage() {
       }
       fetchPackages();
       checkFreeTrialUsage();
+      checkAnyDemoUsage();
       // Fetch product if productId exists - only after router is ready
       if (productId) {
         fetchProduct();
@@ -323,7 +387,7 @@ export default function PackagesPage() {
         fetchCustomPackages();
       }
     }
-  }, [router.isReady, type, productId, fetchPackages, checkFreeTrialUsage, fetchCustomPackages, fetchProduct, user]);
+  }, [router.isReady, type, productId, fetchPackages, checkFreeTrialUsage, checkB2CDemoUsage, fetchCustomPackages, fetchProduct, user]);
 
   // Re-filter packages when product changes
   useEffect(() => {
@@ -405,6 +469,221 @@ export default function PackagesPage() {
     fetchPackages(newValue);
   };
 
+  // Handle B2C Play Demo - Show code in dialog
+  const handlePlayB2CDemo = async (e) => {
+    // Prevent event bubbling
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    // Prevent multiple clicks
+    if (processingB2CDemo || processingPurchase !== null) {
+      return;
+    }
+
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+
+    // Set processing state immediately
+    setProcessingB2CDemo(true);
+
+    try {
+      // Get auth token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        return;
+      }
+
+      // Create B2C demo
+      const response = await axios.post(
+        `${API_URL}/demos/create`,
+        { 
+          targetAudience: 'B2C',
+          productId: productId ? productId : null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Mark that user has used demo
+      setHasUsedB2CDemo(true);
+      setHasUsedAnyDemo(true);
+
+      // Show code in dialog
+      setDemoCode(response.data.trial.uniqueCode);
+      setDemoCodeDialogOpen(true);
+      setProcessingB2CDemo(false);
+    } catch (error) {
+      console.error('Error creating B2C demo:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.error || 'Failed to create demo',
+        severity: 'error',
+      });
+      setProcessingB2CDemo(false);
+    }
+  };
+
+  // Handle B2C Get Demo with Reference - Navigate to game page (no demo creation)
+  const handleGetB2CDemo = async (e) => {
+    // Prevent event bubbling
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    // Prevent multiple clicks
+    if (processingB2CDemo || processingPurchase !== null) {
+      return;
+    }
+
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+
+    // Set processing state immediately
+    setProcessingB2CDemo(true);
+
+    try {
+      // Just redirect to game page - user will enter reference code there
+      // No demo creation needed - reference user will provide the code
+      router.push('/game');
+      setProcessingB2CDemo(false);
+    } catch (error) {
+      console.error('Error navigating to game:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to navigate to game page',
+        severity: 'error',
+      });
+      setProcessingB2CDemo(false);
+    }
+  };
+
+  // Handle B2B Play Demo - Show code in dialog
+  const handlePlayB2BDemo = async (e) => {
+    // Prevent event bubbling
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    // Prevent multiple clicks
+    if (processingB2BDemo || processingPurchase !== null) {
+      return;
+    }
+
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+
+    // Set processing state immediately
+    setProcessingB2BDemo(true);
+
+    try {
+      // Get auth token
+      const token = localStorage.getItem('token');
+      if (!token) {
+        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        return;
+      }
+
+      // Create B2B demo
+      const response = await axios.post(
+        `${API_URL}/demos/create`,
+        { 
+          targetAudience: 'B2B',
+          productId: productId ? productId : null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Mark that user has used demo
+      setHasUsedB2BDemo(true);
+      setHasUsedAnyDemo(true);
+
+      // Show code in dialog
+      setDemoCode(response.data.trial.uniqueCode);
+      setDemoCodeDialogOpen(true);
+      setProcessingB2BDemo(false);
+    } catch (error) {
+      console.error('Error creating B2B demo:', error);
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.error || 'Failed to create demo',
+        severity: 'error',
+      });
+      setProcessingB2BDemo(false);
+    }
+  };
+
+  // Handle B2B Get Demo with Reference - Navigate to game page (no demo creation)
+  const handleGetB2BDemo = async (e) => {
+    // Prevent event bubbling
+    if (e) {
+      e.stopPropagation();
+      e.preventDefault();
+    }
+    
+    // Prevent multiple clicks
+    if (processingB2BDemo || processingPurchase !== null) {
+      return;
+    }
+
+    if (!user) {
+      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      return;
+    }
+
+    // Set processing state immediately
+    setProcessingB2BDemo(true);
+
+    try {
+      // Just redirect to game page - user will enter reference code there
+      // No demo creation needed - reference user will provide the code
+      router.push('/game');
+      setProcessingB2BDemo(false);
+    } catch (error) {
+      console.error('Error navigating to game:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to navigate to game page',
+        severity: 'error',
+      });
+      setProcessingB2BDemo(false);
+    }
+  };
+
+  // Handle copy code to clipboard
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(demoCode).then(() => {
+      setSnackbar({
+        open: true,
+        message: 'Code copied to clipboard!',
+        severity: 'success',
+      });
+    }).catch(() => {
+      setSnackbar({
+        open: true,
+        message: 'Failed to copy code',
+        severity: 'error',
+      });
+    });
+  };
+
   // Handle free trial request
   const handleGetFreeTrial = async () => {
     // Prevent multiple clicks
@@ -428,29 +707,56 @@ export default function PackagesPage() {
         return;
       }
 
-      // Get first B2B or B2E package for trial
-      const b2bPackage = packages.find(pkg => {
-        if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
-          return false;
-        }
-        return pkg.targetAudiences.includes('B2B') || pkg.targetAudiences.includes('B2E');
-      });
+      // Get package based on user type/category
+      let trialPackage = null;
+      if ((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') {
+        // B2B/B2E - get B2B or B2E package
+        trialPackage = packages.find(pkg => {
+          if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
+            return false;
+          }
+          return pkg.targetAudiences.includes('B2B') || pkg.targetAudiences.includes('B2E');
+        });
+      } else if ((!type && selectedCategory === 'families') || type === 'B2C') {
+        // B2C - get B2C package
+        trialPackage = packages.find(pkg => {
+          if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
+            return false;
+          }
+          return pkg.targetAudiences.includes('B2C');
+        });
+      }
 
-      if (!b2bPackage) {
+      if (!trialPackage) {
         setSnackbar({
           open: true,
           message: 'No package available for trial',
           severity: 'error',
         });
+        setProcessingFreeTrial(false);
         return;
       }
 
-      // Create free trial
+      // Determine target audience based on package/user type
+      let targetAudience = null;
+      if ((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') {
+        // Check if package is for B2B or B2E
+        if (trialPackage.targetAudiences?.includes('B2B')) {
+          targetAudience = 'B2B';
+        } else if (trialPackage.targetAudiences?.includes('B2E')) {
+          targetAudience = 'B2E';
+        }
+      } else if ((!type && selectedCategory === 'families') || type === 'B2C') {
+        targetAudience = 'B2C';
+      }
+
+      // Create free trial (if targetAudience is provided, it will be marked as demo)
       const response = await axios.post(
         `${API_URL}/free-trial/create`,
         { 
-          packageId: b2bPackage._id,
+          packageId: trialPackage._id,
           productId: productId ? productId : null,
+          targetAudience: targetAudience, // Pass targetAudience to mark as demo
         },
         {
           headers: {
@@ -1140,7 +1446,7 @@ export default function PackagesPage() {
               }}
             >
               {/* Request Custom Package Card - Show for Organizations & Schools */}
-              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') && (
+              {/* {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') && (
                 <Grid 
                   item 
                   xs={12} 
@@ -1250,10 +1556,194 @@ export default function PackagesPage() {
                     </CardContent>
                   </Card>
                 </Grid>
+              )} */}
+
+              {/* B2C Demo Card - Show for B2C users when packages exist and user hasn't used demo */}
+              {((!type && selectedCategory === 'families') || type === 'B2C') && packages.length > 0 && !hasUsedB2CDemo && (
+                <Grid 
+                  item 
+                  xs={12} 
+                  sm={6} 
+                  md={6} 
+                  lg={3}
+                  sx={{
+                    display: 'flex',
+                  }}
+                >
+                  <Card
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      borderRadius: 3,
+                      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+                      backgroundColor: '#4CAF50',
+                      color: 'white',
+                      position: 'relative',
+                      overflow: 'visible',
+                      border: '3px solid #FFD700',
+                      cursor: 'default',
+                    }}
+                  >
+                    <CardContent 
+                      sx={{ 
+                        flexGrow: 1, 
+                        display: 'flex', 
+                        flexDirection: 'column',
+                        p: 4,
+                      }}
+                    >
+                      <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            backgroundColor: '#FFD700',
+                            color: '#063C5E',
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1,
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          DEMO
+                        </Typography>
+                      </Box>
+
+                      <Typography 
+                        variant="h5" 
+                        component="h3" 
+                        sx={{ 
+                          fontWeight: 700,
+                          color: 'white',
+                          mb: 2,
+                          mt: 2,
+                          fontSize: { xs: '1.25rem', md: '1.5rem' },
+                        }}
+                      >
+                        14-Day Demo
+                      </Typography>
+
+                      <Box sx={{ mb: 3 }}>
+                        <Typography
+                          variant="h3"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#FFD700',
+                            fontSize: { xs: '2rem', md: '2.5rem' },
+                            lineHeight: 1,
+                            mb: 0.5,
+                          }}
+                        >
+                          FREE
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: 'rgba(255,255,255,0.9)',
+                            fontSize: '0.875rem',
+                          }}
+                        >
+                          2 Seats Available
+                        </Typography>
+                      </Box>
+
+                      <Stack spacing={1.5} sx={{ flexGrow: 1, mb: 3 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#FFD700', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                            14 Days Access
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#FFD700', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                            2 Demo Seats
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography sx={{ color: '#FFD700', fontSize: '1.2rem' }}>✓</Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
+                            30 Cards Included
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      <Stack spacing={1.5}>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={() => handleGetFreeTrial()}
+                          disabled={processingFreeTrial || processingPurchase !== null}
+                          sx={{
+                            backgroundColor: 'white',
+                            color: '#063C5E',
+                            fontWeight: 700,
+                            py: 1.5,
+                            cursor: (processingFreeTrial || processingPurchase !== null) ? 'not-allowed' : 'pointer',
+                            zIndex: 10,
+                            position: 'relative',
+                            display: 'flex',
+                            visibility: 'visible',
+                            opacity: 1,
+                            '&:hover:not(:disabled)': {
+                              backgroundColor: '#F5F5F5',
+                              color: '#063C5E',
+                            },
+                            '&:disabled': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                              color: 'rgba(6, 60, 94, 0.5)',
+                              cursor: 'not-allowed',
+                            },
+                          }}
+                        >
+                          {processingFreeTrial ? 'Processing...' : 'Get Free Demo'}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            console.log('B2C Get Demo with Reference button clicked');
+                            handleGetB2CDemo(e);
+                          }}
+                          disabled={processingB2CDemo}
+                          sx={{
+                            borderColor: 'white',
+                            color: 'white',
+                            fontWeight: 700,
+                            py: 1.5,
+                            cursor: (processingB2CDemo || processingPurchase !== null) ? 'not-allowed' : 'pointer',
+                            zIndex: 10,
+                            position: 'relative',
+                            display: 'flex',
+                            visibility: 'visible',
+                            opacity: 1,
+                            '&:hover:not(:disabled)': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              borderColor: 'white',
+                              color: 'white',
+                            },
+                            '&:disabled': {
+                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              color: 'rgba(255, 255, 255, 0.5)',
+                              cursor: 'not-allowed',
+                            },
+                          }}
+                        >
+                          {processingB2CDemo ? 'Processing...' : 'Get Demo with Reference'}
+                        </Button>
+                      </Stack>
+                    </CardContent>
+                  </Card>
+                </Grid>
               )}
 
-              {/* Free Trial Card - Show for Organizations & Schools when B2B/B2E packages exist and user hasn't used trial */}
-              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') && hasB2BPackages && packages.length > 0 && !hasUsedFreeTrial && (
+
+              {/* Free Trial Card - Show for Organizations & Schools when B2B/B2E packages exist and user hasn't used trial or any demo */}
+              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E') && hasB2BPackages && packages.length > 0 && !hasUsedFreeTrial && !hasUsedAnyDemo && (
                 <Grid 
                   item 
                   xs={12} 
@@ -1358,32 +1848,77 @@ export default function PackagesPage() {
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Typography sx={{ color: '#FFD700', fontSize: '1.2rem' }}>✓</Typography>
                           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                            Full Package Access
+                            90 Cards Included
                           </Typography>
                         </Box>
                       </Stack>
 
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        onClick={() => handleGetFreeTrial()}
-                        disabled={processingFreeTrial || processingPurchase !== null}
-                        sx={{
-                          backgroundColor: 'white !important',
-                          // background: 'linear-gradient(90deg, #00897B 0%, #4FC3F7 100%) !important',
-                          // backgroundColor: 'transparent !important',
-                          color: 'white !important',
-                          fontWeight: 700,
-                          py: 1.5,
-                          '&:hover': {
-                            // background: 'linear-gradient(90deg, #00695C 0%, #29B6F6 100%) !important',
-                            // backgroundColor: 'transparent !important',
-                            color: 'white !important',
-                          },
-                        }}
-                      >
-                        {processingFreeTrial ? 'Processing...' : 'Get Free Trial'}
-                      </Button>
+                      <Stack spacing={1.5}>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={() => handleGetFreeTrial()}
+                          disabled={processingFreeTrial || processingPurchase !== null}
+                          sx={{
+                            backgroundColor: 'white',
+                            color: '#063C5E',
+                            fontWeight: 700,
+                            py: 1.5,
+                            cursor: (processingFreeTrial || processingPurchase !== null) ? 'not-allowed' : 'pointer',
+                            zIndex: 10,
+                            position: 'relative',
+                            display: 'flex',
+                            visibility: 'visible',
+                            opacity: 1,
+                            '&:hover:not(:disabled)': {
+                              backgroundColor: '#F5F5F5',
+                              color: '#063C5E',
+                            },
+                            '&:disabled': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.5)',
+                              color: 'rgba(6, 60, 94, 0.5)',
+                              cursor: 'not-allowed',
+                            },
+                          }}
+                        >
+                          {processingFreeTrial ? 'Processing...' : 'Get Free Demo'}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            console.log('B2B Get Demo with Reference button clicked');
+                            handleGetB2BDemo(e);
+                          }}
+                          disabled={processingB2BDemo}
+                          sx={{
+                            borderColor: 'white',
+                            color: 'white',
+                            fontWeight: 700,
+                            py: 1.5,
+                            cursor: (processingB2BDemo || processingPurchase !== null) ? 'not-allowed' : 'pointer',
+                            zIndex: 10,
+                            position: 'relative',
+                            display: 'flex',
+                            visibility: 'visible',
+                            opacity: 1,
+                            '&:hover:not(:disabled)': {
+                              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                              borderColor: 'white',
+                              color: 'white',
+                            },
+                            '&:disabled': {
+                              borderColor: 'rgba(255, 255, 255, 0.5)',
+                              color: 'rgba(255, 255, 255, 0.5)',
+                              cursor: 'not-allowed',
+                            },
+                          }}
+                        >
+                          {processingB2BDemo ? 'Processing...' : 'Get Demo with Reference'}
+                        </Button>
+                      </Stack>
                     </CardContent>
                   </Card>
                 </Grid>
@@ -1750,6 +2285,84 @@ export default function PackagesPage() {
             sx={{ backgroundColor: '#0B7897', '&:hover': { backgroundColor: '#063C5E' } }}
           >
             {submitting ? 'Submitting...' : 'Submit Request'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Demo Code Dialog */}
+      <Dialog
+        open={demoCodeDialogOpen}
+        onClose={() => setDemoCodeDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ textAlign: 'center', pb: 2 }}>
+          <Typography variant="h5" component="div" sx={{ fontWeight: 700, color: '#063C5E' }}>
+            Your Demo Code
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
+              Copy this code and use it to play the game:
+            </Typography>
+            <TextField
+              fullWidth
+              value={demoCode}
+              InputProps={{
+                readOnly: true,
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={handleCopyCode}
+                      edge="end"
+                      sx={{ color: '#063C5E' }}
+                    >
+                      <ContentCopyIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  fontSize: '1.25rem',
+                  fontWeight: 700,
+                  letterSpacing: '0.1em',
+                  textAlign: 'center',
+                  backgroundColor: '#F5F5F5',
+                },
+              }}
+            />
+            <Typography variant="body2" sx={{ mt: 2, color: 'text.secondary' }}>
+              Go to the game page and enter this code to start playing
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button
+            onClick={() => router.push('/game')}
+            variant="contained"
+            sx={{
+              backgroundColor: '#0B7897',
+              '&:hover': { backgroundColor: '#063C5E' },
+              px: 4,
+            }}
+          >
+            Go to Game
+          </Button>
+          <Button
+            onClick={() => setDemoCodeDialogOpen(false)}
+            variant="outlined"
+            sx={{
+              borderColor: '#0B7897',
+              color: '#0B7897',
+              '&:hover': {
+                borderColor: '#063C5E',
+                color: '#063C5E',
+              },
+            }}
+          >
+            Close
           </Button>
         </DialogActions>
       </Dialog>

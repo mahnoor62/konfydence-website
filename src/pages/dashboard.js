@@ -41,6 +41,8 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -69,6 +71,7 @@ export default function DashboardPage() {
   const [tabsScrollLeft, setTabsScrollLeft] = useState(0);
   const [tabsScrollRight, setTabsScrollRight] = useState(false);
   const tabsRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(true);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -355,16 +358,28 @@ export default function DashboardPage() {
   const { user, membership, allMemberships, activePackages, progress, transactions, gameProgress, organizations } = dashboardData;
 
   // Determine which tabs to show
-  const hasProgress = (gameProgress && gameProgress.totalLevelsPlayed > 0) || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0)));
+  // Exclude demo progress from hasProgress check UNLESS user has paid transactions
+  // If user has paid transactions, they're a purchased user and should see progress
+  const hasPaidTransactions = transactions && transactions.length > 0 && transactions.some(t => t.status === 'paid');
+  // Only show progress if: user has paid transactions OR gameProgress.isDemo is explicitly false (not undefined, not true)
+  const shouldShowGameProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && (hasPaidTransactions || gameProgress.isDemo === false);
+  const hasProgress = shouldShowGameProgress || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0)));
   const hasTransactions = transactions && transactions.length > 0;
   const hasMemberships = (allMemberships && allMemberships.length > 0) || (activePackages && activePackages.length > 0);
   
   // Check if user has incomplete game progress (has started but not completed all 3 levels)
-  const hasIncompleteProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && gameProgress.totalLevelsPlayed < 3;
+  // Exclude demo progress UNLESS user has paid transactions
+  // If user has paid transactions, they're a purchased user and should see Resume Game button
+  const hasIncompleteProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && gameProgress.totalLevelsPlayed < 3 && (hasPaidTransactions || gameProgress.isDemo === false);
   
   // Determine which level to resume from (find the first incomplete level)
   const getResumeLevel = () => {
+    // Don't resume demo progress UNLESS user has paid transactions
+    // If user has paid transactions, they're a purchased user and should see Resume Game button
+    // Only resume if: hasPaidTransactions OR isDemo is explicitly false (not undefined, not true)
     if (!gameProgress) return null;
+    if (gameProgress.isDemo === true && !hasPaidTransactions) return null; // Demo user without purchase
+    if (gameProgress.isDemo !== false && !hasPaidTransactions) return null; // isDemo is undefined or true, and no purchase
     // Check each level (1, 2, 3) to find the first one that hasn't been completed
     for (let levelNum = 1; levelNum <= 3; levelNum++) {
       const levelArray = gameProgress[`level${levelNum}`] || [];
@@ -379,6 +394,60 @@ export default function DashboardPage() {
   };
   
   const resumeLevel = getResumeLevel();
+  
+  // Check if user is a demo user - hide Resume Game button and game progress for demo users
+  // BUT: If demo user has made a purchase (has paid transaction), show everything (they're now a purchased user)
+  const isDemoUser = (() => {
+    // CRITICAL: First check if user has paid transactions in transaction table
+    // If user has paid transactions, they're NOT a demo user (even if they were before)
+    // This is the PRIMARY check - if they purchased, they're a purchased user
+    if (transactions && transactions.length > 0) {
+      const hasPaidTransactions = transactions.some(t => t.status === 'paid');
+      if (hasPaidTransactions) {
+        console.log('✅ User has paid transactions - NOT a demo user, showing game progress and Resume Game button');
+        return false; // Has paid transactions = purchased user, show everything
+      }
+    }
+    
+    // If no paid transactions, check if they're a demo user
+    // Method 1: Check backend gameProgress data for isDemo flag
+    if (gameProgress && gameProgress.isDemo === true) {
+      console.log('⚠️ User has isDemo=true in gameProgress and no paid transactions - hiding game progress and Resume Game button');
+      return true; // Demo user with no purchase, hide everything
+    }
+    
+    // Method 2: Check sessionStorage for demo code
+    if (typeof window !== 'undefined') {
+      const codeType = sessionStorage.getItem('codeType');
+      if (codeType === 'trial') {
+        const trialDataStr = sessionStorage.getItem('trialData');
+        if (trialDataStr) {
+          try {
+            const trialData = JSON.parse(trialDataStr);
+            // Check if it's a demo (has targetAudience or isDemo flag)
+            if (trialData.isDemo === true || trialData.targetAudience) {
+              // Double-check: if they have paid transactions, they're not a demo
+              if (transactions && transactions.length > 0) {
+                const hasPaidTransactions = transactions.some(t => t.status === 'paid');
+                if (hasPaidTransactions) {
+                  return false; // Has paid, show everything
+                }
+              }
+              console.log('⚠️ User has demo code in sessionStorage and no paid transactions - hiding game progress and Resume Game button');
+              return true; // Still a demo user, hide everything
+            }
+          } catch (e) {
+            // If parsing fails, continue to other checks
+          }
+        }
+      }
+    }
+    
+    // If gameProgress.isDemo is false or undefined, and no paid transactions
+    // Default: If we can't confirm it's a demo user, show everything
+    // (This is safer - only hide if we're certain it's a demo)
+    return false;
+  })();
 
   return (
     <>
@@ -447,6 +516,23 @@ export default function DashboardPage() {
                       </Box>
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="caption" color="text.secondary">
+                          Password
+                        </Typography>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                          <Typography variant="body2" sx={{ fontFamily: 'monospace', flex: 1 }}>
+                            {showPassword ? (user.password || '••••••••') : '••••••••'}
+                          </Typography>
+                          <IconButton
+                            size="small"
+                            onClick={() => setShowPassword(!showPassword)}
+                            sx={{ color: '#0B7897' }}
+                          >
+                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      <Box sx={{ mt: 2 }}>
+                        <Typography variant="caption" color="text.secondary">
                           Member Since
                         </Typography>
                         <Typography variant="body2">
@@ -468,8 +554,8 @@ export default function DashboardPage() {
                     <Box>
                       <Divider sx={{ my: 1 }} />
 
-                      {/* Resume Game Button - Show if user has incomplete progress */}
-                      {hasIncompleteProgress && resumeLevel && (
+                      {/* Resume Game Button - Show if user has incomplete progress (only for purchased users, not demo users) */}
+                      {hasIncompleteProgress && resumeLevel && !isDemoUser && (
                         <Button
                           variant="contained"
                           fullWidth
@@ -672,8 +758,8 @@ export default function DashboardPage() {
                                 </Grid>
                               </Box>
                               
-                              {/* Game Progress for this Membership */}
-                              {mem.gameProgress && mem.gameProgress.totalLevelsPlayed > 0 && (
+                              {/* Game Progress for this Membership - Hide for demo users UNLESS they have paid transactions */}
+                              {mem.gameProgress && mem.gameProgress.totalLevelsPlayed > 0 && (hasPaidTransactions || mem.gameProgress.isDemo === false) && (
                                 <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #E0E7F0' }}>
                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 600 }}>
                                     Game Progress
@@ -828,15 +914,15 @@ export default function DashboardPage() {
                     {/* Progress Tracking Tab */}
                     {hasProgress && selectedTab === 0 && (
                       <Box sx={{ p: 3 }}>
-                        {/* Overall Game Progress */}
-                        {gameProgress && gameProgress.totalLevelsPlayed > 0 && (
+                        {/* Overall Game Progress - Hide for demo users UNLESS they have paid transactions */}
+                        {gameProgress && gameProgress.totalLevelsPlayed > 0 && (hasPaidTransactions || gameProgress.isDemo === false) && (
                           <Box sx={{ mb: 4 }}>
                             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                               <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
                                 Game Progress
                               </Typography>
-                              {/* Resume Game Button */}
-                              {hasIncompleteProgress && resumeLevel && (
+                              {/* Resume Game Button - Only for purchased users, not demo users */}
+                              {hasIncompleteProgress && resumeLevel && !isDemoUser && (
                                 <Button
                                   variant="contained"
                                   onClick={() => router.push(`/game?resume=${resumeLevel}`)}

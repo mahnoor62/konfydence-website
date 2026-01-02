@@ -410,7 +410,8 @@ export default function Footer() {
               flex: { lg: '0 1 auto' },
             }}
           >
-            Copyright © 2025 Konfydence UG (haftungsbeschränkt) • All rights reserved.
+            Made in Germany • Proudly supporting Konfydence for Kids <br/>
+            Copyright © 2025 Konfydence
           </Typography>
 
           {/* Center: Email Signup */}
