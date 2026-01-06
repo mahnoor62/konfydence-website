@@ -159,7 +159,7 @@ export default function EducationPage() {
                 <Typography
                   variant="h2"
                   sx={{
-                    // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                    fontSize: { xs: '2rem', md: '2rem' },
                     fontWeight: 700,
                     mb: 3,
                     lineHeight: 1.2,
@@ -177,7 +177,7 @@ export default function EducationPage() {
                     color: 'white',
                   }}
                 >
-                  Interactive tools and workshops that teach young people to spot scam tricks early—building real confidence for life online. Perfect for classrooms, clubs, orientation weeks, or leadership programs.
+                  Interactive tools and workshops that teach young people to spot scam tricks early—building real confidence for life online.
                 </Typography>
                 <Typography
                   variant="body1"
@@ -188,7 +188,19 @@ export default function EducationPage() {
                     lineHeight: 1.8,
                   }}
                 >
-                  No lectures. Just fun simulations and activities that train the 5-second pause when H.A.C.K. signals hit.
+                 Designed for classrooms, clubs, orientation weeks, and leadership programs.
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '.9rem' },
+                    mb: 4,
+                    color: 'white',
+                    lineHeight: 1.8,
+                  }}
+                >
+                 No lectures. Just fun simulations and group activities that train a simple, powerful habit:
+                 pause for five seconds when H.A.C.K. signals appear.
                 </Typography>
                 <Stack 
                   direction={{ xs: 'column', md: 'row' }}
@@ -219,7 +231,7 @@ export default function EducationPage() {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Download Free Lesson Pack →
+                    Download Free Lesson Pack
                   </Button>
                   <Button
                     component="a"
@@ -244,7 +256,7 @@ export default function EducationPage() {
                       transition: 'all 0.3s ease',
                     }}
                   >
-                    Request Free Pilot →
+                    Request Free Demo
                   </Button>
                 </Stack>
               </Grid>
@@ -286,7 +298,7 @@ export default function EducationPage() {
                     <SwiperSlide>
                       <Box
                         component="img"
-                        src="/images/education1.jpeg"
+                        src="/images/education1.jpg"
                         alt="Students learning digital safety"
                         sx={{
                           width: '100%',
@@ -328,108 +340,179 @@ export default function EducationPage() {
 
         {/* Why Most Awareness Programs Fail Section */}
         <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }}>
-          <Container maxWidth="lg"     data-aos="fade-out"
-                  data-aos-duration="800">
+          <Container maxWidth="lg" data-aos="fade-out" data-aos-duration="800">
+            {/* Main Heading */}
             <Typography
-              variant="h2"
-              sx={{
-                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
-                fontWeight: 700,
-                mb: 6,
-                textAlign: 'center',
-                color: '#063C5E',
-              }}
-            >
-          Why Most Awareness Programs Fail 
-            </Typography>
-            <Grid container spacing={6} alignItems="center">
-           
-              <Grid item xs={12} md={6}>
-                   <Typography
               variant="h3"
               sx={{
                 // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 700,
-                mb: 6,
-                // textAlign: 'center',
+                mb: 2,
+                textAlign: 'center',
                 color: '#063C5E',
               }}
             >
-       Why Videos and Quizzes Aren&apos;t Enough
+              Why Most Awareness Programs Fail
             </Typography>
-                <Typography
-                  variant="body1"
+            
+            {/* Subtitle */}
+            <Typography
+              variant="body1"
+              sx={{
+                // fontSize: { xs: '1.25rem', md: '1.5rem' },
+                fontWeight: 600,
+                mb: 4,
+                textAlign: 'center',
+                color: '#063C5E',
+              }}
+            >
+              Because watching Videos And Taking Quizzes Aren&apos;t Enough
+            </Typography>
+
+            {/* Text Boxes Row - 2 Columns */}
+            <Grid container spacing={4} sx={{ mb: 6 }}>
+              <Grid item xs={12} md={6}>
+                <Paper
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 3,
-                    lineHeight: 1.8,
-                    color: 'text.primary',
+                    p: 3,
+                    border: '2px solid #0B7897',
+                    borderRadius: 2,
+                    height: '100%',
                   }}
                 >
-                  Students watch, pass the test... and still click months later. Scams strike when rushed or stressed—triggering the limbic hijack before logic kicks in.{' '}
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      // fontSize: { xs: '1rem', md: '1.125rem' },
+                      mb: 2,
+                      lineHeight: 1.8,
+                      color: 'text.primary',
+                    }}
+                  >
+                    Students watch, pass the test... and still click months later. Scams strike when rushed or stressed—triggering the{' '}
+                    {/* <Link 
+                      href="/pdfs/the-limbic-hijack.pdf" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ 
+                        color: '#0B7897', 
+                        textDecoration: 'underline',
+                        fontWeight: 600,
+                      }}
+                    > */}
+                      limbic hijack
+                    {/* </Link>
+                    {' '} */}
+                    before logic kicks in.
+                  </Typography>
                   <Link 
                     href="/pdfs/the-limbic-hijack.pdf" 
                     target="_blank" 
+                    rel="noopener noreferrer"
                     style={{ 
                       color: '#0B7897', 
                       textDecoration: 'none',
                       fontWeight: 600,
-                      borderBottom: '1px solid #0B7897',
+                      fontSize: '1rem',
                     }}
-                    onMouseEnter={(e) => e.target.style.color = '#063C5E'}
-                    onMouseLeave={(e) => e.target.style.color = '#0B7897'}
+                    onMouseEnter={(e) => e.target.style.textDecoration = 'underline'}
+                    onMouseLeave={(e) => e.target.style.textDecoration = 'none'}
                   >
                     Read the Science: Why Human Hardware Fails First →
                   </Link>
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 4,
-                    lineHeight: 1.8,
-                    color: 'text.primary',
-                    fontWeight: 600,
-                  }}
-                >
-                  Konfydence trains the habit that works under pressure: Pause for five seconds when something feels off.
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: '0.9rem', md: '1rem' },
-                    lineHeight: 1.8,
-                    color: 'text.secondary',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  Most cyber attacks don&apos;t need advanced hacking—they succeed through manipulation when people are under pressure.
-                </Typography>
+                </Paper>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Box
-                  component="img"
-                  src="/images/5SecondsDefense.jpg"
-                  alt="Five seconds is all it takes. No real request breaks if you wait."
+                <Paper
                   sx={{
-                    width: '100%',
-                    height: 'auto',
+                    p: 3,
+                    border: '2px solid #0B7897',
                     borderRadius: 2,
-                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: '0.875rem', md: '1rem' },
-                    color: 'text.secondary',
-                    fontStyle: 'italic',
-                    textAlign: 'center',
-                    mt: 2,
+                    height: '100%',
                   }}
                 >
-                  Five seconds is all it takes. No real request breaks if you wait.
-                </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      // fontSize: { xs: '1rem', md: '1.125rem' },
+                      lineHeight: 1.8,
+                      color: 'text.primary',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Konfydence trains the habit that works under pressure: Pause for 5 seconds when something feels off.
+                  </Typography>
+                </Paper>
+              </Grid>
+            </Grid>
+
+            {/* Connecting Text */}
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: { xs: '0.9rem', md: '1rem' },
+                lineHeight: 1.8,
+                color: 'text.secondary',
+                fontStyle: 'italic',
+                textAlign: 'center',
+                mb: 6,
+              }}
+            >
+              Most cyber attacks don&apos;t need advanced hacking—they succeed through manipulation when people are under pressure.
+            </Typography>
+
+            {/* Images Row - 2 Columns with Headings */}
+            <Grid container spacing={4} sx={{ alignItems: 'stretch' }}>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#063C5E',
+                      textAlign: 'center',
+                    }}
+                  >
+                    The Scammer Mindset
+                  </Typography>
+                  <Box
+                    component="img"
+                    src="/images/full.JPG"
+                    alt="The Scammer Mindset"
+                    sx={{
+                      width: '100%',
+                      height: { xs: 'auto', md: '500px' },
+                      objectFit: 'contain',
+                    }}
+                  />
+                </Box>
+              </Grid>
+              <Grid item xs={12} md={6}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 2,
+                      color: '#063C5E',
+                      textAlign: 'center',
+                    }}
+                  >
+                    How to stop Them - The 5 Seconds Pause
+                  </Typography>
+                  <Box
+                    component="img"
+                    src="/images/5SecondsDefense.jpg"
+                    alt="YOUR 5 SECOND DEFENSE"
+                    sx={{
+                      width: '100%',
+                      // borderRadius: 5,
+                      height: { xs: 'auto', md: '500px' },
+                      objectFit: 'contain',
+                    }}
+                  />
+                </Box>
               </Grid>
             </Grid>
           </Container>
@@ -528,7 +611,7 @@ export default function EducationPage() {
                   </Box>
                   <CardContent sx={{ p: 4 }}>
                     <Typography
-                      variant="h5"
+                      variant="h6"
                       sx={{
                         fontWeight: 700,
                         mb: 2,
@@ -613,7 +696,7 @@ export default function EducationPage() {
                   </Box>
                   <CardContent sx={{ p: 4 }}>
                     <Typography
-                      variant="h5"
+                      variant="h6"
                       sx={{
                         fontWeight: 700,
                         mb: 2,
@@ -648,7 +731,7 @@ export default function EducationPage() {
                         },
                       }}
                     >
-                      Request Free Pilot →
+                      Request Free Demo →
                     </Button>
                   </CardContent>
                 </Card>
@@ -656,7 +739,7 @@ export default function EducationPage() {
             </Grid>
 
             {/* Card Game Integration */}
-            <Box sx={{ mb: 8 }} data-aos="fade-up" data-aos-duration="800">
+            {/* <Box sx={{ mb: 8 }} data-aos="fade-up" data-aos-duration="800">
               <Grid container spacing={4} alignItems="center">
                 <Grid item xs={12} md={6}>
                   <Box
@@ -708,10 +791,10 @@ export default function EducationPage() {
                   </Typography>
                 </Grid>
               </Grid>
-            </Box>
+            </Box> */}
 
             {/* Trust Elements */}
-            <Box sx={{ textAlign: 'center' }} data-aos="fade-up" data-aos-duration="800">
+            {/* <Box sx={{ textAlign: 'center' }} data-aos="fade-up" data-aos-duration="800">
               <Typography
                 variant="h4"
                 sx={{
@@ -737,26 +820,44 @@ export default function EducationPage() {
                     data-aos="fade-right"
                     data-aos-duration="800"
                     sx={{
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-                      },
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <Box
-                      component="img"
-                      src="/images/education7.jpeg"
-                      alt="Education Standards"
+                    <Typography
+                      variant="h6"
                       sx={{
-                        width: '100%',
-                        height: 'auto',
-                        display: 'block',
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#063C5E',
+                        textAlign: 'center',
                       }}
-                    />
+                    >
+                      Education Standards
+                    </Typography>
+                    <Box
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.3s, box-shadow 0.3s',
+                        '&:hover': {
+                          transform: 'translateY(-8px)',
+                          boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                        },
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src="/images/education7.jpeg"
+                        alt="Education Standards"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Grid>
                 <Grid item xs={12} sm={6} md={5}>
@@ -764,30 +865,48 @@ export default function EducationPage() {
                     data-aos="fade-left"
                     data-aos-duration="800"
                     sx={{
-                      borderRadius: 3,
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                      transition: 'transform 0.3s, box-shadow 0.3s',
-                      '&:hover': {
-                        transform: 'translateY(-8px)',
-                        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
-                      },
+                      display: 'flex',
+                      flexDirection: 'column',
                     }}
                   >
-                    <Box
-                      component="img"
-                      src="/images/education8.jpeg"
-                      alt="Privacy Focused"
+                    <Typography
+                      variant="h6"
                       sx={{
-                        width: '100%',
-                        height: 'auto',
-                        display: 'block',
+                        fontWeight: 600,
+                        mb: 2,
+                        color: '#063C5E',
+                        textAlign: 'center',
                       }}
-                    />
+                    >
+                      Privacy Focused
+                    </Typography>
+                    <Box
+                      sx={{
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                        transition: 'transform 0.3s, box-shadow 0.3s',
+                        '&:hover': {
+                          transform: 'translateY(-8px)',
+                          boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+                        },
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src="/images/education8.jpeg"
+                        alt="Privacy Focused"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Grid>
               </Grid>
-            </Box>
+            </Box> */}
           </Container>
         </Box>
 

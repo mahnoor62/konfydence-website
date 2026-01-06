@@ -41,8 +41,6 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -71,7 +69,6 @@ export default function DashboardPage() {
   const [tabsScrollLeft, setTabsScrollLeft] = useState(0);
   const [tabsScrollRight, setTabsScrollRight] = useState(false);
   const tabsRef = useRef(null);
-  const [showPassword, setShowPassword] = useState(true);
 
   useEffect(() => {
     if (!authUser && !loading) {
@@ -516,23 +513,6 @@ export default function DashboardPage() {
                       </Box>
                       <Box sx={{ mt: 2 }}>
                         <Typography variant="caption" color="text.secondary">
-                          Password
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontFamily: 'monospace', flex: 1 }}>
-                            {showPassword ? (user.password || '••••••••') : '••••••••'}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={() => setShowPassword(!showPassword)}
-                            sx={{ color: '#0B7897' }}
-                          >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        </Box>
-                      </Box>
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="caption" color="text.secondary">
                           Member Since
                         </Typography>
                         <Typography variant="body2">
@@ -559,7 +539,7 @@ export default function DashboardPage() {
                         <Button
                           variant="contained"
                           fullWidth
-                          onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                          onClick={() => router.push(`/play?resume=${resumeLevel}`)}
                           sx={{
                             backgroundColor: '#0B7897',
                             color: '#fff',
@@ -925,7 +905,7 @@ export default function DashboardPage() {
                               {hasIncompleteProgress && resumeLevel && !isDemoUser && (
                                 <Button
                                   variant="contained"
-                                  onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                                  onClick={() => router.push(`/play?resume=${resumeLevel}`)}
                                   sx={{
                                     backgroundColor: '#0B7897',
                                     color: '#fff',

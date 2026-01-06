@@ -49,7 +49,7 @@ export default function ContactPage() {
       if (topic) {
         // Map old topic values to new ones
         const topicMap = {
-          'b2b_demo': 'comasy',
+          'b2b_demo': 'CoMaSi',
           'b2e_demo': 'education-youth-pack',
           'b2e': 'education-youth-pack',
         };
@@ -381,7 +381,7 @@ export default function ContactPage() {
                       >
                         <MenuItem value="scam-survival-kit">Scam Survival Kit (Families)</MenuItem>
                         <MenuItem value="education-youth-pack">Education / Youth Pack</MenuItem>
-                        <MenuItem value="comasy">CoMaSy (Companies & Compliance)</MenuItem>
+                        <MenuItem value="CoMaSi">CoMaSi (Companies & Compliance)</MenuItem>
                         <MenuItem value="nis2-audit">NIS2 / Audit Readiness</MenuItem>
                         <MenuItem value="partnerships">Partnerships / Ambassadors</MenuItem>
                         <MenuItem value="media-press">Media / Press</MenuItem>
@@ -469,11 +469,10 @@ export default function ContactPage() {
                       lineHeight: 1.7,
                       maxWidth: 600,
                       mx: 'auto',
-                    }}
-                  >
-                    Whether you&apos;re a family, school, company, or auditor — we&apos;re happy to help you reduce human risk.
-                  </Typography>
-                  <Typography
+                    }}>   We W&apos;ll get back to you personally.Usually within one buisness day.</Typography>
+           
+                   
+                  {/* <Typography
                     variant="body2"
                     color="text.secondary"
                     sx={{
@@ -485,7 +484,7 @@ export default function ContactPage() {
                   >
                     Looking for a demo? Visit{' '}
                     <MuiLink
-                      href="/comasy"
+                      href="/comasi"
                       sx={{
                         color: '#0B7897',
                         textDecoration: 'none',
@@ -509,8 +508,8 @@ export default function ContactPage() {
                     >
                       Education
                     </MuiLink>
-                    {' '}to request a guided session.
-                  </Typography>
+                    {' '}to request a guided session. */}
+                  {/* </Typography> */}
                 </Box>
               </>
             )}

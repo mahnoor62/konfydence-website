@@ -17,6 +17,8 @@ import {
   Tab,
   Paper,
   Stack,
+  Modal,
+  IconButton,
 } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -133,6 +135,7 @@ export default function FAQPage() {
   const [expanded, setExpanded] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(0);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded({ ...expanded, [panel]: isExpanded });
@@ -194,7 +197,7 @@ export default function FAQPage() {
       <Header />
       
       {/* Hero Section */}
-      <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#063C5E' }}>
+      <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#096888'}}>
         <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
           {/* First Row: Left Content, Right Image Carousel */}
           <Grid container spacing={4} alignItems="center" sx={{ mb: 4 }}>
@@ -202,7 +205,7 @@ export default function FAQPage() {
               <Typography
                 variant="h1"
                 sx={{
-                  fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                  fontSize: { xs: '2rem', md: '2rem' },
                   fontWeight: 700,
                   mb: 2,
                   color: '#FFFFFF',
@@ -242,19 +245,20 @@ export default function FAQPage() {
                   overflow: 'hidden',
                   boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                   position: 'relative',
-                  animation: 'floatCard 4s ease-in-out infinite',
-                  transformOrigin: 'center',
-                  filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                  '@keyframes floatCard': {
-                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                    '50%': {
-                      transform: 'translateY(-15px) rotate(-1deg)',
-                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                    },
-                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                  },
                 }}
               >
+                <Box
+                  component="img"
+                  src="/images/5SecondsDefense2.jpg"
+                  alt="5 Second Defense"
+                  sx={{
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
+                    borderRadius: 3,
+                  }}
+                />
+                {/* Commented out slider
                 <Swiper
                   modules={[Autoplay, Pagination, Navigation]}
                   spaceBetween={0}
@@ -273,8 +277,8 @@ export default function FAQPage() {
                   <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/f1.jpeg"
-                      alt="Konfydence FAQ"
+                      src="/images/5SecondsDefense2.jpg"
+                      alt="5 Second Defense"
                       sx={{
                         width: '100%',
                         height: 'auto',
@@ -285,8 +289,8 @@ export default function FAQPage() {
                   <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/f2.jpeg"
-                      alt="Konfydence FAQ"
+                      src="/images/5SecondsDefense2.jpg"
+                      alt="5 Second Defense"
                       sx={{
                         width: '100%',
                         height: 'auto',
@@ -295,37 +299,44 @@ export default function FAQPage() {
                     />
                   </SwiperSlide>
                 </Swiper>
+                */}
               </Box>
             </Grid>
           </Grid>
 
-          {/* Second Row: Search Bar and CTA Button - Centered */}
-          <Box sx={{ textAlign: 'center' }}>
-            <Grid container spacing={3} justifyContent="center" sx={{ mb: 3 }}>
-              <Grid item xs={12} sm={8} md={6}>
-                <TextField
-                  fullWidth
-                  placeholder="Search FAQs..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  InputProps={{
-                    startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
-                  }}
-                  sx={{
-                    backgroundColor: 'white',
-                    borderRadius: 2,
-                    '& .MuiOutlinedInput-root': {
-                      '&:hover fieldset': {
-                        borderColor: '#0B7897',
-                      },
-                      '&.Mui-focused fieldset': {
-                        borderColor: '#0B7897',
-                      },
+          {/* Search and Contact Button - Centered Row */}
+          <Box sx={{ textAlign: 'center', mt: 4 }}>
+            <Box
+              sx={{
+                mb: 3,
+                maxWidth: 600,
+                mx: 'auto',
+              }}
+            >
+              <TextField
+                fullWidth
+                placeholder="Search FAQs..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <Box sx={{ mr: 1, display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+                      <SearchIcon />
+                    </Box>
+                  ),
+                }}
+                sx={{
+                  backgroundColor: 'white',
+                  borderRadius: 3,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 3,
+                    '& fieldset': {
+                      border: 'none',
                     },
-                  }}
-                />
-              </Grid>
-            </Grid>
+                  },
+                }}
+              />
+            </Box>
             <Button
               component={Link}
               href="/contact"
@@ -333,11 +344,14 @@ export default function FAQPage() {
               sx={{
                 borderColor: '#FFFFFF',
                 color: '#FFFFFF',
-                px: 4,
+                px: 3,
                 py: 1.5,
+                borderRadius: 3,
+                textTransform: 'none',
+                fontSize: '1rem',
                 fontWeight: 600,
                 '&:hover': {
-                  borderColor: '#F5F5F5',
+                  borderColor: '#FFFFFF',
                   backgroundColor: 'rgba(255, 255, 255, 0.1)',
                 },
               }}
@@ -591,6 +605,40 @@ export default function FAQPage() {
         </Container>
       </Box>
 
+      {/* HACK Image Thumbnail */}
+      <Box sx={{ py: { xs: 3, md: 4 }, backgroundColor: '#ffffff', textAlign: 'center' }}>
+        <Container maxWidth="md">
+          <Typography
+            variant="h6"
+            sx={{
+              mb: 2,
+              color: '#063C5E',
+              fontWeight: 600,
+            }}
+          >
+            H.A.C.K. Framework Reference
+          </Typography>
+          <Box
+            component="img"
+            src="/images/hack.png"
+            alt="H.A.C.K. Framework"
+            onClick={() => setImageModalOpen(true)}
+            sx={{
+              maxWidth: { xs: '120px', md: '300px' },
+              height: 'auto',
+              cursor: 'pointer',
+              borderRadius: 2,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              transition: 'transform 0.3s, box-shadow 0.3s',
+              '&:hover': {
+                transform: 'scale(1.05)',
+                boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
+              },
+            }}
+          />
+        </Container>
+      </Box>
+
       {/* Bottom Close & Conversion */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#063C5E', color: 'white' }}>
         <Container maxWidth="lg">
@@ -621,91 +669,152 @@ export default function FAQPage() {
             </Typography>
           </Box>
           
-          <Grid container spacing={2} sx={{ maxWidth: '700px', mx: 'auto' }}>
-            <Grid item xs={12} sm={6}>
-              <Button
-                component={Link}
-                href="/products"
-                variant="contained"
-                fullWidth
-                sx={{
-                  backgroundColor: '#FF725E',
-                  color: 'white',
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                  '&:hover': {
-                    backgroundColor: '#e65a4a',
-                  },
-                }}
-              >
-                Families → Get Your Kit
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                component={Link}
-                href="/education#pilot-form"
-                variant="contained"
-                fullWidth
-                sx={{
-                  backgroundColor: '#0B7897',
-                  color: 'white',
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                  '&:hover': {
-                    backgroundColor: '#063C5E',
-                  },
-                }}
-              >
-                Schools → Free Resources
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                component={Link}
-                href="/comasy#demo-form"
-                variant="contained"
-                fullWidth
-                sx={{
-                  backgroundColor: '#0B7897',
-                  color: 'white',
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                  '&:hover': {
-                    backgroundColor: '#063C5E',
-                  },
-                }}
-              >
-                Business → Request Demo
-              </Button>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Button
-                component={Link}
-                href="/contact"
-                variant="outlined"
-                fullWidth
-                sx={{
-                  borderColor: 'white',
-                  color: 'white',
-                  py: 1.5,
-                  fontWeight: 600,
-                  fontSize: { xs: '0.875rem', sm: '0.9375rem' },
-                  '&:hover': {
-                    borderColor: '#FF725E',
-                    backgroundColor: 'rgba(255, 114, 94, 0.1)',
-                  },
-                }}
-              >
-                Contact Us →
-              </Button>
-            </Grid>
-          </Grid>
+          <Box
+            sx={{
+              maxWidth: { xs: '100%', sm: '700px' },
+              mx: 'auto',
+              display: 'flex',
+              flexDirection: { xs: 'column', sm: 'row' },
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Button
+              component={Link}
+              href="/products"
+              variant="contained"
+              sx={{
+                backgroundColor: '#FF725E',
+                color: 'white',
+                py: 1.5,
+                px: 4,
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                maxWidth: { xs: '100%', sm: '340px' },
+                '&:hover': {
+                  backgroundColor: '#e65a4a',
+                },
+              }}
+            >
+              Families → Get Your Kit
+            </Button>
+            <Button
+              component={Link}
+              href="/education#pilot-form"
+              variant="contained"
+              sx={{
+                backgroundColor: '#0B7897',
+                color: 'white',
+                py: 1.5,
+                px: 4,
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                maxWidth: { xs: '100%', sm: '340px' },
+                '&:hover': {
+                  backgroundColor: '#063C5E',
+                },
+              }}
+            >
+              Schools → Free Resources
+            </Button>
+            <Button
+              component={Link}
+              href="/comasi#demo-form"
+              variant="contained"
+              sx={{
+                backgroundColor: '#0B7897',
+                color: 'white',
+                py: 1.5,
+                px: 4,
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                maxWidth: { xs: '100%', sm: '340px' },
+                '&:hover': {
+                  backgroundColor: '#063C5E',
+                },
+              }}
+            >
+              Business → Request Demo
+            </Button>
+            <Button
+              component={Link}
+              href="/contact"
+              variant="outlined"
+              sx={{
+                borderColor: 'white',
+                color: 'white',
+                py: 1.5,
+                px: 4,
+                fontWeight: 600,
+                fontSize: { xs: '0.875rem', sm: '0.9375rem' },
+                width: { xs: '100%', sm: 'calc(50% - 8px)' },
+                maxWidth: { xs: '100%', sm: '340px' },
+                '&:hover': {
+                  borderColor: '#FF725E',
+                  backgroundColor: 'rgba(255, 114, 94, 0.1)',
+                },
+              }}
+            >
+              Contact Us →
+            </Button>
+          </Box>
         </Container>
       </Box>
+
+      {/* Full Image Modal */}
+      <Modal
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          p: 2,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'relative',
+            maxWidth: '90vw',
+            maxHeight: '90vh',
+            outline: 'none',
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: -40,
+              right: 0,
+              color: 'white',
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              '&:hover': {
+                backgroundColor: 'rgba(0,0,0,0.7)',
+              },
+            }}
+          >
+            ×
+          </IconButton>
+          <Box
+            component="img"
+            src="/images/hack.png"
+            alt="H.A.C.K. Framework - Full Size"
+            sx={{
+              width: '100%',
+              height: 'auto',
+              maxHeight: '90vh',
+              objectFit: 'contain',
+              borderRadius: 2,
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+            }}
+          />
+        </Box>
+      </Modal>
 
       <Footer />
     </>

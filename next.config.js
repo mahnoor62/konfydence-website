@@ -22,6 +22,44 @@ const nextConfig = {
       },
     ];
   },
+
+  async redirects() {
+    return [
+      {
+        source: '/CoMaSi',
+        destination: '/comasi',
+        permanent: true,
+      },
+      {
+        source: '/CoMaSi/:path*',
+        destination: '/comasi/:path*',
+        permanent: true,
+      },
+      {
+        source: '/comasy',
+        destination: '/comasi',
+        permanent: true,
+      },
+      {
+        source: '/comasy/:path*',
+        destination: '/comasi/:path*',
+        permanent: true,
+      },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/comasi',
+        destination: '/CoMaSi',
+      },
+      {
+        source: '/comasi/:path*',
+        destination: '/CoMaSi/:path*',
+      },
+    ];
+  },
 };
 
 module.exports = nextConfig;

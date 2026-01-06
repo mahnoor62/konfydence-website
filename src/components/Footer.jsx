@@ -48,7 +48,7 @@ const solutionsForEducation = [
 ];
 
 const solutionsForWork = [
-  { label: 'CoMaSy Platform', href: '/comasy' },
+  { label: 'CoMaSi Platform', href: '/comasi' },
   { label: 'Request Demo', href: '/contact' },
 ];
 

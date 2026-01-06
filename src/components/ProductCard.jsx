@@ -20,7 +20,7 @@ const stripHtmlTags = (html) => {
     .trim();
 };
 
-export default function ProductCard({ product, delay = 0, hidePrice = false, buttonText = 'Buy Now', limitDescriptionLines = false }) {
+export default function ProductCard({ product, delay = 0, hidePrice = false, buttonText = 'Buy Now', limitDescriptionLines = false, darkBackground = false }) {
   const router = useRouter();
   const { user: authUser, getAuthToken } = useAuth();
   const [customPackageDialogOpen, setCustomPackageDialogOpen] = useState(false);
@@ -233,46 +233,78 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
       data-aos-delay={delay}
       sx={{
         height: limitDescriptionLines ? { xs: '100%', md: '660px' } : '100%',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        borderRadius: 3,
+        p: darkBackground ? 2 : 0,
+        borderRadius: 0,
+        border: 'none',
         boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        backgroundColor: 'white',
+        backgroundColor: darkBackground ? '#000B3F' : 'white',
         transition: 'all 0.3s ease-in-out',
         transform: 'translateY(0)',
         cursor: 'pointer',
+        boxSizing: 'border-box',
         '&:hover': {
           transform: 'translateY(-12px) scale(1.03)',
-          boxShadow: '0 12px 32px rgba(0,0,0,0.2)',
+          boxShadow: darkBackground ? '0 12px 32px rgba(255, 215, 0, 0.3)' : '0 12px 32px rgba(0,0,0,0.2)',
         },
       }}
     >
       <Box
         sx={{
-          position: 'relative',
-          width: '100%',
-          paddingTop: '66.67%', // 3:2 aspect ratio (2/3 = 0.6667)
-          backgroundColor: '#F5F8FB', // Consistent background color
+          border: darkBackground ? '3px solid #FFD700' : 'none',
+          borderRadius: darkBackground ? '15px' : 0,
           overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minHeight: 0,
+          width: '100%',
         }}
       >
-        <CardMedia
-          component="img"
-          image={resolvedImage || fallbackImage}
-          alt={product.name}
+        <Box
           sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
+            position: 'relative',
             width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            filter: 'saturate(1.05)',
+            paddingTop: darkBackground ? '50%' : '66.67%', // Smaller image for dark background (50% instead of 66.67%)
+            backgroundColor: darkBackground ? '#000B3F' : '#F5F8FB', // Dark background for dark theme
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
-      </Box>
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', flex: limitDescriptionLines ? 1 : 'none', minHeight: limitDescriptionLines ? 0 : 'auto' }}>
+        >
+          <CardMedia
+            component="img"
+            image={resolvedImage || fallbackImage}
+            alt={product.name}
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '85%',
+              maxHeight: '85%',
+              objectFit: 'contain',
+              filter: 'saturate(1.05)',
+            }}
+          />
+        </Box>
+        <CardContent 
+          sx={{ 
+            display: 'flex', 
+            flexDirection: 'column', 
+            flex: limitDescriptionLines ? 1 : 'none', 
+            minHeight: limitDescriptionLines ? 0 : 'auto',
+            p: darkBackground ? 2 : undefined,
+            flexGrow: 1,
+          }}
+        >
+        {!darkBackground && (
         <Box sx={{ mb: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
           {product.badges?.filter((badge) => {
             // Only show approved badges - no third-party logos without written permission
@@ -332,15 +364,28 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
             );
           })}
         </Box>
-        <Typography variant="h5" component="h3" gutterBottom sx={{ color: 'text.primary' }}>
+        )}
+        <Typography 
+          variant="h5" 
+          component="h3" 
+          gutterBottom 
+          sx={{ 
+            color: darkBackground ? 'white' : 'text.primary',
+            fontWeight: 700,
+            textAlign: darkBackground ? 'center' : 'left',
+            fontSize: darkBackground ? { xs: '1.25rem', md: '1.5rem' } : undefined,
+          }}
+        >
           {product.name}
         </Typography>
         <Typography 
           variant="body2" 
-          color="text.secondary" 
+          color={darkBackground ? 'white' : 'text.secondary'} 
           sx={{ 
             mb: 3, 
             display: '-webkit-box',
+            color: darkBackground ? 'white' : undefined,
+            textAlign: darkBackground ? 'center' : 'left',
             WebkitLineClamp: limitDescriptionLines ? (() => {
               const productType = getProductType();
               if (productType === 'B2C') return 4;
@@ -392,14 +437,14 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                   alignItems: 'center',
                   mb: 2,
                   p: 1.5,
-                  backgroundColor: '#F5F8FB',
+                  backgroundColor: darkBackground ? 'rgba(255, 255, 255, 0.1)' : '#F5F8FB',
                   borderRadius: 2,
-                  border: '1px solid #E0E7F0',
+                  border: darkBackground ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid #E0E7F0',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: '#E8F4F8',
-                    borderColor: '#0B7897',
+                    backgroundColor: darkBackground ? 'rgba(255, 255, 255, 0.2)' : '#E8F4F8',
+                    borderColor: darkBackground ? 'rgba(255, 255, 255, 0.5)' : '#0B7897',
                     transform: 'translateY(-2px)',
                   },
                 }}
@@ -408,7 +453,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                   variant="body1" 
                   sx={{ 
                     fontWeight: 600, 
-                    color: '#063C5E',
+                    color: darkBackground ? 'white' : '#063C5E',
                     textAlign: 'center',
                   }}
                 >
@@ -463,8 +508,8 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                     e.stopPropagation();
                   }}
                   sx={{
-                    borderColor: '#063C5E',
-                    color: '#063C5E',
+                    borderColor: darkBackground ? 'white' : '#063C5E',
+                    color: darkBackground ? 'white' : '#063C5E',
                     fontWeight: 600,
                     borderRadius: 2,
                     px: { xs: 3, md: 2 },
@@ -472,8 +517,8 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                     fontSize: { xs: '1rem', md: '0.875rem' },
                     width: '100%',
                     '&:hover': {
-                      borderColor: '#052A42',
-                      backgroundColor: '#E8F4F8',
+                      borderColor: darkBackground ? '#E8F4F8' : '#052A42',
+                      backgroundColor: darkBackground ? 'rgba(255, 255, 255, 0.1)' : '#E8F4F8',
                     },
                   }}
                 >
@@ -538,15 +583,15 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                   e.stopPropagation();
                 }}
                 sx={{
-                  borderColor: '#063C5E',
-                  color: '#063C5E',
+                  borderColor: darkBackground ? 'white' : '#063C5E',
+                  color: darkBackground ? 'white' : '#063C5E',
                   fontWeight: 600,
                   borderRadius: 2,
                   py: 1,
                   width: '100%',
                   '&:hover': {
-                    borderColor: '#052A42',
-                    backgroundColor: '#E8F4F8',
+                    borderColor: darkBackground ? '#E8F4F8' : '#052A42',
+                    backgroundColor: darkBackground ? 'rgba(255, 255, 255, 0.1)' : '#E8F4F8',
                   },
                 }}
               >
@@ -556,6 +601,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
           )}
         </Box>
       </CardContent>
+      </Box>
 
       {/* Custom Package Request Dialog */}
       <Dialog 

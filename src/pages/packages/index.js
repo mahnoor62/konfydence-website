@@ -555,7 +555,7 @@ export default function PackagesPage() {
     try {
       // Just redirect to game page - user will enter reference code there
       // No demo creation needed - reference user will provide the code
-      router.push('/game');
+      router.push('/play');
       setProcessingB2CDemo(false);
     } catch (error) {
       console.error('Error navigating to game:', error);
@@ -654,7 +654,7 @@ export default function PackagesPage() {
     try {
       // Just redirect to game page - user will enter reference code there
       // No demo creation needed - reference user will provide the code
-      router.push('/game');
+      router.push('/play');
       setProcessingB2BDemo(false);
     } catch (error) {
       console.error('Error navigating to game:', error);
@@ -2340,7 +2340,7 @@ export default function PackagesPage() {
         </DialogContent>
         <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
           <Button
-            onClick={() => router.push('/game')}
+            onClick={() => router.push('/play')}
             variant="contained"
             sx={{
               backgroundColor: '#0B7897',

@@ -42,7 +42,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PeopleIcon from '@mui/icons-material/People';
 import BusinessIcon from '@mui/icons-material/Business';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
@@ -114,7 +113,6 @@ export default function OrganizationDashboardPage() {
   const [selectedRequestForNotes, setSelectedRequestForNotes] = useState(null);
   const [transactions, setTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
-  const [showPassword, setShowPassword] = useState(true);
 
   // Helper function to map visible tab index to content index
   // Visible tabs structure (after commenting out Student Activities):
@@ -2474,7 +2472,7 @@ export default function OrganizationDashboardPage() {
                             <Button
                               variant="contained"
                               fullWidth
-                              onClick={() => router.push(`/game?resume=${resumeLevel}`)}
+                              onClick={() => router.push(`/play?resume=${resumeLevel}`)}
                               sx={{
                                 backgroundColor: '#0B7897',
                                 color: '#fff',
@@ -4184,23 +4182,6 @@ export default function OrganizationDashboardPage() {
                         <Typography variant="body2">
                           {user.role === 'b2b_user' ? 'Business User (B2B)' : user.role === 'b2e_user' ? 'Education User (B2E)' : 'B2C User'}
                         </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="caption" color="text.secondary">
-                          Password
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                          <Typography variant="body2" sx={{ fontFamily: 'monospace', flex: 1 }}>
-                            {showPassword ? (user.password || '••••••••') : '••••••••'}
-                          </Typography>
-                          <IconButton
-                            size="small"
-                            onClick={() => setShowPassword(!showPassword)}
-                            sx={{ color: '#0B7897' }}
-                          >
-                            {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                          </IconButton>
-                        </Box>
                       </Box>
                       <Box>
                         <Typography variant="caption" color="text.secondary">

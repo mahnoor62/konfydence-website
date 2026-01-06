@@ -213,16 +213,16 @@ export default function ProductsPageContent() {
             <Box sx={{ textAlign: 'center' }}>
               <Typography
                 variant="h1"
-                component="h1"
+                // component="h1"
                 sx={{
                   mb: 3,
-                  fontSize: { xs: '2rem', md: '3rem' },
+                  fontSize: { xs: '2rem', md: '2rem' },
                   fontWeight: 700,
                   color: 'white',
                   lineHeight: 1.2,
                 }}
               >
-                Discover Konfydence Tools for Every Stage of Life
+              Tools That Train the Pause — Before the Click
               </Typography>
               
               <Typography 
@@ -236,7 +236,8 @@ export default function ProductsPageContent() {
                   lineHeight: 1.7,
                 }}
               >
-                Fun, science-backed simulations that train the one habit that stops scams: a quick pause under pressure. From family game nights to classroom activities and enterprise compliance—build real resilience. Engineered for resilience. Every Konfydence card is designed and manufactured in Germany to meet the highest standards of quality and durability.
+               Fun, science-backed simulations that train the one habit that stops scams: a five-second pause under pressure.
+               From family game nights to classrooms and enterprise compliance.
               </Typography>
 
               <Box sx={{ mb: 4 }}>
@@ -521,7 +522,7 @@ export default function ProductsPageContent() {
                         <Grid container spacing={4} sx={{ mb: 4 }}>
                           {/* Tactical Card Game Kit */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Tactical Card Game Kit
                               </Typography>
@@ -530,7 +531,13 @@ export default function ProductsPageContent() {
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Introductory Pricing (Limited Time Special): €49 (Retail: €59)
+                                  Pricing Structure
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                  Early bird: $49
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                  Later: $59
                                 </Typography>
                               </Box>
                               <Button
@@ -552,7 +559,7 @@ export default function ProductsPageContent() {
 
                           {/* Digital Extension */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Digital Extension (App Access)
                               </Typography>
@@ -561,7 +568,13 @@ export default function ProductsPageContent() {
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Introductory Pricing (early bird): $29/year (Later: $39/year)
+                                  Pricing Structure
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                  Early bird: $29/year
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                  Later: $39/year
                                 </Typography>
                               </Box>
                               <Button
@@ -583,7 +596,7 @@ export default function ProductsPageContent() {
 
                           {/* Best Value Bundle */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.1)', borderRadius: 2, border: '2px solid #0B7897', display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, border: '2px solid #0B7897', display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Best Value Bundle
                               </Typography>
@@ -592,7 +605,13 @@ export default function ProductsPageContent() {
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Introductory Pricing: $69 (Later: $89) – Save more during launch!
+                                  Pricing Structure
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                  Early bird: $69
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                  Later: $89
                                 </Typography>
                               </Box>
                               <Button
@@ -613,10 +632,36 @@ export default function ProductsPageContent() {
                           </Grid>
                         </Grid>
 
+                        {/* Images Section */}
+                        <Box sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                          <Box
+                            component="img"
+                            src="/images/1Bank.png"
+                            alt="Bank"
+                            sx={{
+                              maxWidth:'300px' ,
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                          <Box
+                            component="img"
+                            src="/images/1.png"
+                            alt="Product"
+                            sx={{
+                              maxWidth:'300px' ,
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </Box>
+
                         {/* Additional Notes */}
                         <Box sx={{ mt: 4, textAlign: 'center' }}>
                           <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontStyle: 'italic' }}>
-                            Made in Germany – Premium quality cards built to last.
+                            Engineered in Germany – Premium quality cards built to last.
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontStyle: 'italic' }}>
                             Konfydence for Kids: €1 per sale donated to initiatives that strengthen digital resilience for children and young people.
@@ -633,7 +678,7 @@ export default function ProductsPageContent() {
                         <Grid container spacing={4} sx={{ mb: 4 }}>
                           {/* Free Lesson Pack */}
                           <Grid item xs={12} md={6}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Free Lesson Pack
                               </Typography>
@@ -647,7 +692,7 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/resources/education"
+                                href="/free-resources"
                                 component={NextLink}
                                 sx={{
                                   backgroundColor: '#0B7897',
@@ -664,7 +709,7 @@ export default function ProductsPageContent() {
 
                           {/* Full Student Program */}
                           <Grid item xs={12} md={6}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Full Student Program (CoMaSi Education Edition)
                               </Typography>
@@ -673,6 +718,7 @@ export default function ProductsPageContent() {
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
+                                  Privacy-First By Design <br/>
                                   Pricing: Custom per-seat licensing – request a free pilot to see fit.
                                 </Typography>
                               </Box>
@@ -688,7 +734,7 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Request Free Pilot / Resources →
+                                Request Free Demo / Resources →
                               </Button>
                             </Box>
                           </Grid>
@@ -701,7 +747,7 @@ export default function ProductsPageContent() {
                         <Grid container spacing={4} sx={{ mb: 4 }}>
                           {/* Compliance Made Simple */}
                           <Grid item xs={12} md={6}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Compliance Made Simple (CoMaSi)
                               </Typography>
@@ -725,14 +771,14 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Book Free Demo / Pilot →
+                              Request A Free Demo  →
                               </Button>
                             </Box>
                           </Grid>
 
                           {/* Add-On: Custom Simulations */}
                           <Grid item xs={12} md={6}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'rgba(11, 120, 151, 0.05)', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Add-On: Custom Simulations
                               </Typography>
@@ -741,7 +787,7 @@ export default function ProductsPageContent() {
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Pricing: Included or bundled – discussed in demo.
+                                  Pricing: Custom Pricing
                                 </Typography>
                               </Box>
                               <Button
@@ -756,7 +802,7 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                See Examples in Demo →
+                                Request A Custom Simulation →
                               </Button>
                             </Box>
                           </Grid>
@@ -1001,11 +1047,13 @@ export default function ProductsPageContent() {
           </Container>
         </Box>
 
-        {/* Gallery Section */}
+        {/* Gallery Section - Hidden */}
+        {false && (
         <Box
           sx={{
             py: { xs: 6, md: 8 },
             backgroundColor: '#ffffff',
+            display: 'none',
           }}
           data-aos="fade-up"
           data-aos-duration="800"
@@ -1066,6 +1114,7 @@ export default function ProductsPageContent() {
             </Box>
           </Container>
         </Box>
+        )}
 
         {/* Bottom Section - Start Building the Pause Habit */}
         <Box
@@ -1106,19 +1155,59 @@ export default function ProductsPageContent() {
                 One simple habit stops most scams: Pause for five seconds when pressure hits. Choose the right tool for your world.
               </Typography>
 
-              {/* Pause Bars Visual */}
-              <Box sx={{ mb: 6, maxWidth: '600px', mx: 'auto' }}>
-                <Box
-                  component="img"
-                  src="/images/5SecondsDefense.jpg"
-                  alt="Five seconds pause habit visual"
-                  sx={{
-                    width: '100%',
-                    height: 'auto',
-                    borderRadius: 2,
-                  }}
-                />
-              </Box>
+              {/* Images in 2 Columns */}
+              <Grid container spacing={4} sx={{ mb: 6, alignItems: 'stretch' }}>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      height: { xs: 'auto', md: '500px' },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/hurry.JPG"
+                      alt="Hurry visual"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      }}
+                    />
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      height: { xs: 'auto', md: '500px' },
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      overflow: 'hidden',
+                      borderRadius: 2,
+                    }}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/5SecondsDefense2.jpg"
+                      alt="Five seconds pause habit visual"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        borderRadius: 2,
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      }}
+                    />
+                  </Box>
+                </Grid>
+              </Grid>
 
               {/* CTA Buttons */}
               <Stack
@@ -1178,7 +1267,7 @@ export default function ProductsPageContent() {
                 
                 <Button
                   size="large"
-                  href="/comasy#demo-form"
+                  href="/comasi#demo-form"
                   component={NextLink}
                   sx={{
                     backgroundColor: '#0B7897',

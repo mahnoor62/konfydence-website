@@ -115,7 +115,7 @@ export default function CoMaSyPage() {
         name: formData.name.trim(),
         email: formData.email.trim(),
         company: formData.company.trim(),
-        topic: 'comasy',
+        topic: 'CoMaSi',
         teamSize: formData.teamSize.trim() || '',
         message: formData.message.trim() || '',
       };
@@ -160,6 +160,7 @@ export default function CoMaSyPage() {
                 <Typography
                   variant="h2"
                   sx={{
+                        fontSize: { xs: '2rem', md: '2rem' },
                     // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                     fontWeight: 700,
                     mb: 3,
@@ -189,9 +190,12 @@ export default function CoMaSyPage() {
                     opacity: 0.9,
                     lineHeight: 1.8,
                     color: 'white',
+                    fontWeight: 700,
                   }}
                 >
-                  Short, engaging simulations train your team to pause when scammers use hurry, authority, or emotions—proving reduced risk with auditor-ready reports. NIS2-ready and effective.
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}></Typography> NIS2-ready{' '}
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> No-blame simulations{' '}
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> Measurable behaviour change
                 </Typography>
                 <Button
                   component="a"
@@ -255,8 +259,8 @@ export default function CoMaSyPage() {
                     <SwiperSlide>
                       <Box
                         component="img"
-                        src="/images/comasy1.jpeg"
-                        alt="CoMaSi Platform Training"
+                        src="/images/dashboard.png"
+                        alt="CoMaSi Platform Dashboard"
                         sx={{
                           width: '100%',
                           height: 'auto',
@@ -267,42 +271,20 @@ export default function CoMaSyPage() {
                     <SwiperSlide>
                       <Box
                         component="img"
-                        src="/images/comasy2.png"
-                        alt="CoMaSi Dashboard"
+                        src="/images/dashboard2.png"
+                        alt="CoMaSi Dashboard 2"
                         sx={{
                           width: '100%',
                           height: 'auto',
                           display: 'block',
-                        }}
-                        onError={(e) => {
-                          if (e.target.src.includes('.png')) {
-                            e.target.src = '/images/comasy2.jpeg';
-                          }
                         }}
                       />
                     </SwiperSlide>
                     <SwiperSlide>
                       <Box
                         component="img"
-                        src="/images/comasy3.png"
-                        alt="CoMaSi Simulations"
-                        sx={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                        }}
-                        onError={(e) => {
-                          if (e.target.src.includes('.png')) {
-                            e.target.src = '/images/comasy3.jpeg';
-                          }
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/comasy4.jpeg"
-                        alt="CoMaSi Compliance Reports"
+                        src="/images/dashboard3.png"
+                        alt="CoMaSi Dashboard 3"
                         sx={{
                           width: '100%',
                           height: 'auto',
@@ -332,11 +314,10 @@ export default function CoMaSyPage() {
                 letterSpacing: 1,
               }}
             >
-              Why Most Training Fails (Educational Section – Build Pain & Authority)
-            </Typography>
+Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={6}>
-                <Typography
+                {/* <Typography
                   variant="h3"
                   sx={{
                     // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
@@ -347,7 +328,7 @@ export default function CoMaSyPage() {
                   }}
                 >
                   Why Yearly Videos and Quizzes Don&apos;t Stop Breaches
-                </Typography>
+                </Typography> */}
                 <Typography
                   variant="body1"
                   sx={{
@@ -357,9 +338,10 @@ export default function CoMaSyPage() {
                     color: 'text.primary',
                   }}
                 >
-                  Employees pass the test... then click anyway months later. Why? Scams hit during stress—bypassing logic via the limbic hijack. Traditional tools train knowledge, not behavior under pressure.
-                </Typography>
-                <Box sx={{ mb: 3 }}>
+                  Employees pass the test—then click anyway months later.
+                  <br />
+                  <br />
+                  Why? Real scams strike during stress. They bypass logic and trigger a{' '}
                   <Link
                     href="/pdfs/the-limbic-hijack.pdf"
                     target="_blank"
@@ -367,13 +349,13 @@ export default function CoMaSyPage() {
                     style={{
                       color: '#0B7897',
                       textDecoration: 'underline',
-                      fontSize: '1rem',
                       fontWeight: 600,
                     }}
                   >
-                    Read the Science: Stop the Limbic Hijack →
+                    limbic hijack
                   </Link>
-                </Box>
+                  —urgency, authority, and emotion overwhelm training that lives only in memory.
+                </Typography>
                 <Typography
                   variant="body1"
                   sx={{
@@ -383,7 +365,7 @@ export default function CoMaSyPage() {
                     color: 'text.primary',
                   }}
                 >
-                  <strong>CoMaSi fixes this:</strong> Fun, real-life simulations build the one habit that works—a 5-second pause when H.A.C.K. tricks appear.
+                  <b>CoMaSi trains behavior, not recall.</b>
                 </Typography>
                 <Typography
                   variant="body1"
@@ -394,7 +376,21 @@ export default function CoMaSyPage() {
                     color: 'text.primary',
                   }}
                 >
-                  Our simulations are designed to be failure-safe. The simulation is a learning moment, not a disciplinary one and reinforces the No-Blame culture.
+                  Our simulations are learning moments—not disciplinary events. CoMaSi reinforces a no-blame culture that improves reporting and resilience.
+                </Typography>
+                
+                {/* How Scammers Trigger Us Section */}
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 2,
+                 
+                    mt: 3,
+                    color: '#063C5E',
+                  }}
+                >
+                  How Scammers Trigger Us to Act - The HACK
                 </Typography>
                 
                 {/* H.A.C.K. Quick Reference */}
@@ -453,6 +449,16 @@ export default function CoMaSyPage() {
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 2,   ml:2,
+                    color: '#063C5E',
+                  }}
+                >
+                  How to React - The 5 Seconds Pause
+                </Typography>
                 <Box
                   component="img"
                   src="/images/5SecondsDefense.jpg"
@@ -523,20 +529,12 @@ export default function CoMaSyPage() {
                   >
                     <Box
                       component="img"
-                      src="/images/comasy2.png"
+                      src="/images/dashboard.png"
                       alt="Engaging Simulations"
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
-                      }}
-                      onError={(e) => {
-                        // Try jpeg if png fails
-                        if (e.target.src.includes('.png')) {
-                          e.target.src = '/images/comasy2.jpeg';
-                        } else {
-                          e.target.style.display = 'none';
-                        }
                       }}
                     />
                   </Box>
@@ -589,20 +587,12 @@ export default function CoMaSyPage() {
                   >
                     <Box
                       component="img"
-                      src="/images/comasy3.png"
+                      src="/images/dashboard2.png"
                       alt="Proven Behavior Change"
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
-                      }}
-                      onError={(e) => {
-                        // Try jpeg if png fails
-                        if (e.target.src.includes('.png')) {
-                          e.target.src = '/images/comasy3.jpeg';
-                        } else {
-                          e.target.style.display = 'none';
-                        }
                       }}
                     />
                   </Box>
@@ -655,15 +645,12 @@ export default function CoMaSyPage() {
                   >
                     <Box
                       component="img"
-                      src="/images/comasy4.jpeg"
+                      src="/images/dashboard3.png"
                       alt="Auditor-Ready Reports"
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
-                      }}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
                       }}
                     />
                   </Box>
@@ -906,23 +893,19 @@ export default function CoMaSyPage() {
                     Platform Dashboard Teaser
                   </Typography>
                   <Box
-              
+                    component="img"
+                    src="/images/dashboard.png"
+                    alt="Platform Dashboard Preview"
                     sx={{
                       width: '100%',
+                      height: 'auto',
                       flex: 1,
                       minHeight: { xs: 250, md: 300 },
-                      backgroundColor: '#063C5E',
                       borderRadius: 2,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'white',
-                      fontSize: '1.1rem',
                       mb: 2,
+                      objectFit: 'contain',
                     }}
-                  >
-                    Dashboard Preview
-                  </Box>
+                  />
                   <Typography
                     variant="body2"
                     sx={{
@@ -962,64 +945,19 @@ export default function CoMaSyPage() {
                     Konfydence Behavioral Report
                   </Typography>
                   <Box
+                    component="img"
+                    src="/images/dashboard2.png"
+                    alt="Konfydence Behavioral Report Dashboard"
                     sx={{
                       width: '100%',
+                      height: 'auto',
                       flex: 1,
                       minHeight: { xs: 250, md: 300 },
-                      backgroundColor: '#F6F8FA',
                       borderRadius: 2,
-                      p: 3,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
                       mb: 2,
+                      objectFit: 'contain',
                     }}
-                  >
-                    {/* Chart Placeholder */}
-                    <Box
-                      sx={{
-                        width: '100%',
-                        height: '60%',
-                        backgroundColor: '#ffffff',
-                        borderRadius: 1,
-                        border: '1px solid #e0e0e0',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        mb: 2,
-                        position: 'relative',
-                      }}
-                    >
-                      {/* Simple Bar Chart Representation */}
-                      <Box sx={{ width: '100%', height: '100%', p: 2, display: 'flex', alignItems: 'flex-end', gap: 1 }}>
-                        <Box sx={{ flex: 1, height: '40%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
-                        <Box sx={{ flex: 1, height: '60%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
-                        <Box sx={{ flex: 1, height: '35%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
-                        <Box sx={{ flex: 1, height: '50%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
-                        <Box sx={{ flex: 1, height: '25%', backgroundColor: '#0B7897', borderRadius: '4px 4px 0 0' }} />
-                      </Box>
-                    </Box>
-                    
-                    {/* Metrics */}
-                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E' }}>
-                          Reduction in Rushed Clicks:
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897' }}>
-                          -65%
-                        </Typography>
-                      </Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E' }}>
-                          Pause Reflex Improvement:
-                        </Typography>
-                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897' }}>
-                          +78%
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Box>
+                  />
                   <Typography
                     variant="body2"
                     sx={{
@@ -1059,7 +997,7 @@ export default function CoMaSyPage() {
                 color: '#063C5E',
               }}
             >
-              See CoMaSi in Action – Free Pilot Available
+              See CoMaSi in Action – Free Demo Available
             </Typography>
             <Typography
               variant="h6"
@@ -1070,7 +1008,7 @@ export default function CoMaSyPage() {
                 color: 'text.secondary',
               }}
             >
-              Book a 15-min demo. We&apos;ll show tailored simulations and reports for your team.
+             Explore Complete CoMasi scenerios with your team.
             </Typography>
             
             {/* Success/Error Message */}

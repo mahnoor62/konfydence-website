@@ -177,7 +177,7 @@ export default function PaymentSuccessPage() {
       sessionStorage.setItem('transactionData', JSON.stringify(transaction));
       
       // Route to game page after copying
-      router.push('/game');
+      router.push('/play');
     }
   };
 
@@ -194,7 +194,7 @@ export default function PaymentSuccessPage() {
       }
       sessionStorage.setItem('transactionData', JSON.stringify(transaction));
     }
-    router.push('/game');
+    router.push('/play');
   };
 
   if (loading) {

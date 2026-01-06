@@ -57,13 +57,13 @@ export default function TrialSuccessPage() {
         setCopied(true);
         // Redirect to game page after copying (without code in URL)
         setTimeout(() => {
-          router.push('/game');
+          router.push('/play');
         }, 1000);
       } catch (err) {
         console.error('Failed to copy code:', err);
         // Even if copy fails, still redirect
         setTimeout(() => {
-          router.push('/game');
+          router.push('/play');
         }, 1000);
       }
     }

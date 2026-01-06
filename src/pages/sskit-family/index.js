@@ -118,7 +118,7 @@ export default function SKKPage() {
             <Typography
               variant="h1"
               sx={{
-                  fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                  fontSize: { xs: '2rem', md: '2rem' },
                   fontWeight: 700,
                 mb: 2,
                   color: '#063C5E',
@@ -281,7 +281,7 @@ export default function SKKPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      <strong>Hurry:</strong> The artificial deadline.
+                      <strong>Hurry:</strong> Artificial deadline.
                     </Typography>
                   </li>
                   <li>
@@ -293,7 +293,7 @@ export default function SKKPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      <strong>Authority:</strong> The fake boss or official.
+                      <strong>Authority:</strong> Fake boss or official.
                     </Typography>
                   </li>
                   <li>
@@ -305,7 +305,7 @@ export default function SKKPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      <strong>Comfort:</strong> The &quot;I&apos;m a friend/family&quot; trick.
+                      <strong>Comfort:</strong>  &quot;I&apos;m a friend/family&quot; trick.
                     </Typography>
                   </li>
                   <li>
@@ -317,11 +317,11 @@ export default function SKKPage() {
                         lineHeight: 1.8,
                       }}
                     >
-                      <strong>Kill-Switch:</strong> The panic or extreme excitement trigger.
+                      <strong>Kill-Switch:</strong> Panic or extreme excitement trigger.
                     </Typography>
                   </li>
                 </Box>
-                <Typography
+                {/* <Typography
                   variant="body1"
                   sx={{
                     fontSize: { xs: '1rem', md: '1.125rem' },
@@ -342,7 +342,7 @@ export default function SKKPage() {
                   }}
                 >
                   <strong>One habit that stops most scams:</strong> the 5-second pause.
-            </Typography>
+            </Typography> */}
             <Typography 
               variant="body1" 
               sx={{ 
@@ -353,7 +353,7 @@ export default function SKKPage() {
                     fontWeight: 600,
                   }}
                 >
-                  Americans lost $12.5 billion to scams last year — protect your loved ones for less than a family dinner out.
+                Americans reported over $12 billion in scam losses last year. Protect your family for less than a dinner out.
             </Typography>
               </Box>
             </Grid>
@@ -368,7 +368,7 @@ export default function SKKPage() {
                   fontStyle: 'italic',
                 }}
               >
-                A simple graphic showing a &quot;Hot Brain&quot; (Emotion/Limbic) reacting to a scam message and a &quot;Cool Brain&quot; (Logic/Prefrontal) pausing for 5 seconds.
+           A simple graphic showing a &quot;Hot Brain&quot; (Emotion/Limbic) reacting to a scam message and a &quot;Cool Brain&quot; (Logic) pausing for 5 seconds.
               </Typography>
               <Box
                 component="img"
@@ -937,7 +937,7 @@ export default function SKKPage() {
               <Grid item xs={12} sm={6} md={3}>
                 <Button
                   component={Link}
-                  href="/comasy"
+                  href="/comasi"
                   variant="contained"
                   fullWidth
                   sx={{

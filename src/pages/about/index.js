@@ -46,7 +46,7 @@ export default function AboutPage() {
               <Typography
                 variant="h1"
                 sx={{
-                  // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
+                  fontSize: { xs: '2.5rem', md: '2rem' },
                   fontWeight: 700,
                   mb: 3,
                   color: '#FFFFFF',
@@ -58,13 +58,13 @@ export default function AboutPage() {
               <Typography
                 variant="body1"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  // fontSize: { xs: '1.1rem', md: '1.25rem' },
                   lineHeight: 1.8,
                   color: 'rgba(255,255,255,0.95)',
                   mb: 3,
                 }}
               >
-                Tichi Mbanwie spent over 15 years in high-stakes finance and compliance at PIMCO and Ford. He understood cybersecurity inside out. Yet he watched it happen again and again: smart, experienced people — including close family and friends with strong financial backgrounds — falling for scams.
+                Tichi Mbanwie spent over 16 years in finance and compliance at global organizations like PIMCO and Ford, where security was taken very seriously. Outside the workplace, he watched it happen again and again: smart, experienced people — including close family and friends with strong financial backgrounds — falling victim to scams.
               </Typography>
             </Grid>
             <Grid item xs={12} md={6} data-aos="fade-left">
@@ -137,7 +137,7 @@ export default function AboutPage() {
                   fontStyle: 'italic',
                 }}
               >
-                &quot;These weren&apos;t careless strangers,&quot; Tichi says. &quot;They were people I trusted to manage money professionally. The scams worked because they exploited biology, not ignorance — a rush of hurry, authority, or excitement that bypassed logic in seconds.&quot;
+              Those triggers became the H.A.C.K. framework: Hurry, Authority, Comfort, Kill-Switch.
               </Typography>
             </Box>
 
@@ -162,7 +162,7 @@ export default function AboutPage() {
                 mb: 3,
               }}
             >
-              Konfydence was born from that conviction. No lectures. No shame. Just fun, practical tools that train everyone — families, students, teams — to spot H.A.C.K. tricks and pause before reacting.
+              Konfydence was born from that conviction — to give people permission to slow down long enough to make a better decision.
             </Typography>
 
             <Typography

@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'CoMaSy', href: '/comasy' },
+  { label: 'CoMaSi', href: '/comasi' },
   { label: 'Education', href: '/education' },
   { label: 'Resource Hub', href: '/resources' },
   { label: 'Shop', href: '/sskit-family' },
@@ -108,14 +108,16 @@ export default function Header() {
         position="fixed"
         elevation={0}
         sx={{
-          background: scrolled
-            ? 'rgba(255,255,255,0.95)'
-            : 'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
+          background:  'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
+          // background: scrolled
+          //   ? 'rgba(255,255,255,0.95)'
+          //   : 'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
           backdropFilter: 'blur(18px)',
           borderRadius: '0',
           // borderBottom: scrolled ? '1px solid rgba(15,31,43,0.08)' : 'transparent',
           transition: 'all 0.4s ease',
-          color: scrolled ? 'text.primary' : 'white',
+          // color: scrolled ? 'text.primary' : 'white',
+          color:'white',
         }}
       >
         <Container maxWidth={false} sx={{ px: { xs: 3, md: 10 } }}>
@@ -281,7 +283,7 @@ export default function Header() {
                           </Box>
                           <Box
                             component={Link}
-                            href="/game"
+                            href="/play"
                             onClick={() => setDropdownOpen(false)}
                             sx={{
                               display: 'block',
@@ -452,7 +454,7 @@ export default function Header() {
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/game">
+                  <ListItemButton component={Link} href="/play">
                     <ListItemText 
                       primary="Game" 
                       sx={{

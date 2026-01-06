@@ -275,7 +275,20 @@ export default function Resources() {
     if (canClick) {
       const encodedName = encodeURIComponent(pdfItem.file);
       const pdfUrl = `/pdfs/${encodedName}`;
-      window.open(pdfUrl, '_blank');
+      
+      // Check if file is DOCX - open directly in new tab
+      // The browser will handle it based on server MIME type
+      // If server sends proper headers, it will open in browser or download
+      if (pdfItem.file.toLowerCase().endsWith('.docx')) {
+        // Open directly - browser will handle based on Content-Disposition header
+        // If server wants to display, it should send Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document
+        // If server wants to download, it should send Content-Disposition: attachment
+        // For now, we'll open it directly and let the server decide
+        window.open(pdfUrl, '_blank');
+      } else {
+        // For PDFs, open directly
+        window.open(pdfUrl, '_blank');
+      }
     }
   };
 

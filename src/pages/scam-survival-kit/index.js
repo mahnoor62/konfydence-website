@@ -360,7 +360,7 @@ export default function SKKPage() {
                     mb: 1,
                   }}
                 >
-                  Designed by a Finance & Compliance Expert (ex-PIMCO/Ford)
+                Designed by a finance & compliance expert with 16+ years of experience
                 </Typography>
                 <Typography
                   variant="body2"
@@ -394,6 +394,7 @@ export default function SKKPage() {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
+                    borderRadius: 3,
                     animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
@@ -459,7 +460,7 @@ export default function SKKPage() {
               <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
                 <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
                 <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
-                  Made in Germany &amp; socially responsible
+                Designed in Germany & socially responsible
                 </Typography>
               </Box>
             </Grid>
@@ -468,7 +469,7 @@ export default function SKKPage() {
       </Box>
 
       {/* Problem Awareness Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#E9F4FF' }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#ffffff' }}>
         <Container maxWidth="lg" data-aos="fade-up">
           <Typography
             variant="h2"
@@ -483,125 +484,153 @@ export default function SKKPage() {
             The Hard Truth: Why Warnings Aren&apos;t Enough
           </Typography>
           
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              lineHeight: 1.8,
-              mb: 3,
-              color: '#063C5E',
-              textAlign: 'center',
-            }}
-          >
-            Scams don&apos;t work because people are ignorant.
-          </Typography>
-          
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              lineHeight: 1.8,
-              mb: 3,
-              color: '#063C5E',
-              textAlign: 'center',
-            }}
-          >
-            They work because they exploit human biology, urgency, authority, excitement, fear.
-          </Typography>
-          
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              lineHeight: 1.8,
-              mb: 3,
-              color: '#063C5E',
-              textAlign: 'center',
-            }}
-          >
-            In seconds of pressure, even experts click.
-          </Typography>
-          
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              lineHeight: 1.8,
-              mb: 4,
-              fontWeight: 600,
-              color: '#063C5E',
-              textAlign: 'center',
-            }}
-          >
-            This doesn&apos;t mean you&apos;re careless, it means you&apos;re human.
-          </Typography>
-          
-          <Typography
-            variant="h6"
-            sx={{
-              fontSize: { xs: '1.1rem', md: '1.25rem' },
-              fontWeight: 600,
-              mb: 3,
-              color: '#063C5E',
-            }}
-          >
-            You&apos;ve probably:
-          </Typography>
-          
-          <Grid container spacing={3} sx={{ mb: 4 }}>
-            {[
-              'Felt rushed by an "urgent" email',
-              'Clicked a link you later questioned',
-              'Worried about family members falling for scams',
-              'Found traditional security training boring or forgettable',
-            ].map((point, idx) => (
-              <Grid item xs={12} sm={6} key={idx}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  <Typography
-                    sx={{
-                      color: '#FF725E',
-                      fontSize: '1.5rem',
-                      mr: 2,
-                      lineHeight: 1,
-                      flexShrink: 0,
-                    }}
-                  >
-                    •
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.125rem' },
-                      lineHeight: 1.8,
-                      color: '#063C5E',
-                    }}
-                  >
-                    {point}
-                  </Typography>
+          <Grid container spacing={3} sx={{ mb: 3 }}>
+            <Grid item xs={12} md={6}>
+              <Card
+                sx={{
+                  p: 4,
+                  height: '100%',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  border: '1px solid #E0E0E0',
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    lineHeight: 1.8,
+                    mb: 2,
+                    color: '#063C5E',
+                  }}
+                >
+                  Scams don&apos;t work because people are ignorant.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    lineHeight: 1.8,
+                    mb: 2,
+                    color: '#063C5E',
+                  }}
+                >
+                  They work because they exploit human biology, urgency, authority, excitement, fear.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    lineHeight: 1.8,
+                    mb: 2,
+                    color: '#063C5E',
+                  }}
+                >
+                  In seconds of pressure, even experienced people make mistakes.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    lineHeight: 1.8,
+                    fontWeight: 600,
+                    color: '#063C5E',
+                  }}
+                >
+                  This doesn&apos;t mean you&apos;re careless, it means you&apos;re human.
+                </Typography>
+              </Card>
+            </Grid>
+            
+            <Grid item xs={12} md={6}>
+              <Card
+                sx={{
+                  p: 4,
+                  height: '100%',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  border: '1px solid #E0E0E0',
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: { xs: '1.1rem', md: '1.25rem' },
+                    fontWeight: 600,
+                    mb: 3,
+                    color: '#063C5E',
+                  }}
+                >
+                  You&apos;ve probably:
+                </Typography>
+                <Box>
+                  {[
+                    'Felt rushed by an "urgent" email',
+                    'Worried about family members falling for scams',
+                    'Clicked a link you later questioned',
+                    'Found traditional security training boring or forgettable',
+                  ].map((point, idx) => (
+                    <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
+                      <Typography
+                        sx={{
+                          color: '#FF725E',
+                          fontSize: '1.5rem',
+                          mr: 2,
+                          lineHeight: 1,
+                          flexShrink: 0,
+                        }}
+                      >
+                        •
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1rem', md: '1.125rem' },
+                          lineHeight: 1.8,
+                          color: '#063C5E',
+                        }}
+                      >
+                        {point}
+                      </Typography>
+                    </Box>
+                  ))}
                 </Box>
-              </Grid>
-            ))}
+              </Card>
+            </Grid>
           </Grid>
           
-          <Typography
-            variant="body1"
-            sx={{
-              fontSize: { xs: '1rem', md: '1.125rem' },
-              lineHeight: 1.8,
-              fontWeight: 600,
-              color: '#063C5E',
-              textAlign: 'center',
-            }}
-          >
-            Knowing about scams isn&apos;t enough.
-            <br />
-            What matters is how you react in the moment.
-          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Card
+                sx={{
+                  p: 4,
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  border: '1px solid #E0E0E0',
+                  textAlign: 'center',
+                }}
+              >
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    lineHeight: 1.8,
+                    fontWeight: 600,
+                    color: '#063C5E',
+                  }}
+                >
+                  Knowing about scams isn&apos;t enough.
+                  <br />
+                  What matters is how you react in the moment.
+                </Typography>
+              </Card>
+            </Grid>
+          </Grid>
         </Container>
       </Box>
 
       {/* Solution Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#E9F4FF' }}>
+      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#0A6686' }}>
         <Container maxWidth="lg" data-aos="fade-up">
           <Typography
             variant="h2"
@@ -610,7 +639,7 @@ export default function SKKPage() {
               fontWeight: 700,
               mb: 4,
               textAlign: 'center',
-              color: '#063C5E',
+              color: 'white',
             }}
           >
             What If One 5-Second Habit Changed Everything?
@@ -624,7 +653,7 @@ export default function SKKPage() {
                   fontSize: { xs: '1.25rem', md: '1.5rem' },
                   fontWeight: 600,
                   mb: 3,
-                  color: '#063C5E',
+                  color: 'white',
                 }}
               >
                 Konfydence trains one simple but powerful skill:
@@ -635,7 +664,7 @@ export default function SKKPage() {
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                   fontWeight: 600,
                   mb: 3,
-                  color: '#0B7897',
+                  color: '#FFC54D',
                   fontStyle: 'italic',
                 }}
               >
@@ -648,7 +677,7 @@ export default function SKKPage() {
                   fontSize: { xs: '1.1rem', md: '1.25rem' },
                   fontWeight: 600,
                   mb: 3,
-                  color: '#063C5E',
+                  color: 'white',
                 }}
               >
                 With Konfydence, you:
@@ -656,13 +685,13 @@ export default function SKKPage() {
               
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  <CheckCircleIcon sx={{ color: '#0B7897', mr: 2, mt: 0.5 }} />
+                  <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5 }} />
                   <Typography
                     variant="body1"
                     sx={{
                       fontSize: { xs: '1rem', md: '1.125rem' },
                       lineHeight: 1.8,
-                      color: '#063C5E',
+                      color: 'white',
                     }}
                   >
                     Spot common H.A.C.K. triggers instantly
@@ -682,13 +711,13 @@ export default function SKKPage() {
                   'Protect family, kids, or your team together',
                 ].map((benefit, idx) => (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <CheckCircleIcon sx={{ color: '#0B7897', mr: 2, mt: 0.5 }} />
+                    <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5 }} />
                     <Typography
                       variant="body1"
                       sx={{
                         fontSize: { xs: '1rem', md: '1.125rem' },
                         lineHeight: 1.8,
-                        color: '#063C5E',
+                        color: 'white',
                       }}
                     >
                       {benefit}
@@ -705,7 +734,7 @@ export default function SKKPage() {
                   mt: 4,
                   fontWeight: 600,
                   fontStyle: 'italic',
-                  color: '#063C5E',
+                  color: 'white',
                 }}
               >
                 Scammers win by being fast.
@@ -718,7 +747,7 @@ export default function SKKPage() {
                   mb: 2,
                   fontWeight: 600,
                   fontStyle: 'italic',
-                  color: '#063C5E',
+                  color: 'white',
                 }}
               >
                 Konfydence trains you to be faster, by pausing first.
@@ -768,75 +797,84 @@ export default function SKKPage() {
             How Konfydence Works
           </Typography>
           
-          <Grid container spacing={4} alignItems="center" sx={{ mb: 6 }}>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={1} alignItems="center" sx={{ mb: 6 }}>
+            <Grid item xs={12} md={5.5}>
               <Box
                 sx={{
                   position: 'relative',
-                  height: { xs: '300px', md: '400px' },
                   borderRadius: 3,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
                 }}
               >
-                <Card
+                <Box
                   sx={{
-                    height: '100%',
-                    background: 'linear-gradient(135deg, #FF725E 0%, #e65a4a 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    p: 4,
+                    maxWidth: { xs: '100%', md: '50%' },
+                    width: '100%',
                   }}
                 >
-                  {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'white' }}>
-                    LEFT CARD – FRONT (PANIC)
-                  </Typography> */}
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: 'white' }}>
-                    Bank Email – Urgent Action Required
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2, color: 'white' }}>
-                    Panic Reaction
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.9)' }}>
-                    Urgency · Pressure · Emotional Click
-                  </Typography>
-                </Card>
+                  <Swiper
+                    modules={[Autoplay, Pagination]}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
+                    }}
+                    pagination={{ clickable: true }}
+                    style={{
+                      '--swiper-pagination-color': '#FF725E',
+                    }}
+                  >
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/1Bank.png"
+                        alt="Bank Email Scam Card"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/1.png"
+                        alt="Bank Email Scam Card Back"
+                        sx={{
+                          width: '100%',
+                          height: 'auto',
+                          display: 'block',
+                        }}
+                      />
+                    </SwiperSlide>
+                  </Swiper>
+                </Box>
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={5.5}>
               <Box
                 sx={{
                   position: 'relative',
-                  height: { xs: '300px', md: '400px' },
                   borderRadius: 3,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
                 }}
               >
-                <Card
+                <Box
+                  component="img"
+                  src="/images/5SecondsDefense2.jpg"
+                  alt="The 5-Second Pause"
                   sx={{
-                    height: '100%',
-                    background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    p: 4,
+                    width: '100%',
+                    height: 'auto',
+                    display: 'block',
                   }}
-                >
-                  {/* <Typography variant="h6" sx={{ fontWeight: 600, mb: 2, color: 'white' }}>
-                    RIGHT CARD – FLIP (SAFE ACTION)
-                  </Typography> */}
-                  <Typography variant="h5" sx={{ fontWeight: 700, mb: 2, color: 'white' }}>
-                    The 5-Second Pause
-                  </Typography>
-                  <Typography variant="body1" sx={{ mb: 2, color: 'white' }}>
-                    Pause → Think → Safe Action
-                  </Typography>
-                </Card>
+                />
               </Box>
             </Grid>
           </Grid>
@@ -1070,7 +1108,7 @@ export default function SKKPage() {
                   Design aligned to NIS2 and ISO 27001 human factor security awareness training requirements.
                 </Typography>
                 <Button
-                href="/comasy#demo-form"
+                href="/comasi#demo-form"
                   variant="outlined"
                   sx={{
                     borderColor: '#0B7897',
@@ -1281,7 +1319,7 @@ export default function SKKPage() {
                   color: 'white',
                 }}
               >
-                I saw it happen again and again: smart, experienced colleagues and even close family members falling for scams despite knowing better.
+                I saw it happen again and again: smart, experienced people I worked with and even close family members falling for scams despite knowing better.
               </Typography>
               <Typography
                 variant="body1"
@@ -1411,7 +1449,6 @@ export default function SKKPage() {
                   sx={{
                     width: '100%',
                     height: { xs: '300px', md: '500px' },
-                    overflow: 'hidden',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -1419,9 +1456,10 @@ export default function SKKPage() {
                 >
                   <Box
                     component="img"
-                    src="/images/decisionladder.jpg"
+                    src="/images/decisionladder2.jpg"
                     alt="The Decision Ladder"
                     sx={{
+                      maxWidth: { xs: '100%', md: '90%' },
                       width: '100%',
                       height: '100%',
                       objectFit: 'contain',
@@ -1889,32 +1927,8 @@ export default function SKKPage() {
             Join the First Line of Defense → Get Early Access
           </Typography>
           
-          <Grid container spacing={4} alignItems="stretch">
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  width: '100%',
-                  // height: { xs: '400px', md: '500px' },
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  component="img"
-                  src="/images/decisionladder.jpg"
-                  alt="Decision Ladder"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    animation: 'floatImage 3s ease-in-out infinite',
-                  }}
-                />
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={4} alignItems="stretch" justifyContent="center">
+            <Grid item xs={12} md={8}>
               <Paper
                 elevation={3}
                 sx={{

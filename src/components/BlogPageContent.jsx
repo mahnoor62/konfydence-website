@@ -231,7 +231,7 @@ export default function BlogPageContent() {
               <Typography
                 variant="h1"
                 sx={{
-                  fontSize: { xs: '2rem', md: '3rem', lg: '3.5rem' },
+                  fontSize: { xs: '2rem', md: '2rem' },
                   fontWeight: 700,
                   mb: 2,
                   color: '#FFFFFF',

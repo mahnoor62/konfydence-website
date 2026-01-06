@@ -433,11 +433,12 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       <Typography
                         variant="h1"
                         sx={{
-                          fontSize: '2rem',
+                          // fontSize: '2rem',
                           lineHeight: 1.2,
+                          fontSize: { xs: '1.3rem', md: '2rem' },
                           fontWeight: 700,
                           color: 'white',
-                          mb: 3,
+                          mb: 4,
                           textAlign: 'center',
                         }}
                       >
@@ -448,6 +449,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         sx={{
                           fontSize: '1rem',
                           mb: 4,
+                      
                           opacity: 0.95,
                           color: 'white',
                           textAlign: 'center',
@@ -466,18 +468,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           href="/sskit-family"
                           variant="contained"
                           size="large"
-                          endIcon={
-                            <Box
-                              component="span"
-                              sx={{
-                                ml: 0.5,
-                                fontSize: '1.2rem',
-                                lineHeight: 1,
-                              }}
-                            >
-                              →
-                            </Box>
-                          }
+                          // endIcon={
+                          //   <Box
+                          //     component="span"
+                          //     sx={{
+                          //       ml: 0.5,
+                          //       fontSize: '1.2rem',
+                          //       lineHeight: 1,
+                          //     }}
+                          //   >
+                          //     →
+                          //   </Box>
+                          // }
                           sx={{
                             backgroundColor: '#FFFFFF',
                             color: '#063C5E',
@@ -524,13 +526,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       }}
                     >
                       <Typography
-                        variant="h2"
+                        variant="h1"
                         sx={{
-                          fontSize: '1.75rem',
+                          // fontSize: '2rem',
                           lineHeight: 1.2,
+                          fontSize: { xs: '1.3rem', md: '1.4rem' },
                           fontWeight: 700,
                           color: 'white',
-                          mb: 4,
+                          mb: 3,
                           textAlign: 'center',
                         }}
                       >
@@ -540,7 +543,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         variant="body1"
                         sx={{
                           fontSize: '1rem',
-                          mb: 3,
+                          mb: 4,
                           opacity: 0.95,
                           color: 'white',
                           textAlign: 'center',
@@ -567,7 +570,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             fontWeight: 500,
                           }}
                         >
-                          Understand the Limbic Hijack →
+                          Understand the Limbic Hijack
                         </Link>
                       </Box>
                       <Box
@@ -581,18 +584,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           href="/contact"
                           variant="contained"
                           size="large"
-                          endIcon={
-                            <Box
-                              component="span"
-                              sx={{
-                                ml: 0.5,
-                                fontSize: '1.2rem',
-                                lineHeight: 1,
-                              }}
-                            >
-                              →
-                            </Box>
-                          }
+                          // endIcon={
+                          //   <Box
+                          //     component="span"
+                          //     sx={{
+                          //       ml: 0.5,
+                          //       fontSize: '1.2rem',
+                          //       lineHeight: 1,
+                          //     }}
+                          //   >
+                          //     →
+                          //   </Box>
+                          // }
                           sx={{
                             backgroundColor: '#00A4E8',
                             color: 'white',
@@ -635,7 +638,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 py: { xs: 4, md: 0 },
               }}
             >
-              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Box
                   data-aos="fade-right"
                   data-aos-duration="800"
@@ -644,76 +647,23 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     maxWidth: { xs: '100%', md: '90%' },
                     mx: 'auto',
                     px: { xs: 2, md: 4 },
-                    pt: { xs: 0, md: 4 },
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: { xs: 'center', md: 'flex-start' },
+                    minHeight: { xs: 'auto', md: '204px' },
                   }}
                 >
-                  {/* B2C Image */}
-                  <Box
-                    sx={{
-                      mb: 0,
-                      display: { xs: 'none', md: 'none' },
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      position: 'relative',
-                      animation: 'floatCard 4s ease-in-out infinite',
-                      transformOrigin: 'center',
-                      filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                      '@keyframes floatCard': {
-                        '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                        '50%': {
-                          transform: 'translateY(-15px) rotate(-1deg)',
-                          filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                        },
-                        '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                      },
-                    }}
-                  >
-                    {/* <Box
-                      component="img"
-                      src="/images/hero-left.jpg"
-                      alt="Family with Konfydence cards"
-                      sx={{
-                        width: '100%',
-                        maxWidth: { xs: '280px', md: '450px' },
-                        height: 'auto',
-                        borderRadius: 3,
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-                        objectFit: 'contain',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::after': {
-                          content: '""',
-                          position: 'absolute',
-                          inset: 0,
-                          background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(11,120,151,0.2))',
-                        },
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: '-50%',
-                          left: '-50%',
-                          width: '200%',
-                          height: '200%',
-                          background: 'radial-gradient(circle, rgba(255,255,255,0.45), transparent 60%)',
-                          animation: 'pulseGlow 6s ease-in-out infinite',
-                        },
-                        '@keyframes pulseGlow': {
-                          '0%': { transform: 'translate(-20%, -20%) scale(1)' },
-                          '50%': { transform: 'translate(10%, 10%) scale(1.1)', opacity: 0.7 },
-                          '100%': { transform: 'translate(-20%, -20%) scale(1)' },
-                        },
-                      }}
-                    /> */}
-                  </Box>
                   <Typography
                     variant="h1"
                     sx={{
-              
-                      fontSize: { xs: '2rem', md: '2.75rem', lg: '3rem' },
+                      // fontSize: { xs: '2rem', md: '2.75rem', lg: '3rem' },
                       lineHeight: 1.2,
+                        fontSize: { xs: '1.3rem', md: '1.8rem' },
                       fontWeight: 700,
                       color: 'white',
-                      mb: 12,
+                      mb: 3,
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
@@ -722,8 +672,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   <Typography
                     variant="body1"
                     sx={{
-                      fontSize: { xs: '1rem', md: '1.15rem' },
-                      mb: 4,
+                      // fontSize: { xs: '1rem', md: '1.15rem' },
+                      mb: 2,
                       opacity: 0.95,
                       color: 'white',
                       textAlign: { xs: 'center', md: 'left' },
@@ -731,6 +681,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   >
                     The interactive game that helps families, students, and teams spot tricks before they click—turning everyday pressure into smart pauses.
                   </Typography>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: { xs: 'center', md: 'flex-start' },
+                      mb: 2,
+                      minHeight: '24px',
+                    }}
+                  />
                   <Box
                     sx={{
                       display: 'flex',
@@ -745,18 +703,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       href="/sskit-family"
                       variant="contained"
                       size="large"
-                      endIcon={
-                        <Box
-                          component="span"
-                          sx={{
-                            ml: 0.5,
-                            fontSize: '1.2rem',
-                            lineHeight: 1,
-                          }}
-                        >
-                          →
-                        </Box>
-                      }
+                      // endIcon={
+                      //   <Box
+                      //     component="span"
+                      //     sx={{
+                      //       ml: 0.5,
+                      //       fontSize: '1.2rem',
+                      //       lineHeight: 1,
+                      //     }}
+                      //   >
+                      //     →
+                      //   </Box>
+                      // }
                       sx={{
                         backgroundColor: '#FFFFFF',
                         color: '#063C5E',
@@ -797,7 +755,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 py: { xs: 4, md: 0 },
               }}
             >
-              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
+              <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Box
                   data-aos="fade-left"
                   data-aos-duration="800"
@@ -806,17 +764,23 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     maxWidth: { xs: '100%', md: '90%' },
                     mx: 'auto',
                     px: { xs: 2, md: 4 },
-                    pt: { xs: 0, md: 4 },
+                    width: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: { xs: 'center', md: 'flex-start' },
+                    minHeight: { xs: 'auto', md: '204px' },
                   }}
                 >
                   <Typography
-                    variant="h2"
+                    variant="h1"
                     sx={{
-                      fontSize: { xs: '1.75rem', md: '2.5rem', lg: '3rem' },
+                      // fontSize: { xs: '2rem', md: '2.75rem', lg: '3rem' },
                       lineHeight: 1.2,
+                      fontSize: { xs: '1.3rem', md: '1.8rem' },
                       fontWeight: 700,
                       color: 'white',
-                      mb: 4,
+                      mb: 3,
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
@@ -825,8 +789,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   <Typography
                     variant="body1"
                     sx={{
-                      fontSize: { xs: '1rem', md: '1.15rem' },
-                      mb: 3,
+                      // fontSize: { xs: '1rem', md: '1.15rem' },
+                      mb: 2,
                       opacity: 0.95,
                       color: 'white',
                       textAlign: { xs: 'center', md: 'left' },
@@ -838,7 +802,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     sx={{
                       display: 'flex',
                       justifyContent: { xs: 'center', md: 'flex-start' },
-                      mb: 3,
+                      mb: 2,
                     }}
                   >
                     <Link
@@ -848,7 +812,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       style={{
                         color: 'white',
                         textDecoration: 'underline',
-                        fontSize: { xs: '0.95rem', md: '1rem' },
+                        fontSize: '0.95rem',
                         fontWeight: 500,
                         fontFamily: 'Poppins, sans-serif',
                       }}
@@ -867,21 +831,21 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   >
                         <Button
                           component={Link}
-                          href="/contact?topic=comasy"
+                          href="/contact?topic=comasi"
                           variant="contained"
                           size="large"
-                          endIcon={
-                            <Box
-                              component="span"
-                              sx={{
-                                ml: 0.5,
-                                fontSize: '1.2rem',
-                                lineHeight: 1,
-                              }}
-                            >
-                              →
-                            </Box>
-                          }
+                          // endIcon={
+                          //   <Box
+                          //     component="span"
+                          //     sx={{
+                          //       ml: 0.5,
+                          //       fontSize: '1.2rem',
+                          //       lineHeight: 1,
+                          //     }}
+                          //   >
+                          //     →
+                          //   </Box>
+                          // }
                           sx={{
                             backgroundColor: '#00A4E8',
                             color: 'white',
@@ -930,7 +894,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  backgroundColor: '#7FC7D9',
+                  backgroundColor: '#5FA8BA',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   position: 'relative',
@@ -990,7 +954,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.4 }}>
-                  Scammers always use the same four tricks: H.A.C.K. – Hurry, Authority, Comfort, Kill-Switch (panic or excitement). Spot the trick. Take five seconds. Stay safe.
+                Scammers steal an average of $2,000+ per victim.
+One simple habit — a five-second pause — stops most attacks before they start.
+Get the full kit for just €49.
                 </Typography>
                 {/* <Stack spacing={1}>
                   {['Fun and engaging', 'Accessible for all ages', 'Proven learning method'].map((item) => (
@@ -1007,16 +973,110 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
         </Container>
         </Box>
 
+        {/* Meet Tichi Video Section */}
+        <Box sx={{ py: { xs: 6, md: 20 }, backgroundColor: '#F5F8FB' }}>
+          <Container maxWidth="lg">
+            <Box
+              data-aos="zoom-in"
+              data-aos-duration="800"
+              sx={{
+                backgroundColor: '#E3F2FD',
+                borderRadius: 4,
+                // border: '4px sold black',
+                p: { xs: 3, md: 5 },
+              }}
+            >
+              <Grid container spacing={4} alignItems="center">
+                {/* Video Column */}
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      paddingTop: '56.25%', // 16:9 aspect ratio
+                      backgroundColor: '#000B3F',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        color: 'white',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          // color: '#FF5252',
+                          fontWeight: 700,
+                          mb: 2,
+                        }}
+                      >
+                        Video Placeholder
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'rgba(255, 255, 255, 0.8)',
+                          fontStyle: 'italic',
+                        }}
+                      >
+                        Short video from Tichi coming soon
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+
+                {/* Text Column */}
+                <Grid item xs={12} md={6}>
+                  <Typography
+                    variant="h3"
+                    sx={{
+                      fontSize: { xs: '1.5rem', md: '1.4rem' },
+                      fontWeight: 700,
+                      // color: '#000000',
+                      mb: 2,
+                      lineHeight: 1.3,
+                      textAlign: { xs: 'center', md: 'left' },
+                    }}
+                  >
+                    Meet Tichi - From Finance Expert to Family Protector
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.1rem' },
+                      color: '#063C5E',
+                      lineHeight: 1.8,
+                      textAlign: { xs: 'center', md: 'left' },
+                    }}
+                  >
+                    Discover how a finance expert transformed her expertise into a powerful family protection system, helping thousands stay safe from scams.
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Box>
+          </Container>
+        </Box>
+
         {/* New Introductory Section - Why Most Scam Training Doesn't Work */}
-        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: 'white' }}>
+        <Box sx={{ py: { xs: 8, md: 20 }, backgroundColor: 'white' }}>
           <Container maxWidth="lg">
             <Grid container spacing={6} alignItems="center">
               <Grid item xs={12} md={6}>
                 <Box data-aos="fade-right" data-aos-duration="800">
                   <Typography
-                    variant="h2"
+                    // variant="h2"
                     sx={{
-                      fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                      fontSize: { xs: '1.3rem', md: '1.8rem' },
                       fontWeight: 700,
                       color: '#063C5E',
                       mb: 3,
@@ -1065,7 +1125,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         fontWeight: 600,
                       }}
                     >
-                      Family Tech Contract →
+                      Family Tech Contract 
                     </Link>
                   </Typography>
                   <Typography
@@ -1088,7 +1148,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         fontWeight: 600,
                       }}
                     >
-                      Read the Science: Why Human Hardware Fails Before Software →
+                      Read the Science: Why Human Hardware Fails Before Software 
                     </Link>
                   </Typography>
                   <Typography
@@ -1235,7 +1295,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   </Stack>
                   <Button
                     component={Link}
-                    href="/comasy#demo-form"
+                    href="/comasi#demo-form"
                     variant="contained"
                     size="large"
                     sx={{
@@ -1515,14 +1575,15 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               );
               
               return (
-                <Grid container spacing={6}>
+                <Grid container spacing={6} sx={{ alignItems: 'stretch' }}>
                   {/* Family/Private Users Section */}
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
                     <Box
                       data-aos="fade-up"
                       data-aos-duration="800"
                       sx={{
                         height: '100%',
+                        width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
                       }}
@@ -1567,7 +1628,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       
                       {/* Carousel of Cards */}
                       {uniqueB2C.length > 0 && (
-                        <Box sx={{ mb: 4}}>
+                        <Box sx={{ mb: 4, width: '100%' }}>
                           <Swiper
                             modules={[Pagination, Navigation]}
                             spaceBetween={16}
@@ -1579,14 +1640,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             }}
                           >
                             {uniqueB2C.map((product, index) => (
-                              <SwiperSlide key={product._id || index}>
+                              <SwiperSlide key={product._id || index} style={{ height: 'auto' }}>
                                 <ProductCard 
-                                // sx={{ height:'100%', minHeight:'600px' }}
                                   product={product} 
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
                                   limitDescriptionLines={true}
+                                  darkBackground={true}
                                 />
                               </SwiperSlide>
                             ))}
@@ -1599,18 +1660,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         href="/sskit-family"
                         variant="contained"
                         size="large"
-                        endIcon={
-                          <Box
-                            component="span"
-                            sx={{
-                              ml: 0.5,
-                              fontSize: '1.2rem',
-                              lineHeight: 1,
-                            }}
-                          >
-                            →
-                          </Box>
-                        }
+                        // endIcon={
+                        //   <Box
+                        //     component="span"
+                        //     sx={{
+                        //       ml: 0.5,
+                        //       fontSize: '1.2rem',
+                        //       lineHeight: 1,
+                        //     }}
+                        //   >
+                        //     →
+                        //   </Box>
+                        // }
                         sx={{
                           backgroundColor: '#063C5E',
                           color: 'white',
@@ -1632,13 +1693,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   </Grid>
 
                   {/* Schools & Universities Section */}
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
                     <Box
                       data-aos="fade-up"
                       data-aos-duration="800"
                       data-aos-delay="100"
                       sx={{
                         height: '100%',
+                        width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
                       }}
@@ -1682,16 +1744,17 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       </Typography>
                       
                       {b2eOnlyProducts.length > 0 && (
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{ mb: 4, width: '100%' }}>
                           <Grid container spacing={2}>
                             {b2eOnlyProducts.slice(0, 1).map((product, index) => (
-                              <Grid item xs={12} key={product._id || index}>
+                              <Grid item xs={12} key={product._id || index} sx={{ display: 'flex' }}>
                                 <ProductCard 
                                   product={product} 
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
                                   limitDescriptionLines={true}
+                                  darkBackground={true}
                                 />
                               </Grid>
                             ))}
@@ -1704,18 +1767,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         href="/resources"
                         variant="contained"
                         size="large"
-                        endIcon={
-                          <Box
-                            component="span"
-                            sx={{
-                              ml: 0.5,
-                              fontSize: '1.2rem',
-                              lineHeight: 1,
-                            }}
-                          >
-                            →
-                          </Box>
-                        }
+                        // endIcon={
+                        //   <Box
+                        //     component="span"
+                        //     sx={{
+                        //       ml: 0.5,
+                        //       fontSize: '1.2rem',
+                        //       lineHeight: 1,
+                        //     }}
+                        //   >
+                        //     →
+                        //   </Box>
+                        // }
                         sx={{
                           backgroundColor: '#00A4E8',
                           color: 'white',
@@ -1737,13 +1800,14 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   </Grid>
 
                   {/* Businesses & Organizations Section */}
-                  <Grid item xs={12} md={4}>
+                  <Grid item xs={12} md={4} sx={{ display: 'flex' }}>
                     <Box
                       data-aos="fade-up"
                       data-aos-duration="800"
                       data-aos-delay="200"
                       sx={{
                         height: '100%',
+                        width: '100%',
                         display: 'flex',
                         flexDirection: 'column',
                       }}
@@ -1786,16 +1850,17 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       </Typography>
                       
                       {b2bOnlyProducts.length > 0 && (
-                        <Box sx={{ mb: 4 }}>
+                        <Box sx={{ mb: 4, width: '100%' }}>
                           <Grid container spacing={2}>
                             {b2bOnlyProducts.slice(0, 1).map((product, index) => (
-                              <Grid item xs={12} key={product._id || index}>
+                              <Grid item xs={12} key={product._id || index} sx={{ display: 'flex' }}>
                                 <ProductCard 
                                   product={product} 
                                   delay={0}
                                   hidePrice={true}
                                   buttonText="Get Early Access"
                                   limitDescriptionLines={true}
+                                  darkBackground={true}
                                 />
                               </Grid>
                             ))}
@@ -1808,18 +1873,18 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         href="/contact"
                         variant="contained"
                         size="large"
-                        endIcon={
-                          <Box
-                            component="span"
-                            sx={{
-                              ml: 0.5,
-                              fontSize: '1.2rem',
-                              lineHeight: 1,
-                            }}
-                          >
-                            →
-                          </Box>
-                        }
+                        // endIcon={
+                        //   <Box
+                        //     component="span"
+                        //     sx={{
+                        //       ml: 0.5,
+                        //       fontSize: '1.2rem',
+                        //       lineHeight: 1,
+                        //     }}
+                        //   >
+                        //     →
+                        //   </Box>
+                        // }
                         sx={{
                           backgroundColor: '#5FA8BA',
                           color: 'white',
@@ -2100,7 +2165,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               
                   <Button
                     component={Link}
-                  href="/comasy#demo-form"
+                  href="/comasi#demo-form"
                     variant="contained"
                     size="large"
                     sx={{
@@ -2987,7 +3052,7 @@ Empowering individuals, organizations, and compliance teams with interactive sca
             </Button>
             <Button
               component={Link}
-              href="/comasy#demo-form"
+              href="/comasi#demo-form"
               variant="contained"
               sx={{
                 backgroundColor: '#00A4E8',
@@ -3029,8 +3094,8 @@ Empowering individuals, organizations, and compliance teams with interactive sca
         </Container> */}
       {/* </Box>  */}
 
-      <Box  data-aos="zoom-in" data-aos-duration="800" data-aos-delay="100" sx={{ py: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB' }}>
-        <Container
+      {/* <Box  data-aos="zoom-in" data-aos-duration="800" data-aos-delay="100" sx={{ py: { xs: 8, md: 10 }, backgroundColor: '#F2F5FB' }}> */}
+        {/* <Container
           maxWidth="md"
           sx={{ textAlign: 'center', mb: 6 }}
           data-aos="zoom-in"
@@ -3077,8 +3142,8 @@ Empowering individuals, organizations, and compliance teams with interactive sca
               </Box>
             </>
           )}
-        </Container>
-      </Box>
+        </Container> */}
+      {/* </Box> */}
       </Box>
 
       {/* Final Motivational Section */}
