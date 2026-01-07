@@ -3319,61 +3319,117 @@ export default function OrganizationDashboardPage() {
                                               </TableRow>
                                             </TableHead>
                                             <TableBody>
-                                              {pkg.transaction.gamePlays.map((gamePlay, index) => (
-                                                <TableRow key={index}>
-                                                  <TableCell>
-                                                    <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                                                      {gamePlay.userId?.name || gamePlay.user?.name || 'Unknown User'}
-                                                    </Typography>
-                                                  </TableCell>
-                                                  <TableCell>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                      {gamePlay.userId?.email || gamePlay.user?.email || 'N/A'}
-                                                    </Typography>
-                                                  </TableCell>
-                                                  <TableCell>
-                                                    <Typography variant="body2" color="text.secondary">
-                                                      {gamePlay.playedAt ? new Date(gamePlay.playedAt).toLocaleString() : 'N/A'}
-                                                    </Typography>
-                                                  </TableCell>
-                                                  <TableCell align="right">
-                                                    <Button
-                                                      size="small"
-                                                      variant="outlined"
-                                                      startIcon={<VisibilityIcon />}
-                                                      onClick={() => {
-                                                        // Extract user ID properly - could be object or string
-                                                        let userId = null;
-                                                        if (gamePlay.userId) {
-                                                          if (typeof gamePlay.userId === 'object') {
-                                                            userId = gamePlay.userId._id || gamePlay.userId.id || gamePlay.userId;
-                                                          } else {
-                                                            userId = gamePlay.userId;
-                                                          }
-                                                        } else if (gamePlay.user) {
-                                                          if (typeof gamePlay.user === 'object') {
-                                                            userId = gamePlay.user._id || gamePlay.user.id || gamePlay.user;
-                                                          } else {
-                                                            userId = gamePlay.user;
-                                                          }
-                                                        }
+                                              {pkg.transaction.gamePlays.map((gamePlay, index) => {
+                                                // Check if this is B2B or B2E transaction
+                                                const isB2BOrB2E = pkg.transaction?.type === 'b2b_contract' || pkg.transaction?.type === 'b2e_contract';
+                                                
+                                                // Check if user is deleted
+                                                // When Mongoose populates gamePlays.userId and the user document doesn't exist,
+                                                // it sets gamePlay.userId to null
+                                                
+                                                let isUserDeleted = false;
+                                                let userName = 'Unknown User';
+                                                let userEmail = 'N/A';
+                                                
+                                                if (isB2BOrB2E) {
+                                                  // For B2B/B2E transactions, check if user was deleted
+                                                  // Backend populates with: select: 'name email _id'
+                                                  // If user is deleted, gamePlay.userId will be null
+                                                  
+                                                  if (!gamePlay.userId || gamePlay.userId === null) {
+                                                    // User was deleted (populate returned null)
+                                                    isUserDeleted = true;
+                                                    userName = 'User Deleted';
+                                                    userEmail = 'N/A';
+                                                  } else if (typeof gamePlay.userId === 'object') {
+                                                    // User object exists - check if populated successfully
+                                                    if (gamePlay.userId.name || gamePlay.userId.email) {
+                                                      // User exists and is populated
+                                                      userName = gamePlay.userId.name || 'Unknown User';
+                                                      userEmail = gamePlay.userId.email || 'N/A';
+                                                    } else {
+                                                      // User object exists but no name/email - likely deleted
+                                                      isUserDeleted = true;
+                                                      userName = 'User Deleted';
+                                                      userEmail = 'N/A';
+                                                    }
+                                                  } else {
+                                                    // userId is a string (not populated) - fallback to original logic
+                                                    userName = gamePlay.user?.name || 'Unknown User';
+                                                    userEmail = gamePlay.user?.email || 'N/A';
+                                                  }
+                                                } else {
+                                                  // For non-B2B/B2E transactions, use original logic
+                                                  userName = gamePlay.userId?.name || gamePlay.user?.name || 'Unknown User';
+                                                  userEmail = gamePlay.userId?.email || gamePlay.user?.email || 'N/A';
+                                                }
+                                                
+                                                return (
+                                                  <TableRow key={index}>
+                                                    {isUserDeleted ? (
+                                                      <TableCell colSpan={4} align="center">
+                                                        <Typography variant="body2" sx={{ fontStyle: 'italic', color: 'text.secondary' }}>
+                                                          User Deleted
+                                                        </Typography>
+                                                      </TableCell>
+                                                    ) : (
+                                                      <>
+                                                        <TableCell>
+                                                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                            {userName}
+                                                          </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                          <Typography variant="body2" color="text.secondary">
+                                                            {userEmail}
+                                                          </Typography>
+                                                        </TableCell>
+                                                        <TableCell>
+                                                          <Typography variant="body2" color="text.secondary">
+                                                            {gamePlay.playedAt ? new Date(gamePlay.playedAt).toLocaleString() : 'N/A'}
+                                                          </Typography>
+                                                        </TableCell>
+                                                        <TableCell align="right">
+                                                          <Button
+                                                            size="small"
+                                                            variant="outlined"
+                                                            startIcon={<VisibilityIcon />}
+                                                            onClick={() => {
+                                                              // Extract user ID properly - could be object or string
+                                                              let userId = null;
+                                                              if (gamePlay.userId) {
+                                                                if (typeof gamePlay.userId === 'object') {
+                                                                  userId = gamePlay.userId._id || gamePlay.userId.id || gamePlay.userId;
+                                                                } else {
+                                                                  userId = gamePlay.userId;
+                                                                }
+                                                              } else if (gamePlay.user) {
+                                                                if (typeof gamePlay.user === 'object') {
+                                                                  userId = gamePlay.user._id || gamePlay.user.id || gamePlay.user;
+                                                                } else {
+                                                                  userId = gamePlay.user;
+                                                                }
+                                                              }
 
-                                                        if (userId) {
-                                                          // Convert to string if it's an ObjectId
-                                                          const userIdString = typeof userId === 'object' ? (userId.toString ? userId.toString() : userId._id || userId.id) : userId.toString();
-                                                          // Pass user info for display in dialog
-                                                          handleViewGameProgress(userIdString, {
-                                                            name: gamePlay.userId?.name || gamePlay.user?.name,
-                                                            email: gamePlay.userId?.email || gamePlay.user?.email
-                                                          });
-                                                        }
-                                                      }}
-                                                    >
-                                                      View Progress
-                                                    </Button>
-                                                  </TableCell>
-                                                </TableRow>
-                                              ))}
+                                                              if (userId) {
+                                                                // Convert to string if it's an ObjectId
+                                                                const userIdString = typeof userId === 'object' ? (userId.toString ? userId.toString() : userId._id || userId.id) : userId.toString();
+                                                                // Pass user info for display in dialog
+                                                                handleViewGameProgress(userIdString, {
+                                                                  name: userName,
+                                                                  email: userEmail
+                                                                });
+                                                              }
+                                                            }}
+                                                          >
+                                                            View Progress
+                                                          </Button>
+                                                        </TableCell>
+                                                      </>
+                                                    )}
+                                                  </TableRow>
+                                                );
+                                              })}
                                             </TableBody>
                                           </Table>
                                         </TableContainer>

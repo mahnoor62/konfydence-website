@@ -751,6 +751,21 @@ const CodeVerificationDialog = ({
                   Use
                 </Button>
               }
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                '& .MuiAlert-icon': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                },
+                '& .MuiAlert-message': {
+                  display: 'flex',
+                  alignItems: 'center',
+                  alignSelf: 'center',
+                  flex: 1,
+                },
+              }}
             >
               
               <strong style={{ fontSize: '1.1rem', fontWeight: 700 }}>  Found code in clipboard: {codeFromClipboard}</strong>
@@ -2346,7 +2361,7 @@ export default function GamePage() {
           totalQuestions: totalQuestions,
           percentageScore: percentageScore,
           riskLevel: riskLevel,
-          isDemo: isDemo
+          isDemo: isDemo,
         };
 
         console.log(`📤 Sending progress data to API:`, {
@@ -2410,6 +2425,12 @@ export default function GamePage() {
   }, [user, trialInfo, API_URL]);
 
   const nextCard = useCallback(async () => {
+    console.log('📝 nextCard called', {
+      currentCardIndex,
+      scenariosLength: scenarios.length,
+      isLastCard: currentCardIndex >= scenarios.length - 1
+    });
+    
     // Clear timer when moving to next card
     if (timerInterval) {
       clearInterval(timerInterval);
@@ -2417,6 +2438,7 @@ export default function GamePage() {
     }
     
     if (currentCardIndex < scenarios.length - 1) {
+      console.log('➡️ Moving to next card');
       setCurrentCardIndex(prev => prev + 1);
       setSelectedAnswer(null);
       setShowFeedback(false);
@@ -2424,6 +2446,7 @@ export default function GamePage() {
       setQuestionTimer(180); // Reset timer for next question
     } else {
       // Game complete
+      console.log('✅ All cards completed, showing summary screen');
       // Check if this is a demo user
       const codeType = sessionStorage.getItem('codeType');
       let isDemoUser = false;
@@ -2515,7 +2538,7 @@ export default function GamePage() {
                     );
                     console.log('✅ Seat incremented for demo user');
                   } catch (incrementError) {
-                    // If error is "already completed", that's expected for "Play Again" scenario
+                    // If error is "already completed", that's expected
                     if (incrementError.response?.data?.alreadyPlayed || incrementError.response?.data?.seatsFinished) {
                       console.log(`ℹ️ Demo user (${targetAudience}) has already completed - seat not incremented (this is expected for "Play Again")`);
                     } else {
@@ -2540,9 +2563,19 @@ export default function GamePage() {
       } else {
         console.warn(`⚠️ Cannot save progress: selectedLevel=${selectedLevel}, answerHistory.length=${answerHistory?.length || 0}`);
       }
+      
+      // Ensure codeVerified is set to true before showing summary
+      const codeVerifiedStorage = sessionStorage.getItem('codeVerified') === 'true';
+      if (!codeVerifiedStorage) {
+        console.log('⚠️ codeVerified is false, setting it to true for summary screen');
+        sessionStorage.setItem('codeVerified', 'true');
+        setCodeVerified(true);
+      }
+      
+      console.log('🎯 Setting gameState to summary, codeVerified:', codeVerifiedStorage || true);
       setGameState('summary');
     }
-  }, [currentCardIndex, scenarios.length, selectedLevel, score, answerHistory, scenarios, saveGameProgress]);
+  }, [currentCardIndex, scenarios.length, selectedLevel, score, answerHistory, scenarios, saveGameProgress, codeVerified, setCodeVerified]);
 
   const playAgain = useCallback(() => {
     setGameState('levelSelect');
@@ -3706,7 +3739,18 @@ export default function GamePage() {
                           </div>
                           <button 
                             className={`${styles.btn} ${styles.btnPrimary}`}
-                            onClick={nextCard}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('🔘 VIEW RESULTS button clicked', {
+                                currentCardIndex,
+                                totalCards: scenarios.length,
+                                isLastCard: currentCardIndex >= scenarios.length - 1,
+                                gameState,
+                                codeVerified
+                              });
+                              nextCard();
+                            }}
                           >
                             {currentCardIndex < scenarios.length - 1 ? 'Next' : 'View Results'}
                           </button>

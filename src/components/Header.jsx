@@ -118,6 +118,7 @@ export default function Header() {
           transition: 'all 0.4s ease',
           // color: scrolled ? 'text.primary' : 'white',
           color:'white',
+          zIndex: 1100, // Higher than dialog backdrop but lower than dialog itself
         }}
       >
         <Container maxWidth={false} sx={{ px: { xs: 3, md: 10 } }}>

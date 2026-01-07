@@ -420,7 +420,7 @@ export default function RegisterPage() {
                     },
                   }}
                 >
-                  <Tab label="Individual" value="individual" />
+                  <Tab label="Individual B2C" value="individual" />
                   <Tab label="Business B2B" value="b2b" />
                   <Tab label="Institute B2E" value="b2e" />
                   <Tab label="Member of Organization" value="member_org" />

@@ -646,13 +646,16 @@ const CodeVerificationDialog = ({
         '& .MuiBackdrop-root': {
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
           zIndex: 9998,
+          pointerEvents: dialogOpen ? 'auto' : 'none',
         },
         '& .MuiDialog-container': {
           zIndex: 9999,
+          pointerEvents: dialogOpen ? 'auto' : 'none',
         },
         '& .MuiDialog-paper': {
           zIndex: 9999,
           position: 'relative',
+          pointerEvents: dialogOpen ? 'auto' : 'none',
         },
       }}
     >
@@ -1131,6 +1134,35 @@ export default function GamePage() {
       }
     }
   }, [user]);
+
+  // Clean up any lingering backdrops/overlays that might block clicks on Header
+  useEffect(() => {
+    const cleanupBackdrops = () => {
+      // Remove any backdrop overlays when code is verified or dialog is closed
+      if (codeVerified || !showCodeDialog) {
+        const backdrops = document.querySelectorAll('.MuiBackdrop-root');
+        backdrops.forEach(backdrop => {
+          if (backdrop && backdrop.parentElement) {
+            const computedStyle = window.getComputedStyle(backdrop);
+            // Only remove if it's not currently being used by an open dialog
+            const dialogOpen = backdrop.parentElement.querySelector('.MuiDialog-root[aria-hidden="false"]');
+            if (!dialogOpen) {
+              backdrop.style.display = 'none';
+              backdrop.style.pointerEvents = 'none';
+              backdrop.style.opacity = '0';
+            }
+          }
+        });
+      }
+    };
+    
+    cleanupBackdrops();
+    
+    // Clean up periodically to catch any lingering overlays
+    const interval = setInterval(cleanupBackdrops, 300);
+    
+    return () => clearInterval(interval);
+  }, [codeVerified, showCodeDialog]);
 
   // This useEffect is removed - all logic moved to mount useEffect above
 
@@ -3045,6 +3077,16 @@ export default function GamePage() {
             // Allow closing when Cancel button is clicked
             console.log('Dialog closed via Cancel button');
             setShowCodeDialog(false);
+            // Force remove any lingering backdrop/overlays
+            setTimeout(() => {
+              const backdrops = document.querySelectorAll('.MuiBackdrop-root');
+              backdrops.forEach(backdrop => {
+                if (backdrop.parentElement) {
+                  backdrop.style.display = 'none';
+                  backdrop.style.pointerEvents = 'none';
+                }
+              });
+            }, 100);
           }}
           onVerified={handleCodeVerified}
           forceOpen={true}
@@ -3053,6 +3095,16 @@ export default function GamePage() {
           setCodeVerified={setCodeVerified}
           setShowCodeDialog={setShowCodeDialog}
         />
+      )}
+      
+      {/* Ensure no backdrop blocks clicks when dialog is closed */}
+      {codeVerified && (
+        <style jsx global>{`
+          .MuiBackdrop-root {
+            display: none !important;
+            pointer-events: none !important;
+          }
+        `}</style>
       )}
       
       {/* Floating button to reopen code dialog when closed */}
@@ -4008,7 +4060,7 @@ export default function GamePage() {
                           </div>
                           <div className={styles.demoPromoCenter} style={{ marginTop: '20px' }}>
                             <h3 className={styles.demoPromoTitle}>
-                              Want to master all 80 scenarios? Get the full Physical Kit & unlimited digital access.
+                              Want to master all 90 scenarios? Get the full Physical Kit & unlimited digital access.
                             </h3>
                             <button 
                               className={styles.demoPromoButton}

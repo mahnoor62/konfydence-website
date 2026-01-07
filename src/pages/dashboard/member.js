@@ -556,14 +556,7 @@ export default function MemberDashboardPage() {
                         </Typography>
                       </Box>
                     )}
-                    <Box>
-                      <Typography variant="caption" color="text.secondary">
-                        Password
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 0.5, fontFamily: 'monospace' }}>
-                        {user.password || '••••••••'}
-                      </Typography>
-                    </Box>
+                    {/* Password hidden from member dashboard */}
                     <Box>
                       <Typography variant="caption" color="text.secondary">
                         Member Since
