@@ -954,14 +954,22 @@ export default function MemberDashboardPage() {
                           {user.role === 'b2b_member' ? 'Business Member' : 'Education Member'}
                         </Typography>
                       </Box>
+                      {/* Password display commented out
                       <Box>
                         <Typography variant="caption" color="text.secondary">
                           Password
                         </Typography>
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                          {user.password || '••••••••'}
+                        <Typography variant="body2" sx={{ 
+                          fontFamily: 'monospace', 
+                          fontSize: '0.9rem',
+                          wordBreak: 'break-all',
+                          color: '#063C5E',
+                          fontWeight: 500
+                        }}>
+                          {dashboardData?.user?.password || 'N/A'}
                         </Typography>
                       </Box>
+                      */}
                       <Box>
                         <Typography variant="caption" color="text.secondary">
                           Member Since
