@@ -65,6 +65,7 @@ export default function DashboardPage() {
   const [submitting, setSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [selectedTab, setSelectedTab] = useState(0);
+  const [copiedCode, setCopiedCode] = useState(null);
   const [selectedLevelTab, setSelectedLevelTab] = useState(0);
   const [tabsScrollLeft, setTabsScrollLeft] = useState(0);
   const [tabsScrollRight, setTabsScrollRight] = useState(false);
@@ -363,6 +364,15 @@ export default function DashboardPage() {
   const hasProgress = shouldShowGameProgress || (progress && (progress.totalCards > 0 || (progress.packageProgress && progress.packageProgress.length > 0)));
   const hasTransactions = transactions && transactions.length > 0;
   const hasMemberships = (allMemberships && allMemberships.length > 0) || (activePackages && activePackages.length > 0);
+  
+  // Filter shop page purchases (packageId null, packageType present, and digital/digital_physical)
+  const shopPagePurchases = transactions && transactions.length > 0 ? transactions.filter(tx => 
+    !tx.packageId && 
+    tx.packageType && 
+    (tx.packageType === 'digital' || tx.packageType === 'digital_physical') &&
+    tx.status === 'paid'
+  ) : [];
+  const hasShopPagePurchases = shopPagePurchases.length > 0;
   
   // Check if user has incomplete game progress (has started but not completed all 3 levels)
   // Exclude demo progress UNLESS user has paid transactions
@@ -887,6 +897,9 @@ export default function DashboardPage() {
                           {hasTransactions && (
                             <Tab label="Purchase History" />
                           )}
+                          {hasShopPagePurchases && (
+                            <Tab label="Package Info" />
+                          )}
                         </Tabs>
                       </Box>
                     </Box>
@@ -1309,7 +1322,7 @@ export default function DashboardPage() {
                     )}
 
                     {/* Purchase History Tab */}
-                    {hasTransactions && selectedTab === (hasProgress ? 1 : 0) && (
+                    {hasTransactions && selectedTab === (hasProgress ? 1 : 0) && !hasShopPagePurchases && (
                       <Box sx={{ p: 3 }}>
                         <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
                           Purchase History
@@ -1338,7 +1351,9 @@ export default function DashboardPage() {
                                   <TableCell>
                                     {new Date(tx.createdAt).toLocaleDateString()}
                                   </TableCell>
-                                  <TableCell>{tx.packageName}</TableCell>
+                                  <TableCell>
+                                    {tx.packageId ? tx.packageName : (tx.packageType ? tx.packageType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : tx.packageName)}
+                                  </TableCell>
                                   <TableCell>
                                     <Chip
                                       label={tx.type.replace('_', ' ').toUpperCase()}
@@ -1372,6 +1387,224 @@ export default function DashboardPage() {
                             </TableBody>
                           </Table>
                         </TableContainer>
+                      </Box>
+                    )}
+                    {hasTransactions && selectedTab === (hasProgress ? 1 : 0) && hasShopPagePurchases && (
+                      <Box sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                          Purchase History
+                        </Typography>
+                        <TableContainer 
+                          sx={{ 
+                            maxHeight: transactions.length > 5 ? '600px' : 'auto',
+                            border: '1px solid #E0E7F0',
+                            borderRadius: 2,
+                          }}
+                        >
+                          <Table stickyHeader>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Date</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Package</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Type</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Amount</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Status</TableCell>
+                                <TableCell sx={{ fontWeight: 600, backgroundColor: '#F5F8FB' }}>Payment ID</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {transactions.map((tx) => (
+                                <TableRow key={tx.id} hover>
+                                  <TableCell>
+                                    {new Date(tx.createdAt).toLocaleDateString()}
+                                  </TableCell>
+                                  <TableCell>
+                                    {tx.packageId ? tx.packageName : (tx.packageType ? tx.packageType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : tx.packageName)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={tx.type.replace('_', ' ').toUpperCase()}
+                                      size="small"
+                                      sx={{ textTransform: 'capitalize' }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    ${tx.amount.toFixed(2)}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={tx.status}
+                                      color={
+                                        tx.status === 'paid'
+                                          ? 'success'
+                                          : tx.status === 'pending'
+                                          ? 'warning'
+                                          : 'default'
+                                      }
+                                      size="small"
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'monospace', fontSize: '0.85rem' }}>
+                                      {tx.stripePaymentIntentId || tx.paymentIntentId || 'N/A'}
+                                    </Typography>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </TableContainer>
+                      </Box>
+                    )}
+
+                    {/* Package Info Tab - Shop Page Purchases */}
+                    {hasShopPagePurchases && selectedTab === (hasProgress ? (hasTransactions ? 2 : 1) : (hasTransactions ? 1 : 0)) && (
+                      <Box sx={{ p: 3 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 2 }}>
+                          Package Information
+                        </Typography>
+                        <Grid container spacing={3}>
+                          {shopPagePurchases.map((tx) => (
+                            <Grid item xs={12} md={6} key={tx.id}>
+                              <Card
+                                sx={{
+                                  height: '100%',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                  borderRadius: 2,
+                                  border: '1px solid #E0E7F0',
+                                  '&:hover': {
+                                    boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+                                  },
+                                }}
+                              >
+                                <CardContent>
+                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                                    <Box>
+                                      <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', mb: 0.5 }}>
+                                        {tx.packageType ? tx.packageType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'Package'}
+                                      </Typography>
+                                      <Typography variant="body2" color="text.secondary">
+                                        Purchased: {new Date(tx.createdAt).toLocaleDateString()}
+                                      </Typography>
+                                    </Box>
+                                    <Chip
+                                      label={tx.status}
+                                      color={tx.status === 'paid' ? 'success' : 'default'}
+                                      size="small"
+                                    />
+                                  </Box>
+
+                                  {/* Unique Code Section */}
+                                  {tx.uniqueCode && (
+                                    <Box
+                                      sx={{
+                                        p: 2,
+                                        backgroundColor: '#F5F8FB',
+                                        borderRadius: 2,
+                                        mb: 2,
+                                        border: '2px dashed #0B7897',
+                                      }}
+                                    >
+                                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
+                                        Your Unique Code
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <Typography
+                                          variant="h6"
+                                          sx={{
+                                            fontWeight: 700,
+                                            color: '#0B7897',
+                                            fontFamily: 'monospace',
+                                            letterSpacing: 1.5,
+                                            flexGrow: 1,
+                                          }}
+                                        >
+                                          {tx.uniqueCode}
+                                        </Typography>
+                                        <IconButton
+                                          onClick={async () => {
+                                            try {
+                                              await navigator.clipboard.writeText(tx.uniqueCode);
+                                              setCopiedCode(tx.id);
+                                              setTimeout(() => setCopiedCode(null), 2000);
+                                            } catch (err) {
+                                              console.error('Failed to copy:', err);
+                                            }
+                                          }}
+                                          size="small"
+                                          sx={{
+                                            color: '#0B7897',
+                                            '&:hover': {
+                                              backgroundColor: 'rgba(11, 120, 151, 0.1)',
+                                            },
+                                          }}
+                                        >
+                                          <ContentCopyIcon sx={{ fontSize: 18 }} />
+                                        </IconButton>
+                                      </Box>
+                                      {copiedCode === tx.id && (
+                                        <Alert severity="success" sx={{ mt: 1, py: 0.5 }}>
+                                          Code copied to clipboard!
+                                        </Alert>
+                                      )}
+                                    </Box>
+                                  )}
+
+                                  {/* Seat Information */}
+                                  {tx.maxSeats !== null && tx.maxSeats !== undefined && (
+                                    <Box sx={{ mb: 2 }}>
+                                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 600 }}>
+                                        Seat Information
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', gap: 2 }}>
+                                        <Box>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Total Seats
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                                            {tx.maxSeats}
+                                          </Typography>
+                                        </Box>
+                                        <Box>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Used Seats
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#FF725E' }}>
+                                            {tx.usedSeats || 0}
+                                          </Typography>
+                                        </Box>
+                                        <Box>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Available
+                                          </Typography>
+                                          <Typography variant="h6" sx={{ fontWeight: 700, color: '#4caf50' }}>
+                                            {(tx.maxSeats || 0) - (tx.usedSeats || 0)}
+                                          </Typography>
+                                        </Box>
+                                      </Box>
+                                    </Box>
+                                  )}
+
+                                  {/* Package Type Info */}
+                                  <Box>
+                                    <Typography variant="body2" color="text.secondary" sx={{ mb: 0.5, fontWeight: 600 }}>
+                                      Package Type
+                                    </Typography>
+                                    <Chip
+                                      label={tx.packageType ? tx.packageType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: '#E3F2FD',
+                                        color: '#063C5E',
+                                        fontWeight: 600,
+                                      }}
+                                    />
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            </Grid>
+                          ))}
+                        </Grid>
                       </Box>
                     )}
                   </CardContent>

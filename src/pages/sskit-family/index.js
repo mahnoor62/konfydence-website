@@ -39,7 +39,7 @@ export default function SKKPage() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [products, setProducts] = useState([]);
-  const [processingPurchase, setProcessingPurchase] = useState(false);
+  const [processingPurchase, setProcessingPurchase] = useState(null); // null, 'physical', 'digital', or 'bundle'
   
   // Fetch products on mount
   useEffect(() => {
@@ -520,7 +520,7 @@ export default function SKKPage() {
                       color: '#063C5E',
                     }}
                   >
-                    Physical Scam Survival Kit
+                   Tactical Card Game Kit
                   </Typography>
                   <Typography
                     variant="body1"
@@ -557,17 +557,17 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
-                    disabled={processingPurchase}
+                    disabled={processingPurchase !== null}
                     onClick={async () => {
-                      if (processingPurchase) return;
-                      setProcessingPurchase(true);
+                      if (processingPurchase !== null) return;
+                      setProcessingPurchase('physical');
                       
                       try {
                         // Get physical product
                         const physicalProduct = getProductBySlug('physical') || getProductBySlug('tactical');
                         if (!physicalProduct?._id) {
                           alert('Product not found. Please try again.');
-                          setProcessingPurchase(false);
+                          setProcessingPurchase(null);
                           return;
                         }
                         
@@ -575,17 +575,20 @@ export default function SKKPage() {
                         const token = localStorage.getItem('token');
                         if (!token) {
                           router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
-                          setProcessingPurchase(false);
+                          setProcessingPurchase(null);
                           return;
                         }
 
-                        // Create Stripe checkout session for direct product purchase
+                        // Create Stripe checkout session for shop page physical product purchase
                         const checkoutResponse = await axios.post(
                           `${API_URL}/payments/create-checkout-session`,
                           {
                             productId: physicalProduct._id,
                             urlType: 'B2C',
                             directProductPurchase: true,
+                            shopPagePurchase: true, // Flag to identify shop page purchase
+                            packageType: 'physical', // Physical product
+                            maxSeats: 0, // Physical products have 0 seats
                           },
                           {
                             headers: {
@@ -603,7 +606,7 @@ export default function SKKPage() {
                       } catch (error) {
                         console.error('Error creating checkout session:', error);
                         alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
-                        setProcessingPurchase(false);
+                        setProcessingPurchase(null);
                       }
                     }}
                     sx={{
@@ -620,7 +623,7 @@ export default function SKKPage() {
                       },
                     }}
                   >
-                    {processingPurchase ? 'Processing...' : 'Buy Now'}
+                    {processingPurchase === 'physical' ? 'Processing...' : 'Buy Now'}
                   </Button>
                 </CardContent>
               </Card>
@@ -669,13 +672,23 @@ export default function SKKPage() {
                   <Typography
                     variant="body1"
                     sx={{
-                      mb: 2,
+                      mb: 1,
                       flexGrow: 1,
                       lineHeight: 1.7,
                       color: 'text.secondary',
                     }}
                   >
                     New scenarios, progress tracking, printables (annual subscription).
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 2,
+                      color: '#063C5E',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Max seat for digital play: 1
                   </Typography>
                   <Box sx={{ mb: 2 }}>
                     <Typography
@@ -701,13 +714,56 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
-                    onClick={() => {
-                      // Get digital product
-                      const digitalProduct = getProductBySlug('digital') || getProductBySlug('extension');
-                      if (digitalProduct?._id) {
-                        router.push(`/packages?type=B2C&productId=${digitalProduct._id}`);
-                      } else {
-                        router.push('/packages?type=B2C');
+                    disabled={processingPurchase !== null}
+                    onClick={async () => {
+                      if (processingPurchase !== null) return;
+                      setProcessingPurchase('digital');
+                      
+                      try {
+                        // Get digital product
+                        const digitalProduct = getProductBySlug('digital') || getProductBySlug('extension');
+                        if (!digitalProduct?._id) {
+                          alert('Product not found. Please try again.');
+                          setProcessingPurchase(null);
+                          return;
+                        }
+                        
+                        // Get auth token
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          setProcessingPurchase(null);
+                          return;
+                        }
+
+                        // Create Stripe checkout session for shop page digital product purchase
+                        const checkoutResponse = await axios.post(
+                          `${API_URL}/payments/create-checkout-session`,
+                          {
+                            productId: digitalProduct._id,
+                            urlType: 'B2C',
+                            directProductPurchase: true,
+                            shopPagePurchase: true, // Flag to identify shop page purchase
+                            packageType: 'digital', // Digital product
+                            maxSeats: 1, // Digital products have 1 seat
+                          },
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
+                        
+                        // Redirect to Stripe Checkout
+                        if (checkoutResponse.data.url) {
+                          window.location.href = checkoutResponse.data.url;
+                        } else {
+                          throw new Error('No checkout URL received');
+                        }
+                      } catch (error) {
+                        console.error('Error creating checkout session:', error);
+                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setProcessingPurchase(null);
                       }
                     }}
                     sx={{
@@ -718,9 +774,13 @@ export default function SKKPage() {
                       '&:hover': {
                         backgroundColor: '#063C5E',
                       },
+                      '&:disabled': {
+                        backgroundColor: '#ccc',
+                        color: '#666',
+                      },
                     }}
                   >
-                    Subscribe Now 
+                    {processingPurchase === 'digital' ? 'Processing...' : 'Subscribe Now'}
                   </Button>
                 </CardContent>
               </Card>
@@ -815,13 +875,23 @@ export default function SKKPage() {
                   <Typography
                     variant="body1"
                     sx={{
-                      mb: 2,
+                      mb: 1,
                       flexGrow: 1,
                       lineHeight: 1.7,
                       color: 'text.secondary',
                     }}
                   >
                     Physical Kit + 1-Year Digital + Free Family Tech Contract.
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 2,
+                      color: '#063C5E',
+                      fontWeight: 600,
+                    }}
+                  >
+                    Max seat for digital play: 1
                   </Typography>
                   <Box sx={{ mb: 2 }}>
                     <Typography
@@ -847,13 +917,56 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
-                    onClick={() => {
-                      // Get bundle product
-                      const bundleProduct = getProductBySlug('bundle') || getProductBySlug('full');
-                      if (bundleProduct?._id) {
-                        router.push(`/packages?type=B2C&productId=${bundleProduct._id}`);
-                      } else {
-                        router.push('/packages?type=B2C');
+                    disabled={processingPurchase !== null}
+                    onClick={async () => {
+                      if (processingPurchase !== null) return;
+                      setProcessingPurchase('bundle');
+                      
+                      try {
+                        // Get bundle product
+                        const bundleProduct = getProductBySlug('bundle') || getProductBySlug('full');
+                        if (!bundleProduct?._id) {
+                          alert('Product not found. Please try again.');
+                          setProcessingPurchase(null);
+                          return;
+                        }
+                        
+                        // Get auth token
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          setProcessingPurchase(null);
+                          return;
+                        }
+
+                        // Create Stripe checkout session for shop page bundle product purchase
+                        const checkoutResponse = await axios.post(
+                          `${API_URL}/payments/create-checkout-session`,
+                          {
+                            productId: bundleProduct._id,
+                            urlType: 'B2C',
+                            directProductPurchase: true,
+                            shopPagePurchase: true, // Flag to identify shop page purchase
+                            packageType: 'digital_physical', // Bundle = digital + physical
+                            maxSeats: 1, // Bundle products have 1 seat
+                          },
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
+                        
+                        // Redirect to Stripe Checkout
+                        if (checkoutResponse.data.url) {
+                          window.location.href = checkoutResponse.data.url;
+                        } else {
+                          throw new Error('No checkout URL received');
+                        }
+                      } catch (error) {
+                        console.error('Error creating checkout session:', error);
+                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setProcessingPurchase(null);
                       }
                     }}
                     sx={{
@@ -864,9 +977,13 @@ export default function SKKPage() {
                       '&:hover': {
                         backgroundColor: '#e65a4a',
                       },
+                      '&:disabled': {
+                        backgroundColor: '#ccc',
+                        color: '#666',
+                      },
                     }}
                   >
-                    Get Bundle Now 
+                    {processingPurchase === 'bundle' ? 'Processing...' : ' Get Bundle Now'}
                   </Button>
                 </CardContent>
               </Card>

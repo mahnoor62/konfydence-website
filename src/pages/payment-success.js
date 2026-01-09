@@ -456,7 +456,7 @@ export default function PaymentSuccessPage() {
                         Package:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                        {transaction.customPackageId ? 'Custom Package' : (transaction.packageId?.name || (transaction.packageType === 'physical' ? 'Physical' : 'N/A'))}
+                        {transaction.customPackageId ? 'Custom Package' : (transaction.packageId?.name || (transaction.packageType ? transaction.packageType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') : 'N/A'))}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>

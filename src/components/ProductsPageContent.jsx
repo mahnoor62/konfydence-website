@@ -1867,6 +1867,26 @@ export default function ProductsPageContent() {
                                   return;
                                 }
 
+                                // Determine product type for unique code generation
+                                const productTitle = (product.title || product.name || '').toLowerCase();
+                                const isDigitalProduct = productTitle.includes('digital') || productTitle.includes('extension');
+                                const isBundleProduct = productTitle.includes('bundle') || productTitle.includes('full');
+                                const isPhysicalProduct = productTitle.includes('physical') || productTitle.includes('tactical');
+                                
+                                let packageType = 'physical';
+                                let maxSeats = 0;
+                                
+                                if (isDigitalProduct) {
+                                  packageType = 'digital';
+                                  maxSeats = 1;
+                                } else if (isBundleProduct) {
+                                  packageType = 'digital_physical';
+                                  maxSeats = 1;
+                                } else if (isPhysicalProduct) {
+                                  packageType = 'physical';
+                                  maxSeats = 0;
+                                }
+
                                 // Create Stripe checkout session for direct product purchase
                                 const checkoutResponse = await axios.post(
                                   `${API_URL}/payments/create-checkout-session`,
@@ -1874,6 +1894,8 @@ export default function ProductsPageContent() {
                                     productId: product._id,
                                     urlType: 'B2E',
                                     directProductPurchase: true, // Flag for direct product purchase
+                                    packageType: packageType, // Pass package type for unique code generation
+                                    maxSeats: maxSeats, // Pass max seats
                                   },
                                   {
                                     headers: {
@@ -2103,6 +2125,26 @@ export default function ProductsPageContent() {
                                   return;
                                 }
 
+                                // Determine product type for unique code generation
+                                const productTitle = (product.title || product.name || '').toLowerCase();
+                                const isDigitalProduct = productTitle.includes('digital') || productTitle.includes('extension');
+                                const isBundleProduct = productTitle.includes('bundle') || productTitle.includes('full');
+                                const isPhysicalProduct = productTitle.includes('physical') || productTitle.includes('tactical');
+                                
+                                let packageType = 'physical';
+                                let maxSeats = 0;
+                                
+                                if (isDigitalProduct) {
+                                  packageType = 'digital';
+                                  maxSeats = 1;
+                                } else if (isBundleProduct) {
+                                  packageType = 'digital_physical';
+                                  maxSeats = 1;
+                                } else if (isPhysicalProduct) {
+                                  packageType = 'physical';
+                                  maxSeats = 0;
+                                }
+
                                 // Create Stripe checkout session for direct product purchase - B2B for businesses
                                 const checkoutResponse = await axios.post(
                                   `${API_URL}/payments/create-checkout-session`,
@@ -2110,6 +2152,8 @@ export default function ProductsPageContent() {
                                     productId: product._id,
                                     urlType: 'B2B', // B2B for businesses tab
                                     directProductPurchase: true,
+                                    packageType: packageType, // Pass package type for unique code generation
+                                    maxSeats: maxSeats, // Pass max seats
                                   },
                                   {
                                     headers: {
