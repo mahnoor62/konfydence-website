@@ -894,7 +894,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  backgroundColor: '#5FA8BA',
+                  backgroundColor: '#1F506E',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   position: 'relative',
@@ -930,7 +930,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   width: '100%',
                   display: 'flex',
                   flexDirection: 'column',
-                  backgroundColor: '#5FA8BA',
+                  backgroundColor: '#1F506E',
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   position: 'relative',
@@ -956,7 +956,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.4 }}>
                 Scammers steal an average of $2,000+ per victim.
 One simple habit — a five-second pause — stops most attacks before they start.
-Get the full kit for just €49.
+Get the full kit for just $49.
                 </Typography>
                 {/* <Stack spacing={1}>
                   {['Fun and engaging', 'Accessible for all ages', 'Proven learning method'].map((item) => (
@@ -1070,28 +1070,42 @@ Get the full kit for just €49.
         {/* New Introductory Section - Why Most Scam Training Doesn't Work */}
         <Box sx={{ py: { xs: 8, md: 20 }, backgroundColor: 'white' }}>
           <Container maxWidth="lg">
-            <Grid container spacing={6} alignItems="center">
+            {/* Heading at Top Center */}
+            <Box sx={{ mb: { xs: 4, md: 6 }, textAlign: 'center' }}>
+              <Typography
+                data-aos="fade-up"
+                data-aos-duration="800"
+                sx={{
+                  fontSize: { xs: '1.3rem', md: '1.8rem' },
+                  fontWeight: 700,
+                  color: '#063C5E',
+                  lineHeight: 1.2,
+                }}
+              >
+                Why Most Scam Training Doesn&apos;t Work (And What Does)
+              </Typography>
+            </Box>
+
+            {/* Two Columns - Equal Height */}
+            <Grid container spacing={6} alignItems="stretch">
               <Grid item xs={12} md={6}>
-                <Box data-aos="fade-right" data-aos-duration="800">
-                  <Typography
-                    // variant="h2"
-                    sx={{
-                      fontSize: { xs: '1.3rem', md: '1.8rem' },
-                      fontWeight: 700,
-                      color: '#063C5E',
-                      mb: 3,
-                      lineHeight: 1.2,
-                    }}
-                  >
-                    Why Most Scam Training Doesn&apos;t Work (And What Does)
-                  </Typography>
+                <Box 
+                  data-aos="fade-right" 
+                  data-aos-duration="800"
+                  sx={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    // mt: { xs: 0, md: 8 },
+                  }}
+                >
                   <Typography
                     variant="body1"
                     sx={{
                       fontSize: { xs: '1rem', md: '1.1rem' },
                       color: 'text.primary',
-                      mb: 3,
-                      lineHeight: 1.8,
+                      mb: { xs: 3, md: 4 },
+                      lineHeight: { xs: 1.8, md: 2.4 },
                     }}
                   >
                     You&apos;ve seen the yearly videos and quizzes. Everyone clicks through, passes the test, and… still falls for scams months later.
@@ -1101,8 +1115,8 @@ Get the full kit for just €49.
                     sx={{
                       fontSize: { xs: '1rem', md: '1.1rem' },
                       color: 'text.primary',
-                      mb: 3,
-                      lineHeight: 1.8,
+                      mb: { xs: 3, md: 4 },
+                      lineHeight: { xs: 1.8, md: 2.4 },
                     }}
                   >
                     Why? Because scams don&apos;t happen in calm moments. They hit when you&apos;re busy, stressed, or rushed. In those seconds, your brain reacts before you can think—and even smart people click.
@@ -1112,8 +1126,8 @@ Get the full kit for just €49.
                     sx={{
                       fontSize: { xs: '1rem', md: '1.1rem' },
                       color: 'text.primary',
-                      mb: 3,
-                      lineHeight: 1.8,
+                      mb: { xs: 3, md: 4 },
+                      lineHeight: { xs: 1.8, md: 2.4 },
                     }}
                   >
                     In order to dismantle the Kill-Switch of shame, we enhance the &quot;No-Blame&quot; culture established in our{' '}
@@ -1133,8 +1147,8 @@ Get the full kit for just €49.
                     sx={{
                       fontSize: { xs: '1rem', md: '1.1rem' },
                       color: 'text.primary',
-                      mb: 3,
-                      lineHeight: 1.8,
+                      mb: { xs: 3, md: 4 },
+                      lineHeight: { xs: 1.8, md: 2.4 },
                     }}
                   >
                     <strong>Stop the Limbic Hijack:</strong> Our framework trains your brain to outsmart the biological triggers scammers use to bypass your logic.{' '}
@@ -1151,27 +1165,6 @@ Get the full kit for just €49.
                       Read the Science: Why Human Hardware Fails Before Software 
                     </Link>
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      mb: 3,
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    Konfydence fixes this by training the one simple habit that works under pressure: <strong>Pause for five seconds when something feels off.</strong>
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      lineHeight: 1.8,
-                    }}
-                  >
-                    No long lectures. Just quick, real-life practice that sticks.
-                  </Typography>
                 </Box>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1179,37 +1172,69 @@ Get the full kit for just €49.
                   data-aos="fade-left"
                   data-aos-duration="800"
                   sx={{
+                    height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
                   }}
                 >
+                  <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        color: 'text.primary',
+                        mb: { xs: 1.5, md: 2 },
+                        // lineHeight: { xs: 1.6, md: 1.8 },
+                      }}
+                    >
+                      Konfydence fixes this by training the one simple habit that works under pressure: <strong>Pause for five seconds when something feels off.</strong>
+                    </Typography>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        color: 'text.primary',
+                        // lineHeight: { xs: 1.6, md: 1.8 },
+                      }}
+                    >
+                      No long lectures. Just quick, real-life practice that sticks.
+                    </Typography>
+                  </Box>
                   <Box
-                    component="img"
-                    src="/images/5SecondsDefense.jpg"
-                    alt="Five seconds is all it takes. No real request breaks if you wait."
                     sx={{
-                      width: '100%',
-                      maxWidth: '100%',
-                      height: 'auto',
-                      borderRadius: {xs:1, md:2},
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                      mb: 2,
-                    }}
-                  />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: '0.875rem', md: '1rem' },
-                      color: 'text.secondary',
-                      fontStyle: 'italic',
-                      textAlign: 'center',
-                      maxWidth: '90%',
+                      flex: 1,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
                     }}
                   >
-                    Five seconds is all it takes. No real request breaks if you wait.
-                  </Typography>
+                    <Box
+                      component="img"
+                      src="/images/5SecondsDefense.jpg"
+                      alt="Five seconds is all it takes. No real request breaks if you wait."
+                      sx={{
+                        width: '100%',
+                        maxWidth: { xs: '100%', md: '70%' },
+                        height: 'auto',
+                        borderRadius: {xs:1, md:2},
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                        mb: 2,
+                      }}
+                    />
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontSize: { xs: '0.875rem', md: '1rem' },
+                        color: 'text.secondary',
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        maxWidth: '90%',
+                      }}
+                    >
+                      Five seconds is all it takes. No real request breaks if you wait.
+                    </Typography>
+                  </Box>
                 </Box>
               </Grid>
             </Grid>
@@ -1626,8 +1651,24 @@ Get the full kit for just €49.
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
                       </Typography>
                       
-                      {/* Carousel of Cards */}
-                      {uniqueB2C.length > 0 && (
+                      {/* Static Card for Family */}
+                      <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                        <Box
+                          component="img"
+                          src="/images/1Bank.png"
+                          alt="Family Product"
+                          sx={{
+                            width: '100%',
+                            maxWidth: { xs: '85%', md: '85%' },
+                            height: 'auto',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
+                        />
+                      </Box>
+                      
+                      {/* Commented out dynamic products */}
+                      {/* {uniqueB2C.length > 0 && (
                         <Box sx={{ mb: 4, width: '100%' }}>
                           <Swiper
                             modules={[Pagination, Navigation]}
@@ -1653,42 +1694,30 @@ Get the full kit for just €49.
                             ))}
                           </Swiper>
                         </Box>
-                      )}
+                      )} */}
                       
-                      <Button
-                        component={Link}
-                        href="/sskit-family"
-                        variant="contained"
-                        size="large"
-                        // endIcon={
-                        //   <Box
-                        //     component="span"
-                        //     sx={{
-                        //       ml: 0.5,
-                        //       fontSize: '1.2rem',
-                        //       lineHeight: 1,
-                        //     }}
-                        //   >
-                        //     →
-                        //   </Box>
-                        // }
-                        sx={{
-                          backgroundColor: '#063C5E',
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: '#052A42',
-                            transform: 'translateX(5px)',
-                          },
-                          px: 4,
-                          py: 1.5,
-                          fontWeight: 600,
-                          transition: 'all 0.3s ease',
-                          alignSelf: 'flex-start',
-                          mt: 'auto',
-                        }}
-                      >
-                        Get Your Kit Now
-                      </Button>
+                      <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: 'auto' }}>
+                        <Button
+                          component={Link}
+                          href="/sskit-family"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                            backgroundColor: '#063C5E',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#052A42',
+                              transform: 'translateX(5px)',
+                            },
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease',
+                          }}
+                        >
+                          Get Your Kit Now
+                        </Button>
+                      </Box>
                     </Box>
                   </Grid>
 
@@ -1743,7 +1772,24 @@ Get the full kit for just €49.
                         Quick classroom activities and workshops teach young people to spot pressure tricks early. Perfect for student clubs, orientation weeks, or leadership training—easy for teachers, engaging for students.
                       </Typography>
                       
-                      {b2eOnlyProducts.length > 0 && (
+                      {/* Static Card for Schools */}
+                      <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                        <Box
+                          component="img"
+                          src="/images/social.png"
+                          alt="Schools Product"
+                          sx={{
+                            width: '100%',
+                            maxWidth: { xs: '85%', md: '85%' },
+                            height: 'auto',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
+                        />
+                      </Box>
+                      
+                      {/* Commented out dynamic products */}
+                      {/* {b2eOnlyProducts.length > 0 && (
                         <Box sx={{ mb: 4, width: '100%' }}>
                           <Grid container spacing={2}>
                             {b2eOnlyProducts.slice(0, 1).map((product, index) => (
@@ -1760,42 +1806,30 @@ Get the full kit for just €49.
                             ))}
                           </Grid>
                         </Box>
-                      )}
+                      )} */}
                       
-                      <Button
-                        component={Link}
-                        href="/resources"
-                        variant="contained"
-                        size="large"
-                        // endIcon={
-                        //   <Box
-                        //     component="span"
-                        //     sx={{
-                        //       ml: 0.5,
-                        //       fontSize: '1.2rem',
-                        //       lineHeight: 1,
-                        //     }}
-                        //   >
-                        //     →
-                        //   </Box>
-                        // }
-                        sx={{
-                          backgroundColor: '#00A4E8',
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: '#0088C7',
-                            transform: 'translateX(5px)',
-                          },
-                          px: 4,
-                          py: 1.5,
-                          fontWeight: 600,
-                          transition: 'all 0.3s ease',
-                          alignSelf: 'flex-start',
-                          mt: 'auto',
-                        }}
-                      >
-                        Download Free Lesson Pack
-                      </Button>
+                      <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: 'auto' }}>
+                        <Button
+                          component={Link}
+                          href="/resources"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                            backgroundColor: '#00A4E8',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#0088C7',
+                              transform: 'translateX(5px)',
+                            },
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease',
+                          }}
+                        >
+                          Download Free Lesson Pack
+                        </Button>
+                      </Box>
                     </Box>
                   </Grid>
 
@@ -1849,7 +1883,24 @@ Get the full kit for just €49.
                         Go beyond check-box training. Our simulations prove your team can handle real pressure—with reports ready for auditors. NIS2-ready, fun, and effective.
                       </Typography>
                       
-                      {b2bOnlyProducts.length > 0 && (
+                      {/* Static Card for Business */}
+                      <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
+                        <Box
+                          component="img"
+                          src="/images/urgency.png"
+                          alt="Business Product"
+                          sx={{
+                            width: '100%',
+                            maxWidth: { xs: '85%', md: '85%' },
+                            height: 'auto',
+                            borderRadius: 2,
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          }}
+                        />
+                      </Box>
+                      
+                      {/* Commented out dynamic products */}
+                      {/* {b2bOnlyProducts.length > 0 && (
                         <Box sx={{ mb: 4, width: '100%' }}>
                           <Grid container spacing={2}>
                             {b2bOnlyProducts.slice(0, 1).map((product, index) => (
@@ -1866,42 +1917,30 @@ Get the full kit for just €49.
                             ))}
                           </Grid>
                         </Box>
-                      )}
+                      )} */}
                       
-                      <Button
-                        component={Link}
-                        href="/contact"
-                        variant="contained"
-                        size="large"
-                        // endIcon={
-                        //   <Box
-                        //     component="span"
-                        //     sx={{
-                        //       ml: 0.5,
-                        //       fontSize: '1.2rem',
-                        //       lineHeight: 1,
-                        //     }}
-                        //   >
-                        //     →
-                        //   </Box>
-                        // }
-                        sx={{
-                          backgroundColor: '#5FA8BA',
-                          color: 'white',
-                          '&:hover': {
-                            backgroundColor: '#4a8a9a',
-                            transform: 'translateX(5px)',
-                          },
-                          px: 4,
-                          py: 1.5,
-                          fontWeight: 600,
-                          transition: 'all 0.3s ease',
-                          alignSelf: 'flex-start',
-                          mt: 'auto',
-                        }}
-                      >
-                        Book a Free Pilot
-                      </Button>
+                      <Box sx={{ display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' }, mt: 'auto' }}>
+                        <Button
+                          component={Link}
+                          href="/contact"
+                          variant="contained"
+                          size="large"
+                          sx={{
+                            backgroundColor: '#5FA8BA',
+                            color: 'white',
+                            '&:hover': {
+                              backgroundColor: '#4a8a9a',
+                              transform: 'translateX(5px)',
+                            },
+                            px: 4,
+                            py: 1.5,
+                            fontWeight: 600,
+                            transition: 'all 0.3s ease',
+                          }}
+                        >
+                          Book a Free Pilot
+                        </Button>
+                      </Box>
                     </Box>
                   </Grid>
                 </Grid>
@@ -2140,7 +2179,7 @@ Get the full kit for just €49.
                           KMU
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#063C5E', fontWeight: 600 }}>
-                          €1,500/year
+                          $1,500/year
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2148,7 +2187,7 @@ Get the full kit for just €49.
                           Mid-size
                         </Typography>
                         <Typography variant="body2" sx={{ color: '#063C5E', fontWeight: 600 }}>
-                          €4/employee
+                          $4/employee
                         </Typography>
                       </Box>
                       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -3214,18 +3253,18 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 href="/sskit-family"
                 variant="contained"
                 size="large"
-                endIcon={
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      fontSize: '1.2rem',
-                      lineHeight: 1,
-                    }}
-                  >
-                    →
-                  </Box>
-                }
+                // endIcon={
+                //   <Box
+                //     component="span"
+                //     sx={{
+                //       ml: 0.5,
+                //       fontSize: '1.2rem',
+                //       lineHeight: 1,
+                //     }}
+                //   >
+                //     →
+                //   </Box>
+                // }
                 sx={{
                   backgroundColor: '#FFFFFF',
                   color: 'white',
@@ -3249,18 +3288,18 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 href="/free-resources"
                 variant="contained"
                 size="large"
-                endIcon={
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      fontSize: '1.2rem',
-                      lineHeight: 1,
-                    }}
-                  >
-                    →
-                  </Box>
-                }
+                // endIcon={
+                //   <Box
+                //     component="span"
+                //     sx={{
+                //       ml: 0.5,
+                //       fontSize: '1.2rem',
+                //       lineHeight: 1,
+                //     }}
+                //   >
+                //     →
+                //   </Box>
+                // }
                 sx={{
                   backgroundColor: '#00A4E8',
                   color: 'white',
@@ -3284,18 +3323,18 @@ Empowering individuals, organizations, and compliance teams with interactive sca
                 href="/contact"
                 variant="contained"
                 size="large"
-                endIcon={
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      fontSize: '1.2rem',
-                      lineHeight: 1,
-                    }}
-                  >
-                    →
-                  </Box>
-                }
+                // endIcon={
+                //   <Box
+                //     component="span"
+                //     sx={{
+                //       ml: 0.5,
+                //       fontSize: '1.2rem',
+                //       lineHeight: 1,
+                //     }}
+                //   >
+                //     →
+                //   </Box>
+                // }
                 sx={{
                   backgroundColor: '#5FA8BA',
                   color: 'white',

@@ -120,7 +120,7 @@
 //                 {product.description}
 //               </Typography>
 //               <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#0B7897' }}>
-//                 €{product.price.toFixed(2)}
+//                 ${product.price.toFixed(2)}
 //               </Typography>
 
 //               <Grid container spacing={2} sx={{ mb: 4 }}>
@@ -507,7 +507,7 @@ export default function ProductDetailPage({ product, error }) {
               {/* Price */}
               {hasPrice && (
                 <Typography variant="h4" sx={{ fontWeight: 700, mb: 3, color: '#0B7897' }}>
-                  €{formattedPrice}
+                  ${formattedPrice}
                 </Typography>
               )}
 

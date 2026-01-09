@@ -108,11 +108,12 @@ export default function Header() {
         position="fixed"
         elevation={0}
         sx={{
-          background:  'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
+          // background:  'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
+          background:'#065270',
           // background: scrolled
           //   ? 'rgba(255,255,255,0.95)'
           //   : 'linear-gradient(90deg, rgba(0,139,139,0.15) 0%, rgba(0,81,131,0.25) 100%)',
-          backdropFilter: 'blur(18px)',
+          // backdropFilter: 'blur(18px)',
           borderRadius: '0',
           // borderBottom: scrolled ? '1px solid rgba(15,31,43,0.08)' : 'transparent',
           transition: 'all 0.4s ease',
@@ -227,15 +228,15 @@ export default function Header() {
                         onClick={toggleDropdown}
                         endIcon={<ArrowDropDownIcon sx={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />}
                         sx={{
-                          borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
-                          color: scrolled ? 'primary.main' : 'white',
+                          borderColor: 'rgba(255,255,255,0.85)',
+                          color: 'white',
                           textTransform: 'none',
                           fontWeight: 600,
                           fontFamily: 'var(--font-poppins), sans-serif',
                           px: 2.5,
                           '&:hover': {
-                            borderColor: scrolled ? 'primary.dark' : 'white',
-                            backgroundColor: scrolled ? 'primary.light' : 'rgba(255,255,255,0.1)',
+                            borderColor: 'white',
+                            backgroundColor: 'rgba(255,255,255,0.1)',
                             color: 'white',
                           },
                         }}
@@ -340,15 +341,14 @@ export default function Header() {
                       component={Link}
                       href="/login"
                       sx={{
-                        borderColor: scrolled ? 'primary.main' : 'rgba(255,255,255,0.85)',
-                        color: scrolled ? 'primary.main' : 'white',
+                        backgroundColor: 'white',
+                        color: '#063C5E',
                         textTransform: 'none',
                         fontWeight: 600,
                         px: 2.5,
                         '&:hover': {
-                          borderColor: scrolled ? 'primary.dark' : 'white',
-                          backgroundColor: scrolled ? 'primary.light' : 'rgba(255,255,255,0.1)',
-                          color: 'white',
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          color: '#063C5E',
                         },
                       }}
                     >
@@ -399,7 +399,7 @@ export default function Header() {
             boxSizing: 'border-box',
             width: 280,
             fontFamily: 'var(--font-poppins), sans-serif',
-            background: 'linear-gradient(180deg, #FFFFFF 0%, #F6F8FA 100%)',
+            background: '#065270',
           },
         }}
       >
@@ -417,13 +417,18 @@ export default function Header() {
                     sx={{
                       borderRadius: 2,
                       mb: 0.5,
+                      color: 'white',
                       '&.Mui-selected': {
-                        backgroundColor: 'rgba(6, 60, 94, 0.1)',
-                        color: '#063C5E',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        color: '#0E4D68',
                         fontWeight: 600,
                       },
                       '&.Mui-selected:hover': {
-                        backgroundColor: 'rgba(6, 60, 94, 0.15)',
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                      },
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
                       },
                     }}
                   >
@@ -433,6 +438,7 @@ export default function Header() {
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
                           fontWeight: isActive ? 600 : 500,
+                          color: 'inherit',
                         },
                       }}
                     />
@@ -443,24 +449,50 @@ export default function Header() {
             {!authLoading && user ? (
               <>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href={getDashboardRoute()}>
+                  <ListItemButton 
+                    component={Link} 
+                    href={getDashboardRoute()}
+                    sx={{
+                      color: 'white',
+                      borderRadius: 2,
+                      mb: 0.5,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                      },
+                    }}
+                  >
                     <ListItemText 
                       primary="Dashboard" 
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
+                          color: 'inherit',
                         },
                       }}
                     />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/play">
+                  <ListItemButton 
+                    component={Link} 
+                    href="/play"
+                    sx={{
+                      color: 'white',
+                      borderRadius: 2,
+                      mb: 0.5,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                      },
+                    }}
+                  >
                     <ListItemText 
                       primary="Game" 
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
+                          color: 'inherit',
                         },
                       }}
                     />
@@ -473,9 +505,12 @@ export default function Header() {
                       logout();
                     }}
                     sx={{
-                      color: '#d32f2f',
+                      color: 'white',
+                      borderRadius: 2,
+                      mb: 0.5,
                       '&:hover': {
-                        backgroundColor: 'rgba(211, 47, 47, 0.08)',
+                        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                        color: 'white',
                       },
                     }}
                   >
@@ -484,6 +519,7 @@ export default function Header() {
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
+                          color: 'inherit',
                         },
                       }}
                     />
@@ -493,24 +529,50 @@ export default function Header() {
             ) : (
               <>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/login">
+                  <ListItemButton 
+                    component={Link} 
+                    href="/login"
+                    sx={{
+                      color: 'white',
+                      borderRadius: 2,
+                      mb: 0.5,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                      },
+                    }}
+                  >
                     <ListItemText 
                       primary="Login" 
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
+                          color: 'inherit',
                         },
                       }}
                     />
                   </ListItemButton>
                 </ListItem>
                 <ListItem disablePadding>
-                  <ListItemButton component={Link} href="/sskit-family">
+                  <ListItemButton 
+                    component={Link} 
+                    href="/sskit-family"
+                    sx={{
+                      color: 'white',
+                      borderRadius: 2,
+                      mb: 0.5,
+                      '&:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.2)',
+                        color: 'white',
+                      },
+                    }}
+                  >
                     <ListItemText 
                       primary="Shop Now" 
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'var(--font-poppins), sans-serif !important',
+                          color: 'inherit',
                         },
                       }}
                     />

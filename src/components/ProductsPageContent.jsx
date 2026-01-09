@@ -1,6 +1,7 @@
 'use client';
 
-import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab } from '@mui/material';
+import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab, Dialog, IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import NextLink from 'next/link';
@@ -10,12 +11,10 @@ import ProductCard from '@/components/ProductCard';
 import PaginationControls from '@/components/PaginationControls';
 import ErrorDisplay from '@/components/ErrorDisplay';
 import LoadingState from '@/components/LoadingState';
+import { useAuth } from '@/contexts/AuthContext';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_BASE_URL) {
-  throw new Error('NEXT_PUBLIC_API_URL environment variable is missing!');
-}
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 const API_URL = `${API_BASE_URL}/api`;
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -68,6 +67,7 @@ export default function ProductsPageContent() {
   const pageParam = router.query.page;
   const typeParam = router.query.type || 'all';
   const categoryParam = router.query.category || 'all';
+  const { user } = useAuth();
 
   const currentPage = Math.max(parseInt(pageParam || '1', 10) || 1, 1);
   const [products, setProducts] = useState([]);
@@ -79,24 +79,24 @@ export default function ProductsPageContent() {
   const [activeTab, setActiveTab] = useState(0); // 0: Families, 1: Schools/Uni, 2: Businesses
   const [cardPage, setCardPage] = useState(1);
   const CARDS_PER_PAGE = 6; // 2 rows of 3 cards = 6 cards per page
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [processingPurchase, setProcessingPurchase] = useState(false);
+  const [schoolsDemoModalOpen, setSchoolsDemoModalOpen] = useState(false);
+  const [businessesDemoModalOpen, setBusinessesDemoModalOpen] = useState(false);
 
-  const fetchProducts = useCallback(async (page, type, category) => {
+  const fetchProducts = useCallback(async (page, type, category, targetAudience) => {
     try {
       setLoading(true);
       setError(null);
       const ts = Date.now();
       const params = {
-        page: page.toString(),
-        limit: PRODUCTS_PER_PAGE.toString(),
+        all: 'true', // Fetch all products without pagination for filtering
         _t: ts, // cache breaker
       };
 
-      if (type && type !== 'all') {
-        params.type = type;
-      }
-
-      if (category && category !== 'all') {
-        params.category = category;
+      if (targetAudience) {
+        params.targetAudience = targetAudience;
       }
 
       const url = `${API_URL}/products`;
@@ -106,11 +106,13 @@ export default function ProductsPageContent() {
         params,
       });
       
-      setProducts(res.data.products || []);
+      // Handle both array response and paginated response
+      const fetchedProducts = Array.isArray(res.data) ? res.data : (res.data.products || []);
+      setProducts(fetchedProducts);
       setMeta({
-        total: res.data.total || 0,
-        totalPages: res.data.totalPages || res.data.pages || 1,
-        page: res.data.page || 1,
+        total: fetchedProducts.length,
+        totalPages: 1,
+        page: 1,
       });
     } catch (err) {
       console.error('❌ Error fetching products:', {
@@ -135,9 +137,16 @@ export default function ProductsPageContent() {
 
   useEffect(() => {
     if (router.isReady) {
-      fetchProducts(currentPage, selectedType, selectedCategory);
+      // Map activeTab to targetAudience
+      const targetAudienceMap = {
+        0: 'private-users', // Families - B2C
+        1: 'schools', // Schools - B2E
+        2: 'businesses', // Business - B2B
+      };
+      const targetAudience = targetAudienceMap[activeTab];
+      fetchProducts(currentPage, selectedType, selectedCategory, targetAudience);
     }
-  }, [currentPage, selectedType, selectedCategory, fetchProducts, router.isReady]);
+  }, [currentPage, selectedType, selectedCategory, activeTab, fetchProducts, router.isReady]);
 
   // Reset card page when tab changes
   useEffect(() => {
@@ -409,77 +418,68 @@ export default function ProductsPageContent() {
             <>
               {/* Filter products based on active tab */}
               {(() => {
-                // B2C products: For families - prioritize targetAudience
-                const b2cProducts = products.filter(p => {
-                  if (p.targetAudience === 'private-users') return true;
-                  if (p.targetAudience === 'schools' || p.targetAudience === 'businesses') return false;
-                  if (!p.targetAudience) {
-                    return p.category === 'private-users' ||
-                           p.category === 'membership' ||
-                           p.category === 'template' ||
-                           p.category === 'guide' ||
-                           p.category === 'toolkit' ||
-                           p.category === 'digital-guide' ||
-                           (p.name?.toLowerCase().includes('scam survival kit'));
+                // Filter products by targetAudience (handle both array and string)
+                const filteredProducts = products.filter(p => {
+                  const targetAudiences = Array.isArray(p.targetAudience) ? p.targetAudience : (p.targetAudience ? [p.targetAudience] : []);
+                  
+                  if (activeTab === 0) {
+                    // Families - B2C (private-users)
+                    return targetAudiences.includes('private-users');
+                  } else if (activeTab === 1) {
+                    // Schools - B2E (schools)
+                    return targetAudiences.includes('schools');
+                  } else if (activeTab === 2) {
+                    // Business - B2B (businesses)
+                    return targetAudiences.includes('businesses');
                   }
                   return false;
                 });
-                
-                // B2E products: For schools - prioritize targetAudience
-                const b2eProducts = products.filter(p => {
-                  if (p.targetAudience === 'schools') return true;
-                  if (p.targetAudience === 'private-users' || p.targetAudience === 'businesses') return false;
-                  if (!p.targetAudience) {
-                    return p.category === 'schools';
-                  }
-                  return false;
-                });
-                
-                // B2B products: For organizations - prioritize targetAudience
-                const b2bProducts = products.filter(p => {
-                  if (p.targetAudience === 'businesses') return true;
-                  if (p.targetAudience === 'private-users' || p.targetAudience === 'schools') return false;
-                  if (!p.targetAudience) {
-                    return p.category === 'businesses';
-                  }
-                  return false;
-                });
-                
-                // Remove duplicates
-                const uniqueB2C = b2cProducts.filter(p => 
-                  !b2bProducts.some(bp => bp._id === p._id) &&
-                  !b2eProducts.some(ep => ep._id === p._id)
-                );
-                const uniqueB2B = b2bProducts.filter(p => 
-                  !b2cProducts.some(cp => cp._id === p._id) &&
-                  !b2eProducts.some(ep => ep._id === p._id)
-                );
-                const uniqueB2E = b2eProducts.filter(p => 
-                  !b2cProducts.some(cp => cp._id === p._id) &&
-                  !b2bProducts.some(bp => bp._id === p._id)
-                );
                 
                 // Filter based on active tab
-                let displayedProducts = [];
+                let displayedProducts = filteredProducts;
                 let sectionContent = null;
                 
+                // Find specific products for Families tab
+                let physicalProduct = null;
+                let digitalProduct = null;
+                let bundleProduct = null;
+                
                 if (activeTab === 0) {
-                  // For Families
-                  displayedProducts = uniqueB2C;
+                  // Find physical, digital, and bundle products
+                  physicalProduct = filteredProducts.find(p => 
+                    p.title?.toLowerCase().includes('tactical') || 
+                    p.title?.toLowerCase().includes('physical') ||
+                    p.name?.toLowerCase().includes('tactical') ||
+                    p.name?.toLowerCase().includes('physical')
+                  );
+                  
+                  digitalProduct = filteredProducts.find(p => 
+                    p.title?.toLowerCase().includes('digital') || 
+                    p.name?.toLowerCase().includes('digital')
+                  );
+                  
+                  bundleProduct = filteredProducts.find(p => 
+                    p.title?.toLowerCase().includes('bundle') || 
+                    p.title?.toLowerCase().includes('best value') ||
+                    p.name?.toLowerCase().includes('bundle') ||
+                    p.name?.toLowerCase().includes('best value')
+                  );
+                  
+                  // If not found by title, use first 3 products
+                  if (!physicalProduct && filteredProducts.length > 0) physicalProduct = filteredProducts[0];
+                  if (!digitalProduct && filteredProducts.length > 1) digitalProduct = filteredProducts[1];
+                  if (!bundleProduct && filteredProducts.length > 2) bundleProduct = filteredProducts[2];
+                  
                   sectionContent = {
                     headline: 'Build Lifelong Confidence at Home',
                     subheadline: 'Offline-first card game + optional digital challenges for ongoing practice. Perfect for dinner tables, car rides, or family discussions—no nagging required.',
                   };
                 } else if (activeTab === 1) {
-                  // For Schools & Universities
-                  displayedProducts = uniqueB2E;
                   sectionContent = {
                     headline: 'Turn Students into Digital Leaders',
                     subheadline: 'Engaging activities that fit classrooms, clubs, or orientation weeks. Easy for teachers, proven to build pause habits early.',
                   };
                 } else if (activeTab === 2) {
-                  // For Businesses & Organizations
-                  displayedProducts = uniqueB2B;
                   sectionContent = {
                     headline: 'Compliance That Proves Real Risk Reduction',
                     subheadline: 'Beyond quizzes—fun simulations with auditor-ready reports on pause behavior under pressure. NIS2-ready and ISO-aligned.',
@@ -520,30 +520,111 @@ export default function ProductsPageContent() {
                     {activeTab === 0 && (
                       <Box sx={{ mb: 5 }}>
                         <Grid container spacing={4} sx={{ mb: 4 }}>
-                          {/* Tactical Card Game Kit */}
+                          {/* Tactical Card Game Kit - Physical Product */}
                           <Grid item xs={12} md={4}>
                             <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              {physicalProduct?.imageUrl && (
+                                <Box
+                                  component="img"
+                                  src={physicalProduct.imageUrl.startsWith('http') 
+                                    ? physicalProduct.imageUrl 
+                                    : `${API_BASE_URL}${physicalProduct.imageUrl.startsWith('/') ? physicalProduct.imageUrl : `/${physicalProduct.imageUrl}`}`}
+                                  alt={physicalProduct.title}
+                                  onClick={() => {
+                                    const imageUrl = physicalProduct.imageUrl.startsWith('http') 
+                                      ? physicalProduct.imageUrl 
+                                      : `${API_BASE_URL}${physicalProduct.imageUrl.startsWith('/') ? physicalProduct.imageUrl : `/${physicalProduct.imageUrl}`}`;
+                                    setSelectedImage(imageUrl);
+                                    setImageModalOpen(true);
+                                  }}
+                                  sx={{
+                                    width: '100%',
+                                    height: '200px',
+                                    objectFit: 'contain',
+                                    mb: 2,
+                                    borderRadius: 1,
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, opacity 0.2s',
+                                    '&:hover': {
+                                      transform: 'scale(1.02)',
+                                      opacity: 0.9,
+                                    },
+                                  }}
+                                />
+                              )}
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Tactical Card Game Kit
                               </Typography>
                               <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
-                                80 premium cards with real-life scenarios. Spot H.A.C.K. tricks (Hurry, Authority, Comfort, Kill-Switch) and practice the 5-second pause. Includes no-blame Family Tech Contract.
+                                {physicalProduct?.description ? physicalProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '90 premium cards with real-life scenarios. Spot H.A.C.K. tricks (Hurry, Authority, Comfort, Kill-Switch) and practice the 5-second pause. Includes no-blame Family Tech Contract.'}
                               </Typography>
                               <Box sx={{ mb: 2 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Pricing Structure
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
-                                  Early bird: $49
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
-                                  Later: $59
-                                </Typography>
+                                {physicalProduct?.price && (
+                                  <>
+                                    <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                      <b>Early bird: ${physicalProduct.price}</b>
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                      <b>Later: $59</b>
+                                    </Typography>
+                                  </>
+                                )}
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/sskit-family"
-                                component={NextLink}
+                                onClick={async () => {
+                                  if (!user) {
+                                    router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                    return;
+                                  }
+                                  
+                                  if (processingPurchase) return;
+                                  setProcessingPurchase(true);
+                                  
+                                  try {
+                                    if (!physicalProduct?._id) {
+                                      alert('Product not found. Please try again.');
+                                      setProcessingPurchase(false);
+                                      return;
+                                    }
+                                    
+                                    // Get auth token
+                                    const token = localStorage.getItem('token');
+                                    if (!token) {
+                                      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                      setProcessingPurchase(false);
+                                      return;
+                                    }
+                                    
+                                    // Create Stripe Checkout Session - Direct product purchase (no package needed)
+                                    const checkoutResponse = await axios.post(
+                                      `${API_URL}/payments/create-checkout-session`,
+                                      {
+                                        productId: physicalProduct._id,
+                                        urlType: 'B2C',
+                                        directProductPurchase: true, // Flag for direct product purchase
+                                      },
+                                      {
+                                        headers: {
+                                          Authorization: `Bearer ${token}`,
+                                        },
+                                      }
+                                    );
+                                    
+                                    // Redirect to Stripe Checkout
+                                    if (checkoutResponse.data.url) {
+                                      window.location.href = checkoutResponse.data.url;
+                                    } else {
+                                      alert('Failed to create checkout session');
+                                      setProcessingPurchase(false);
+                                    }
+                                  } catch (error) {
+                                    console.error('Error purchasing physical product:', error);
+                                    alert(error.response?.data?.error || 'Failed to start checkout process');
+                                    setProcessingPurchase(false);
+                                  }
+                                }}
+                                disabled={processingPurchase}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -552,71 +633,138 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Buy Physical Kit Now →
+                                {processingPurchase ? 'Redirecting to Stripe...' : 'Buy Physical Kit Now'}
                               </Button>
                             </Box>
                           </Grid>
 
-                          {/* Digital Extension */}
+                          {/* Digital Extension - Digital Product */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
-                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: '#0B7897', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                              {digitalProduct?.imageUrl && (
+                                <Box
+                                  component="img"
+                                  src={digitalProduct.imageUrl.startsWith('http') 
+                                    ? digitalProduct.imageUrl 
+                                    : `${API_BASE_URL}${digitalProduct.imageUrl.startsWith('/') ? digitalProduct.imageUrl : `/${digitalProduct.imageUrl}`}`}
+                                  alt={digitalProduct.title || digitalProduct.name}
+                                  onClick={() => {
+                                    const imageUrl = digitalProduct.imageUrl.startsWith('http') 
+                                      ? digitalProduct.imageUrl 
+                                      : `${API_BASE_URL}${digitalProduct.imageUrl.startsWith('/') ? digitalProduct.imageUrl : `/${digitalProduct.imageUrl}`}`;
+                                    setSelectedImage(imageUrl);
+                                    setImageModalOpen(true);
+                                  }}
+                                  sx={{
+                                    width: '100%',
+                                    height: '200px',
+                                    objectFit: 'contain',
+                                    mb: 2,
+                                    borderRadius: 1,
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, opacity 0.2s',
+                                    '&:hover': {
+                                      transform: 'scale(1.02)',
+                                      opacity: 0.9,
+                                    },
+                                  }}
+                                />
+                              )}
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: 'white' }}>
                                 Digital Extension (App Access)
                               </Typography>
-                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
-                                Monthly new scenarios, progress tracking, and solo/family challenges on your phone.
+                              <Typography variant="body1" sx={{ mb: 2, color: 'white', lineHeight: 1.7, flexGrow: 1 }}>
+                                {digitalProduct?.description ? digitalProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : 'Monthly new scenarios, progress tracking, and solo/family challenges on your phone.'}
                               </Typography>
                               <Box sx={{ mb: 2 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Pricing Structure
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
-                                  Early bird: $29/year
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
-                                  Later: $39/year
-                                </Typography>
+                                {digitalProduct?.price ? (
+                                  <>
+                                    <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                                      <b>Early bird: ${digitalProduct.price}/year</b>
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'white' }}>
+                                      <b>Later: $39/year</b>
+                                    </Typography>
+                                  </>
+                                ) : (
+                                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                                    <b>Early bird: ${digitalProduct?.price || 'N/A'}/year</b>
+                                  </Typography>
+                                )}
                               </Box>
                               <Button
-                                variant="contained"
-                                href="/sskit-family"
+                                variant="outlined"
+                                href={digitalProduct?._id ? `/packages?type=B2C&productId=${digitalProduct._id}` : '/packages?type=B2C'}
                                 component={NextLink}
                                 sx={{
-                                  backgroundColor: '#0B7897',
+                                  backgroundColor: 'transparent',
                                   color: 'white',
+                                  borderColor: 'white',
+                                  border: '2px solid white',
                                   '&:hover': {
-                                    backgroundColor: '#063C5E',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    borderColor: 'white',
                                   },
                                 }}
                               >
-                                Subscribe to Digital →
+                                Subscribe to Digital
                               </Button>
                             </Box>
                           </Grid>
 
-                          {/* Best Value Bundle */}
+                          {/* Best Value Bundle - Bundle Product */}
                           <Grid item xs={12} md={4}>
                             <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, border: '2px solid #0B7897', display: 'flex', flexDirection: 'column' }}>
+                              {bundleProduct?.imageUrl && (
+                                <Box
+                                  component="img"
+                                  src={bundleProduct.imageUrl.startsWith('http') 
+                                    ? bundleProduct.imageUrl 
+                                    : `${API_BASE_URL}${bundleProduct.imageUrl.startsWith('/') ? bundleProduct.imageUrl : `/${bundleProduct.imageUrl}`}`}
+                                  alt={bundleProduct.title || bundleProduct.name}
+                                  onClick={() => {
+                                    const imageUrl = bundleProduct.imageUrl.startsWith('http') 
+                                      ? bundleProduct.imageUrl 
+                                      : `${API_BASE_URL}${bundleProduct.imageUrl.startsWith('/') ? bundleProduct.imageUrl : `/${bundleProduct.imageUrl}`}`;
+                                    setSelectedImage(imageUrl);
+                                    setImageModalOpen(true);
+                                  }}
+                                  sx={{
+                                    width: '100%',
+                                    height: '200px',
+                                    objectFit: 'contain',
+                                    mb: 2,
+                                    borderRadius: 1,
+                                    cursor: 'pointer',
+                                    transition: 'transform 0.2s, opacity 0.2s',
+                                    '&:hover': {
+                                      transform: 'scale(1.02)',
+                                      opacity: 0.9,
+                                    },
+                                  }}
+                                />
+                              )}
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
                                 Best Value Bundle
                               </Typography>
                               <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
-                                Physical Kit + 1-Year Digital Access.
+                                {bundleProduct?.description ? bundleProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : 'Physical Kit + 1-Year Digital Access.'}
                               </Typography>
                               <Box sx={{ mb: 2 }}>
-                                <Typography variant="body2" sx={{ fontWeight: 600, color: '#063C5E', mb: 0.5 }}>
-                                  Pricing Structure
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
-                                  Early bird: $69
-                                </Typography>
-                                <Typography variant="body2" sx={{ color: '#063C5E' }}>
-                                  Later: $89
-                                </Typography>
+                                {bundleProduct?.price && (
+                                  <>
+                                    <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                      <b>Early bird: ${bundleProduct.price}</b>
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                      <b>Later: $89</b>
+                                    </Typography>
+                                  </>
+                                )}
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/sskit-family"
+                                href={bundleProduct?._id ? `/packages?type=B2C&productId=${bundleProduct._id}` : '/packages?type=B2C'}
                                 component={NextLink}
                                 sx={{
                                   backgroundColor: '#0B7897',
@@ -626,7 +774,7 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Get Bundle Now →
+                                Get Bundle Now
                               </Button>
                             </Box>
                           </Grid>
@@ -664,7 +812,7 @@ export default function ProductsPageContent() {
                             Engineered in Germany – Premium quality cards built to last.
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1, color: 'text.secondary', fontStyle: 'italic' }}>
-                            Konfydence for Kids: €1 per sale donated to initiatives that strengthen digital resilience for children and young people.
+                            Konfydence for Kids: $1 per sale donated to initiatives that strengthen digital resilience for children and young people.
                           </Typography>
                           <Typography variant="body2" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
                             A simple, no-blame agreement to start open conversations about online safety. Builds trust, sets boundaries, and reinforces the pause habit.
@@ -702,7 +850,7 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Download Free Pack →
+                                Download Free Pack
                               </Button>
                             </Box>
                           </Grid>
@@ -724,8 +872,7 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/contact"
-                                component={NextLink}
+                                onClick={() => setSchoolsDemoModalOpen(true)}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -734,11 +881,37 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Request Free Demo / Resources →
+                                Request Free Demo / Resources 
                               </Button>
                             </Box>
                           </Grid>
                         </Grid>
+
+                        {/* Images Section for Schools */}
+                        <Box sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                          <Box
+                            component="img"
+                            src="/images/lucrative.png"
+                            alt="School Product"
+                            sx={{
+                              maxWidth: '300px',
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                          <Box
+                            component="img"
+                            src="/images/lucrative-back.png"
+                            alt="School Product 2"
+                            sx={{
+                              maxWidth: '300px',
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </Box>
                       </Box>
                     )}
 
@@ -771,7 +944,7 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                              Request A Free Demo  →
+                              Request A Free Demo
                               </Button>
                             </Box>
                           </Grid>
@@ -792,8 +965,7 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/contact"
-                                component={NextLink}
+                                onClick={() => setBusinessesDemoModalOpen(true)}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -802,83 +974,113 @@ export default function ProductsPageContent() {
                                   },
                                 }}
                               >
-                                Request A Custom Simulation →
+                                Request A Custom Simulation
                               </Button>
                             </Box>
                           </Grid>
                         </Grid>
+
+                        {/* Images Section for Business */}
+                        <Box sx={{ mt: 4, mb: 4, display: 'flex', justifyContent: 'center', gap: 3, flexWrap: 'wrap' }}>
+                          <Box
+                            component="img"
+                            src="/images/vendor.png"
+                            alt="Business Product"
+                            sx={{
+                              maxWidth: '300px',
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                          <Box
+                            component="img"
+                            src="/images/vendor-back.png"
+                            alt="Business Product 2"
+                            sx={{
+                              maxWidth: '300px',
+                              height: 'auto',
+                              borderRadius: 2,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            }}
+                          />
+                        </Box>
                       </Box>
                     )}
 
-                    {/* Products Grid with Pagination */}
-                    {displayedProducts.length === 0 ? (
-                      <Box textAlign="center" py={6}>
-                        <Typography variant="h6" color="text.secondary">
-                          No products found in this category.
-                        </Typography>
-                      </Box>
-                    ) : (
+                    {/* Products Grid with Pagination - Hidden for Families, Schools, and Businesses tabs */}
+                    {activeTab !== 0 && activeTab !== 1 && activeTab !== 2 && (
                       <>
-                        {(() => {
-                          // Calculate pagination for cards
-                          const totalCardPages = Math.ceil(displayedProducts.length / CARDS_PER_PAGE);
-                          const startIndex = (cardPage - 1) * CARDS_PER_PAGE;
-                          const endIndex = startIndex + CARDS_PER_PAGE;
-                          const paginatedProducts = displayedProducts.slice(startIndex, endIndex);
+                        {displayedProducts.length === 0 ? (
+                          <Box textAlign="center" py={6}>
+                            <Typography variant="h6" color="text.secondary">
+                              No products found in this category.
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <>
+                            {(() => {
+                              // Calculate pagination for cards
+                              const totalCardPages = Math.ceil(displayedProducts.length / CARDS_PER_PAGE);
+                              const startIndex = (cardPage - 1) * CARDS_PER_PAGE;
+                              const endIndex = startIndex + CARDS_PER_PAGE;
+                              const paginatedProducts = displayedProducts.slice(startIndex, endIndex);
 
-                          return (
-                            <>
-                              <Grid
-                                data-aos="zoom-in"
-                                data-aos-duration="800"
-                                data-aos-delay="100"
-                                container
-                                spacing={4}
-                                sx={{ alignItems: 'stretch', mb: 4 }}
-                              >
-                                {paginatedProducts.map((product, index) => (
-                                  <Grid item xs={12} sm={6} md={4} key={product._id}>
-                                    <ProductCard product={product} delay={index * 100} />
+                              return (
+                                <>
+                                  <Grid
+                                    data-aos="zoom-in"
+                                    data-aos-duration="800"
+                                    data-aos-delay="100"
+                                    container
+                                    spacing={4}
+                                    sx={{ alignItems: 'stretch', mb: 4 }}
+                                  >
+                                    {paginatedProducts.map((product, index) => (
+                                      <Grid item xs={12} sm={6} md={4} key={product._id}>
+                                        <ProductCard product={product} delay={index * 100} />
+                                      </Grid>
+                                    ))}
                                   </Grid>
-                                ))}
-                              </Grid>
 
-                              {/* Card Pagination */}
-                              {totalCardPages > 1 && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
-                                  <Stack direction="row" spacing={1} alignItems="center">
-                                    <Button
-                                      onClick={() => setCardPage(p => Math.max(1, p - 1))}
-                                      disabled={cardPage === 1}
-                                      sx={{ minWidth: 100 }}
-                                    >
-                                      Previous
-                                    </Button>
-                                    <Typography variant="body2" sx={{ px: 2 }}>
-                                      Page {cardPage} of {totalCardPages}
-                                    </Typography>
-                                    <Button
-                                      onClick={() => setCardPage(p => Math.min(totalCardPages, p + 1))}
-                                      disabled={cardPage === totalCardPages}
-                                      sx={{ minWidth: 100 }}
-                                    >
-                                      Next
-                                    </Button>
-                                  </Stack>
-                                </Box>
-                              )}
+                                  {/* Card Pagination */}
+                                  {totalCardPages > 1 && (
+                                    <Box sx={{ display: 'flex', justifyContent: 'center', mb: 4 }}>
+                                      <Stack direction="row" spacing={1} alignItems="center">
+                                        <Button
+                                          onClick={() => setCardPage(p => Math.max(1, p - 1))}
+                                          disabled={cardPage === 1}
+                                          sx={{ minWidth: 100 }}
+                                        >
+                                          Previous
+                                        </Button>
+                                        <Typography variant="body2" sx={{ px: 2 }}>
+                                          Page {cardPage} of {totalCardPages}
+                                        </Typography>
+                                        <Button
+                                          onClick={() => setCardPage(p => Math.min(totalCardPages, p + 1))}
+                                          disabled={cardPage === totalCardPages}
+                                          sx={{ minWidth: 100 }}
+                                        >
+                                          Next
+                                        </Button>
+                                      </Stack>
+                                    </Box>
+                                  )}
 
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                                textAlign="center"
-                                sx={{ mb: 3 }}
-                              >
-                                Showing {startIndex + 1}–{Math.min(endIndex, displayedProducts.length)} of {displayedProducts.length} {displayedProducts.length === 1 ? 'product' : 'products'}
-                              </Typography>
-                            </>
-                          );
-                        })()}
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    textAlign="center"
+                                    sx={{ mb: 3 }}
+                                  >
+                                    Showing {startIndex + 1}–{Math.min(endIndex, displayedProducts.length)} of {displayedProducts.length} {displayedProducts.length === 1 ? 'product' : 'products'}
+                                  </Typography>
+                                </>
+                              );
+                            })()}
+                          </>
+                        )}
                       </>
                     )}
                   </>
@@ -942,7 +1144,7 @@ export default function ProductsPageContent() {
                   lineHeight: 1.7,
                 }}
               >
-                Scammers need rush. You need pause. Start building it today—with tools designed for real life.
+                Scammers rely on rush. You rely on pause. Start building it today—with tools designed for real life.
               </Typography>
 
               {/* CTA Buttons */}
@@ -1464,6 +1666,528 @@ export default function ProductsPageContent() {
         </Box>
       </Box>
       <Footer />
+      
+      {/* Image Modal Dialog */}
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            maxWidth: 'fit-content',
+            margin: 'auto',
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative', display: 'inline-block', p: 2 }}>
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: '#063C5E',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {selectedImage && (
+            <Box
+              component="img"
+              src={selectedImage}
+              alt="Product Image"
+              sx={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                borderRadius: 1,
+                display: 'block',
+              }}
+            />
+          )}
+        </Box>
+      </Dialog>
+
+      {/* Schools Demo Modal */}
+      <Dialog
+        open={schoolsDemoModalOpen}
+        onClose={() => setSchoolsDemoModalOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            p: 3,
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => setSchoolsDemoModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              color: '#063C5E',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, color: '#063C5E', textAlign: 'center' }}>
+            Get Early Access
+          </Typography>
+          
+          <Grid container spacing={3}>
+            {(() => {
+              // Get first 3 products for schools
+              const schoolsProducts = products.filter(p => {
+                const targetAudiences = Array.isArray(p.targetAudience) ? p.targetAudience : (p.targetAudience ? [p.targetAudience] : []);
+                return targetAudiences.includes('schools');
+              }).slice(0, 3);
+              
+              return schoolsProducts.map((product, index) => {
+                // Check if product is physical (Tactical Card Game Kit)
+                const isPhysical = product.title?.toLowerCase().includes('tactical') || 
+                                   product.title?.toLowerCase().includes('physical') ||
+                                   product.name?.toLowerCase().includes('tactical') ||
+                                   product.name?.toLowerCase().includes('physical');
+                
+                // Center card (index 1) should have blue background
+                const isCenterCard = index === 1;
+                
+                return (
+                  <Grid item xs={12} md={4} key={product._id || index}>
+                    <Box sx={{ 
+                      height: '100%', 
+                      p: 0, 
+                      backgroundColor: isCenterCard ? '#0B7897' : 'white', 
+                      borderRadius: 3, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
+                      overflow: 'hidden' 
+                    }}>
+                      {/* Image Section */}
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: '100%',
+                          paddingTop: '66.67%',
+                          backgroundColor: isCenterCard ? '#0B7897' : '#FFFFFF',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {product.imageUrl && (
+                          <Box
+                            component="img"
+                            src={product.imageUrl.startsWith('http') 
+                              ? product.imageUrl 
+                              : `${API_BASE_URL}${product.imageUrl.startsWith('/') ? product.imageUrl : `/${product.imageUrl}`}`}
+                            alt={product.title || product.name}
+                            sx={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: 'auto',
+                              height: 'auto',
+                              maxWidth: isCenterCard ? '95%' : '85%',
+                              maxHeight: isCenterCard ? '95%' : '85%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        )}
+                      </Box>
+                      
+                      {/* Content Section */}
+                      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ 
+                          mb: 1, 
+                          fontWeight: 700, 
+                          color: isCenterCard ? 'white' : '#063C5E', 
+                          fontSize: '1.1rem' 
+                        }}>
+                          {product.title || product.name || 'Product'}
+                        </Typography>
+                        
+                        {/* Price Display */}
+                        {product.price && (
+                          <Typography variant="h5" sx={{ 
+                            mb: 2, 
+                            fontWeight: 700, 
+                            color: isCenterCard ? '#FFD700' : '#0B7897', 
+                            fontSize: '1.5rem' 
+                          }}>
+                           Early Bird: ${product.price}
+                          </Typography>
+                        )}
+                        
+                        {/* Buy Now Button for Physical / Get Early Access for Others */}
+                        {isPhysical ? (
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            disabled={processingPurchase}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              
+                              if (processingPurchase) return;
+                              setProcessingPurchase(true);
+
+                              try {
+                                if (!product?._id) {
+                                  alert('Product not found. Please try again.');
+                                  setProcessingPurchase(false);
+                                  return;
+                                }
+                                
+                                // Get auth token
+                                const token = localStorage.getItem('token');
+                                if (!token) {
+                                  router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                  setProcessingPurchase(false);
+                                  return;
+                                }
+
+                                // Create Stripe checkout session for direct product purchase
+                                const checkoutResponse = await axios.post(
+                                  `${API_URL}/payments/create-checkout-session`,
+                                  {
+                                    productId: product._id,
+                                    urlType: 'B2E',
+                                    directProductPurchase: true, // Flag for direct product purchase
+                                  },
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  }
+                                );
+                                
+                                // Redirect to Stripe Checkout
+                                if (checkoutResponse.data.url) {
+                                  window.location.href = checkoutResponse.data.url;
+                                } else {
+                                  throw new Error('No checkout URL received');
+                                }
+                              } catch (error) {
+                                console.error('Error creating checkout session:', error);
+                                alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                                setProcessingPurchase(false);
+                              }
+                            }}
+                            sx={{
+                              backgroundColor: isCenterCard ? '#FFFFFF' : '#0B7897',
+                              color: isCenterCard ? '#0B7897' : 'white',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              py: 1,
+                              mt: 'auto',
+                              border: 'none',
+                              '&:hover': {
+                                backgroundColor: isCenterCard ? '#F5F5F5' : '#063C5E',
+                                color: isCenterCard ? '#063C5E' : 'white',
+                              },
+                              '&:disabled': {
+                                backgroundColor: '#ccc',
+                                color: '#666',
+                              },
+                            }}
+                          >
+                            {processingPurchase ? 'Redirecting to Stripe...' : 'Buy Now'}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant={isCenterCard ? "outlined" : "contained"}
+                            fullWidth
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/packages?type=B2E&productId=${product._id}`);
+                              setSchoolsDemoModalOpen(false);
+                            }}
+                            sx={{
+                              backgroundColor: isCenterCard ? '#FFFFFF !important' : '#0B7897 !important',
+                              color: isCenterCard ? '#0B7897 !important' : 'white !important',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              py: 1,
+                              mt: 'auto',
+                              border: isCenterCard ? '1px solid #FFFFFF' : 'none',
+                              boxShadow: 'none !important',
+                              '&:hover': {
+                                backgroundColor: isCenterCard ? '#F5F5F5 !important' : '#063C5E !important',
+                                color: isCenterCard ? '#063C5E !important' : 'white !important',
+                                borderColor: isCenterCard ? '#FFFFFF' : 'transparent',
+                                boxShadow: 'none !important',
+                              },
+                            }}
+                          >
+                            Get Early Access
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
+                  </Grid>
+                );
+              });
+            })()}
+          </Grid>
+        </Box>
+      </Dialog>
+
+      {/* Businesses Demo Modal */}
+      <Dialog
+        open={businessesDemoModalOpen}
+        onClose={() => setBusinessesDemoModalOpen(false)}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 2,
+            p: 3,
+          },
+        }}
+      >
+        <Box sx={{ position: 'relative' }}>
+          <IconButton
+            onClick={() => setBusinessesDemoModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: -8,
+              right: -8,
+              color: '#063C5E',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          
+          <Typography variant="h4" sx={{ mb: 3, fontWeight: 700, color: '#063C5E', textAlign: 'center' }}>
+            Get Early Access
+          </Typography>
+          
+          <Grid container spacing={3}>
+            {(() => {
+              // Get first 3 products for businesses
+              const businessesProducts = products.filter(p => {
+                const targetAudiences = Array.isArray(p.targetAudience) ? p.targetAudience : (p.targetAudience ? [p.targetAudience] : []);
+                return targetAudiences.includes('businesses');
+              }).slice(0, 3);
+              
+              return businessesProducts.map((product, index) => {
+                // Check if product is physical (Tactical Card Game Kit)
+                const isPhysical = product.title?.toLowerCase().includes('tactical') || 
+                                   product.title?.toLowerCase().includes('physical') ||
+                                   product.name?.toLowerCase().includes('tactical') ||
+                                   product.name?.toLowerCase().includes('physical');
+                
+                // Center card (index 1) should have blue background
+                const isCenterCard = index === 1;
+                
+                return (
+                  <Grid item xs={12} md={4} key={product._id || index}>
+                    <Box sx={{ 
+                      height: '100%', 
+                      p: 0, 
+                      backgroundColor: isCenterCard ? '#0B7897' : 'white', 
+                      borderRadius: 3, 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      boxShadow: '0 4px 20px rgba(0,0,0,0.1)', 
+                      overflow: 'hidden' 
+                    }}>
+                      {/* Image Section */}
+                      <Box
+                        sx={{
+                          position: 'relative',
+                          width: '100%',
+                          paddingTop: '66.67%',
+                          backgroundColor: isCenterCard ? '#0B7897' : '#FFFFFF',
+                          overflow: 'hidden',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {product.imageUrl && (
+                          <Box
+                            component="img"
+                            src={product.imageUrl.startsWith('http') 
+                              ? product.imageUrl 
+                              : `${API_BASE_URL}${product.imageUrl.startsWith('/') ? product.imageUrl : `/${product.imageUrl}`}`}
+                            alt={product.title || product.name}
+                            sx={{
+                              position: 'absolute',
+                              top: '50%',
+                              left: '50%',
+                              transform: 'translate(-50%, -50%)',
+                              width: 'auto',
+                              height: 'auto',
+                              maxWidth: isCenterCard ? '95%' : '85%',
+                              maxHeight: isCenterCard ? '95%' : '85%',
+                              objectFit: 'contain',
+                            }}
+                          />
+                        )}
+                      </Box>
+                      
+                      {/* Content Section */}
+                      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ 
+                          mb: 1, 
+                          fontWeight: 700, 
+                          color: isCenterCard ? 'white' : '#063C5E', 
+                          fontSize: '1.1rem' 
+                        }}>
+                          {product.title || product.name || 'Product'}
+                        </Typography>
+                        
+                        {/* Price Display */}
+                        {product.price && (
+                          <Typography variant="h5" sx={{ 
+                            mb: 2, 
+                            fontWeight: 700, 
+                            color: isCenterCard ? '#FFD700' : '#0B7897', 
+                            fontSize: '1.5rem' 
+                          }}>
+                           Early Bird: ${product.price}
+                          </Typography>
+                        )}
+                        
+                        {/* Buy Now Button for Physical / Get Early Access for Others */}
+                        {isPhysical ? (
+                          <Button
+                            variant="contained"
+                            fullWidth
+                            disabled={processingPurchase}
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              
+                              if (processingPurchase) return;
+                              setProcessingPurchase(true);
+
+                              try {
+                                if (!product?._id) {
+                                  alert('Product not found. Please try again.');
+                                  setProcessingPurchase(false);
+                                  return;
+                                }
+                                
+                                // Get auth token
+                                const token = localStorage.getItem('token');
+                                if (!token) {
+                                  router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                  setProcessingPurchase(false);
+                                  return;
+                                }
+
+                                // Create Stripe checkout session for direct product purchase - B2B for businesses
+                                const checkoutResponse = await axios.post(
+                                  `${API_URL}/payments/create-checkout-session`,
+                                  {
+                                    productId: product._id,
+                                    urlType: 'B2B', // B2B for businesses tab
+                                    directProductPurchase: true,
+                                  },
+                                  {
+                                    headers: {
+                                      Authorization: `Bearer ${token}`,
+                                    },
+                                  }
+                                );
+                                
+                                // Redirect to Stripe Checkout
+                                if (checkoutResponse.data.url) {
+                                  window.location.href = checkoutResponse.data.url;
+                                } else {
+                                  throw new Error('No checkout URL received');
+                                }
+                              } catch (error) {
+                                console.error('Error creating checkout session:', error);
+                                alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                                setProcessingPurchase(false);
+                              }
+                            }}
+                            sx={{
+                              backgroundColor: isCenterCard ? '#FFFFFF' : '#0B7897',
+                              color: isCenterCard ? '#0B7897' : 'white',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              py: 1,
+                              mt: 'auto',
+                              border: 'none',
+                              '&:hover': {
+                                backgroundColor: isCenterCard ? '#F5F5F5' : '#063C5E',
+                                color: isCenterCard ? '#063C5E' : 'white',
+                              },
+                              '&:disabled': {
+                                backgroundColor: '#ccc',
+                                color: '#666',
+                              },
+                            }}
+                          >
+                            {processingPurchase ? 'Redirecting to Stripe...' : 'Buy Now'}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant={isCenterCard ? "outlined" : "contained"}
+                            fullWidth
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              router.push(`/packages?type=B2B&productId=${product._id}`); // B2B for businesses
+                              setBusinessesDemoModalOpen(false);
+                            }}
+                            sx={{
+                              backgroundColor: isCenterCard ? '#FFFFFF !important' : '#0B7897 !important',
+                              color: isCenterCard ? '#0B7897 !important' : 'white !important',
+                              fontWeight: 600,
+                              borderRadius: 2,
+                              py: 1,
+                              mt: 'auto',
+                              border: isCenterCard ? '1px solid #FFFFFF' : 'none',
+                              boxShadow: 'none !important',
+                              '&:hover': {
+                                backgroundColor: isCenterCard ? '#F5F5F5 !important' : '#063C5E !important',
+                                color: isCenterCard ? '#063C5E !important' : 'white !important',
+                                borderColor: isCenterCard ? '#FFFFFF' : 'transparent',
+                                boxShadow: 'none !important',
+                              },
+                            }}
+                          >
+                            Get Early Access
+                          </Button>
+                        )}
+                      </Box>
+                    </Box>
+                  </Grid>
+                );
+              });
+            })()}
+          </Grid>
+        </Box>
+      </Dialog>
     </>
   );
 }

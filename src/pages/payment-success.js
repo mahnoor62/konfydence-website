@@ -160,12 +160,12 @@ export default function PaymentSuccessPage() {
   };
 
   const handleCopyCode = () => {
-    if (transaction?.uniqueCode) {
+    if (transaction?.uniqueCode && transaction.packageType !== 'physical') {
       navigator.clipboard.writeText(transaction.uniqueCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
       
-      // Save code to sessionStorage and route to game page
+      // Save code to sessionStorage and route to game page (only for non-physical products)
       sessionStorage.setItem('codeType', 'purchase');
       sessionStorage.setItem('code', transaction.uniqueCode);
       sessionStorage.setItem('codeVerified', 'true');
@@ -182,6 +182,12 @@ export default function PaymentSuccessPage() {
   };
 
   const handlePlayGame = () => {
+    // Only allow play game for non-physical products (physical products don't have digital access)
+    if (transaction?.packageType === 'physical') {
+      // For physical products, don't navigate to play page
+      return;
+    }
+    
     // Save code to sessionStorage for game page
     if (transaction?.uniqueCode) {
       sessionStorage.setItem('codeType', 'purchase');
@@ -349,83 +355,87 @@ export default function PaymentSuccessPage() {
                   </Typography>
                 </Box>
 
-                {/* Unique Code */}
-                <Box
-                  sx={{
-                    p: 1.5,
-                    backgroundColor: '#F5F8FB',
-                    borderRadius: 2,
-                    border: '2px dashed #0B7897',
-                    width: '100%',
-                    maxWidth: 400,
-                  }}
-                >
-                  <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                    Your Unique Order Code (Send to you via email)
-                  </Typography>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 1,
-                      mt: 0.5,
-                    }}
-                  >
-                    <Typography
-                      variant="h5"
+                {/* Unique Code - Only show for non-physical products */}
+                {transaction.packageType !== 'physical' && transaction.uniqueCode && (
+                  <>
+                    <Box
                       sx={{
-                        fontWeight: 700,
-                        color: '#0B7897',
-                        fontFamily: 'monospace',
-                        letterSpacing: 1.5,
-                        fontSize: { xs: '1.1rem', sm: '1.3rem' },
+                        p: 1.5,
+                        backgroundColor: '#F5F8FB',
+                        borderRadius: 2,
+                        border: '2px dashed #0B7897',
+                        width: '100%',
+                        maxWidth: 400,
                       }}
                     >
-                      {transaction.uniqueCode}
-                    </Typography>
-                    <IconButton
-                      onClick={handleCopyCode}
-                      size="small"
-                      sx={{
-                        color: '#0B7897',
-                        '&:hover': {
-                          backgroundColor: 'rgba(11, 120, 151, 0.1)',
-                        },
-                      }}
-                    >
-                      <ContentCopyIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
-                    </IconButton>
-                  </Box>
-                  {copied && (
-                    <Alert severity="success" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                      Code copied to clipboard!
-                    </Alert>
-                  )}
-                </Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
+                        Your Unique Order Code (Send to you via email)
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 1,
+                          mt: 0.5,
+                        }}
+                      >
+                        <Typography
+                          variant="h5"
+                          sx={{
+                            fontWeight: 700,
+                            color: '#0B7897',
+                            fontFamily: 'monospace',
+                            letterSpacing: 1.5,
+                            fontSize: { xs: '1.1rem', sm: '1.3rem' },
+                          }}
+                        >
+                          {transaction.uniqueCode}
+                        </Typography>
+                        <IconButton
+                          onClick={handleCopyCode}
+                          size="small"
+                          sx={{
+                            color: '#0B7897',
+                            '&:hover': {
+                              backgroundColor: 'rgba(11, 120, 151, 0.1)',
+                            },
+                          }}
+                        >
+                          <ContentCopyIcon sx={{ fontSize: { xs: 18, sm: 20 } }} />
+                        </IconButton>
+                      </Box>
+                      {copied && (
+                        <Alert severity="success" sx={{ mt: 1, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
+                          Code copied to clipboard!
+                        </Alert>
+                      )}
+                    </Box>
 
-                {/* Important Instructions */}
-                <Alert 
-                  severity="warning" 
-                  sx={{ 
-                    width: '100%', 
-                    maxWidth: 400,
-                    textAlign: 'left',
-                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                    '& .MuiAlert-message': {
-                      width: '100%'
-                    }
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                    Important Instructions:
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                    You&apos;ll need it to play the game
-                    {/* Copy this code now - this is a one-time display. Without this code, you cannot play the game. 
-                    Make sure to save it in a safe place before proceeding. */}
-                  </Typography>
-                </Alert>
+                    {/* Important Instructions - Only for digital packages */}
+                    <Alert 
+                      severity="warning" 
+                      sx={{ 
+                        width: '100%', 
+                        maxWidth: 400,
+                        textAlign: 'left',
+                        fontSize: { xs: '0.75rem', sm: '0.85rem' },
+                        '& .MuiAlert-message': {
+                          width: '100%'
+                        }
+                      }}
+                    >
+                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
+                        Important Instructions:
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
+                        You&apos;ll need it to play the game
+                      </Typography>
+                    </Alert>
+                  </>
+                )}
+
+                {/* Physical Product Message - Removed as requested */}
 
                 {/* Transaction Details */}
                 <Box
@@ -446,7 +456,7 @@ export default function PaymentSuccessPage() {
                         Package:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                        {transaction.packageId?.name || 'N/A'}
+                        {transaction.customPackageId ? 'Custom Package' : (transaction.packageId?.name || (transaction.packageType === 'physical' ? 'Physical' : 'N/A'))}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -454,7 +464,7 @@ export default function PaymentSuccessPage() {
                         Amount:
                       </Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                        {(transaction.currency === 'EUR' ? '€' : transaction.currency)} {transaction.amount.toFixed(2)}
+                        ${transaction.amount.toFixed(2)}
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -470,24 +480,27 @@ export default function PaymentSuccessPage() {
 
                 {/* Action Buttons */}
                 <Stack spacing={1} sx={{ width: '100%', maxWidth: 400 }}>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    size="medium"
-                    onClick={handlePlayGame}
-                    sx={{
-                      backgroundColor: '#4CAF50',
-                      color: 'white',
-                      fontWeight: 700,
-                      py: 1,
-                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
-                      '&:hover': {
-                        backgroundColor: '#45a049',
-                      },
-                    }}
-                  >
-                    Play Game
-                  </Button>
+                  {/* Only show Play Game button for non-physical products */}
+                  {transaction.packageType !== 'physical' && (
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      size="medium"
+                      onClick={handlePlayGame}
+                      sx={{
+                        backgroundColor: '#4CAF50',
+                        color: 'white',
+                        fontWeight: 700,
+                        py: 1,
+                        fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                        '&:hover': {
+                          backgroundColor: '#45a049',
+                        },
+                      }}
+                    >
+                      Play Game
+                    </Button>
+                  )}
                   <Button
                     variant="contained"
                     fullWidth
@@ -506,24 +519,28 @@ export default function PaymentSuccessPage() {
                   >
                     Go to Dashboard
                   </Button>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    size="medium"
-                    onClick={() => router.push('/packages')}
-                    sx={{
-                      borderColor: '#0B7897',
-                      color: '#0B7897',
-                      fontSize: { xs: '0.85rem', sm: '0.95rem' },
-                      py: 1,
-                      '&:hover': {
-                        borderColor: '#063C5E',
-                        backgroundColor: 'rgba(11, 120, 151, 0.1)',
-                      },
-                    }}
-                  >
-                    Browse More Packages
-                  </Button>
+                  {/* Hide Browse More Packages button for physical products */}
+                  {transaction.packageType !== 'physical' && (
+                    <Button
+                      variant="outlined"
+                      fullWidth
+                      size="medium"
+                      onClick={() => router.push('/packages')}
+                      sx={{
+                        borderColor: '#0B7897',
+                        color: '#0B7897',
+                        fontSize: { xs: '0.85rem', sm: '0.95rem' },
+                        py: 1,
+                        '&:hover': {
+                          borderColor: '#063C5E',
+                          color: '#063C5E',
+                          backgroundColor: 'rgba(11, 120, 151, 0.1)',
+                        },
+                      }}
+                    >
+                      Browse More Packages
+                    </Button>
+                  )}
                 </Stack>
               </Stack>
             </CardContent>

@@ -24,6 +24,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import axios from 'axios';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -32,10 +33,37 @@ if (!API_BASE_URL) {
 const API_URL = `${API_BASE_URL}/api`;
 
 export default function SKKPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [products, setProducts] = useState([]);
+  const [processingPurchase, setProcessingPurchase] = useState(false);
+  
+  // Fetch products on mount
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/products`, {
+          params: { targetAudience: 'private-users', all: 'true' }
+        });
+        setProducts(response.data || []);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+      }
+    };
+    fetchProducts();
+  }, []);
+  
+  // Get product by slug or name
+  const getProductBySlug = (slug) => {
+    return products.find(p => 
+      p.slug?.toLowerCase().includes(slug.toLowerCase()) ||
+      p.name?.toLowerCase().includes(slug.toLowerCase()) ||
+      p.title?.toLowerCase().includes(slug.toLowerCase())
+    );
+  };
 
   const validateEmail = (email) => {
     const emailRegex = /.+@.+\..+/;
@@ -258,7 +286,7 @@ export default function SKKPage() {
                     color: 'text.primary',
                   }}
                 >
-                  <strong>80 real-world scenarios.</strong> Practice recognizing scams before they happen.
+                  <strong>90 real-world scenarios.</strong> Practice recognizing scams before they happen.
                 </Typography>
                 <Typography
                   variant="body1"
@@ -469,6 +497,18 @@ export default function SKKPage() {
                         }}
                       />
                     </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/physical.png"
+                        alt="Physical Scam Survival Kit"
+                        sx={{
+                          width: '100%',
+                          height: { xs: '250px', md: '300px' },
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </SwiperSlide>
                   </Swiper>
                 </Box>
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
@@ -491,7 +531,7 @@ export default function SKKPage() {
                       color: 'text.secondary',
                     }}
                   >
-                    80 premium cards + H.A.C.K. reference. Instant fun, lifelong habit.
+                    90 premium cards + H.A.C.K. reference. Instant fun, lifelong habit.
                   </Typography>
                   <Box sx={{ mb: 2 }}>
                     <Typography
@@ -517,6 +557,55 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
+                    disabled={processingPurchase}
+                    onClick={async () => {
+                      if (processingPurchase) return;
+                      setProcessingPurchase(true);
+                      
+                      try {
+                        // Get physical product
+                        const physicalProduct = getProductBySlug('physical') || getProductBySlug('tactical');
+                        if (!physicalProduct?._id) {
+                          alert('Product not found. Please try again.');
+                          setProcessingPurchase(false);
+                          return;
+                        }
+                        
+                        // Get auth token
+                        const token = localStorage.getItem('token');
+                        if (!token) {
+                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          setProcessingPurchase(false);
+                          return;
+                        }
+
+                        // Create Stripe checkout session for direct product purchase
+                        const checkoutResponse = await axios.post(
+                          `${API_URL}/payments/create-checkout-session`,
+                          {
+                            productId: physicalProduct._id,
+                            urlType: 'B2C',
+                            directProductPurchase: true,
+                          },
+                          {
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          }
+                        );
+                        
+                        // Redirect to Stripe Checkout
+                        if (checkoutResponse.data.url) {
+                          window.location.href = checkoutResponse.data.url;
+                        } else {
+                          throw new Error('No checkout URL received');
+                        }
+                      } catch (error) {
+                        console.error('Error creating checkout session:', error);
+                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setProcessingPurchase(false);
+                      }
+                    }}
                     sx={{
                       backgroundColor: '#0B7897',
                       color: 'white',
@@ -525,9 +614,13 @@ export default function SKKPage() {
                       '&:hover': {
                         backgroundColor: '#063C5E',
                       },
+                      '&:disabled': {
+                        backgroundColor: '#ccc',
+                        color: '#666',
+                      },
                     }}
                   >
-                    Add to Cart →
+                    {processingPurchase ? 'Processing...' : 'Buy Now'}
                   </Button>
                 </CardContent>
               </Card>
@@ -550,46 +643,17 @@ export default function SKKPage() {
                 }}
               >
                 <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                  <Swiper
-                    modules={[Autoplay, Pagination]}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    autoplay={{
-                      delay: 3000,
-                      disableOnInteraction: false,
+                  <Box
+                    component="img"
+                    src="/images/digital.png"
+                    alt="Digital Family Extension"
+                    sx={{
+                      width: '100%',
+                      height: { xs: '250px', md: '300px' },
+                      objectFit: 'cover',
+                      backgroundColor: '#f5f5f5',
                     }}
-                    pagination={{ clickable: true }}
-                    style={{
-                      '--swiper-pagination-color': '#0B7897',
-                    }}
-                  >
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk10.png"
-                        alt="Digital Family Extension App"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                          backgroundColor: '#f5f5f5',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk11.png"
-                        alt="Digital Family Extension Features"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                          backgroundColor: '#f5f5f5',
-                        }}
-                      />
-                    </SwiperSlide>
-                  </Swiper>
+                  />
             </Box>
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Typography
@@ -637,6 +701,15 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
+                    onClick={() => {
+                      // Get digital product
+                      const digitalProduct = getProductBySlug('digital') || getProductBySlug('extension');
+                      if (digitalProduct?._id) {
+                        router.push(`/packages?type=B2C&productId=${digitalProduct._id}`);
+                      } else {
+                        router.push('/packages?type=B2C');
+                      }
+                    }}
                     sx={{
                       backgroundColor: '#0B7897',
                       color: 'white',
@@ -647,7 +720,7 @@ export default function SKKPage() {
                       },
                     }}
                   >
-                    Subscribe Now →
+                    Subscribe Now 
                   </Button>
                 </CardContent>
               </Card>
@@ -689,16 +762,44 @@ export default function SKKPage() {
                   BEST VALUE
                 </Box>
                 <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                  <Box
-                    component="img"
-                    src="/images/skk13.jpeg"
-                    alt="Full Bundle - Physical Kit + Digital"
-                    sx={{
-                      width: '100%',
-                      height: { xs: '250px', md: '300px' },
-                      objectFit: 'cover',
+                  <Swiper
+                    modules={[Autoplay, Pagination]}
+                    spaceBetween={0}
+                    slidesPerView={1}
+                    autoplay={{
+                      delay: 3000,
+                      disableOnInteraction: false,
                     }}
-                  />
+                    pagination={{ clickable: true }}
+                    style={{
+                      '--swiper-pagination-color': '#0B7897',
+                    }}
+                  >
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/skk13.jpeg"
+                        alt="Full Bundle - Physical Kit + Digital"
+                        sx={{
+                          width: '100%',
+                          height: { xs: '250px', md: '300px' },
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </SwiperSlide>
+                    <SwiperSlide>
+                      <Box
+                        component="img"
+                        src="/images/full.png"
+                        alt="Full Bundle"
+                        sx={{
+                          width: '100%',
+                          height: { xs: '250px', md: '300px' },
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </SwiperSlide>
+                  </Swiper>
             </Box>
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Typography
@@ -746,6 +847,15 @@ export default function SKKPage() {
                   <Button
                     variant="contained"
                     fullWidth
+                    onClick={() => {
+                      // Get bundle product
+                      const bundleProduct = getProductBySlug('bundle') || getProductBySlug('full');
+                      if (bundleProduct?._id) {
+                        router.push(`/packages?type=B2C&productId=${bundleProduct._id}`);
+                      } else {
+                        router.push('/packages?type=B2C');
+                      }
+                    }}
                     sx={{
                       backgroundColor: '#FF725E',
                       color: 'white',
@@ -756,7 +866,7 @@ export default function SKKPage() {
                       },
                     }}
                   >
-                    Get Bundle Now →
+                    Get Bundle Now 
                   </Button>
                 </CardContent>
               </Card>

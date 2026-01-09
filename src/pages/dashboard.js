@@ -1347,7 +1347,7 @@ export default function DashboardPage() {
                                     />
                                   </TableCell>
                                   <TableCell>
-                                    {tx.currency === 'EUR' ? '€' : tx.currency} {tx.amount.toFixed(2)}
+                                    ${tx.amount.toFixed(2)}
                                   </TableCell>
                                   <TableCell>
                                     <Chip

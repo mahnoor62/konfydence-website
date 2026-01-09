@@ -401,13 +401,42 @@ export default function PackagesPage() {
   const filterPackagesByCategory = (packagesList, category) => {
     let filtered = packagesList;
     
-    // Only filter by product targetAudience if type is NOT B2B or B2E
-    // When type is B2B or B2E, show all B2B and B2E packages regardless of product
-    if (productId && product && type !== 'B2B' && type !== 'B2E' && type !== 'B2B_B2E') {
+    // If productId is present and product is selected, filter to only show the matching package
+    if (productId && product) {
+      // Determine package type based on product title/name
+      const productTitle = (product.title || product.name || '').toLowerCase();
+      let matchingPackageType = null;
+      
+      // Check product title/name to determine package type
+      // Bundle/Best Value - highest priority (check first)
+      if (productTitle.includes('bundle') || productTitle.includes('best value')) {
+        matchingPackageType = 'digital_physical';
+      } 
+      // Physical/Tactical - map to digital_physical (bundle) since physical package is removed
+      else if (productTitle.includes('physical') || productTitle.includes('tactical')) {
+        matchingPackageType = 'digital_physical'; // Physical products map to bundle package
+      } 
+      // Digital - check if contains digital but not physical/tactical
+      else if (productTitle.includes('digital') || productTitle.includes('extension')) {
+        if (!productTitle.includes('physical') && !productTitle.includes('tactical')) {
+          matchingPackageType = 'digital';
+        } else {
+          matchingPackageType = 'digital_physical';
+        }
+      }
+      
+      // Filter packages to only show the matching package type
+      if (matchingPackageType) {
+        filtered = packagesList.filter(pkg => {
+          const packageType = pkg.packageType || pkg.type || pkg.category || 'standard';
+          return packageType === matchingPackageType;
+        });
+      }
+      
+      // Also filter by targetAudience
       const productTargetAudience = product.targetAudience || product.category;
       let allowedTargetAudiences = [];
       
-      // Map product targetAudience to package targetAudiences
       if (productTargetAudience === 'businesses') {
         allowedTargetAudiences = ['B2B'];
       } else if (productTargetAudience === 'schools') {
@@ -416,14 +445,39 @@ export default function PackagesPage() {
         allowedTargetAudiences = ['B2C'];
       }
       
-      // Filter packages that match product targetAudience
       if (allowedTargetAudiences.length > 0) {
-        filtered = packagesList.filter(pkg => {
+        filtered = filtered.filter(pkg => {
           if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
             return false;
           }
           return pkg.targetAudiences.some(ta => allowedTargetAudiences.includes(ta));
         });
+      }
+    } else {
+      // Only filter by product targetAudience if type is NOT B2B or B2E (when no specific product selected)
+      // When type is B2B or B2E, show all B2B and B2E packages regardless of product
+      if (type !== 'B2B' && type !== 'B2E' && type !== 'B2B_B2E') {
+        const productTargetAudience = product?.targetAudience || product?.category;
+        let allowedTargetAudiences = [];
+        
+        // Map product targetAudience to package targetAudiences
+        if (productTargetAudience === 'businesses') {
+          allowedTargetAudiences = ['B2B'];
+        } else if (productTargetAudience === 'schools') {
+          allowedTargetAudiences = ['B2E'];
+        } else if (productTargetAudience === 'private-users') {
+          allowedTargetAudiences = ['B2C'];
+        }
+        
+        // Filter packages that match product targetAudience
+        if (allowedTargetAudiences.length > 0 && product) {
+          filtered = packagesList.filter(pkg => {
+            if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
+              return false;
+            }
+            return pkg.targetAudiences.some(ta => allowedTargetAudiences.includes(ta));
+          });
+        }
       }
     }
     
@@ -440,12 +494,17 @@ export default function PackagesPage() {
       // Check if there are any B2B or B2E packages
       setHasB2BPackages(categoryFiltered.length > 0);
     } else if (category === 'families') {
-      // Filter for B2C (families)
+      // Filter for B2C (families) - only show digital and digital_physical (remove physical)
       const categoryFiltered = filtered.filter(pkg => {
         if (!pkg.targetAudiences || !Array.isArray(pkg.targetAudiences)) {
           return false;
         }
-        return pkg.targetAudiences.includes('B2C');
+        if (!pkg.targetAudiences.includes('B2C')) {
+          return false;
+        }
+        // Only show digital and digital_physical packages for B2C
+        const packageType = pkg.packageType || pkg.type || pkg.category || 'standard';
+        return packageType === 'digital' || packageType === 'digital_physical';
       });
       setPackages(categoryFiltered);
       setHasB2BPackages(false); // No free trial for B2C
@@ -1050,7 +1109,7 @@ export default function PackagesPage() {
         notes: requestForm.customPricing 
           ? String(requestForm.customPricing).trim() 
           : '',
-        currency: 'EUR'
+        currency: 'USD'
       };
       
       const requestData = {
@@ -1348,7 +1407,7 @@ export default function PackagesPage() {
                                   mb: 0.5,
                                 }}
                               >
-                                {pkg.contractPricing?.currency === 'EUR' ? '€' : pkg.contractPricing?.currency || '€'}{pkg.contractPricing?.amount || 0}
+                                ${pkg.contractPricing?.amount || 0}
                               </Typography>
                               <Typography
                                 variant="body2"
@@ -1446,7 +1505,7 @@ export default function PackagesPage() {
               }}
             >
               {/* Request Custom Package Card - Show for Organizations & Schools */}
-              {/* {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') && (
+              {((!type && selectedCategory === 'organizations_schools') || type === 'B2B' || type === 'B2E' || type === 'B2B_B2E') && (
                 <Grid 
                   item 
                   xs={12} 
@@ -1556,10 +1615,11 @@ export default function PackagesPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-              )} */}
+              )}
 
               {/* B2C Demo Card - Show for B2C users when packages exist and user hasn't used demo */}
-              {((!type && selectedCategory === 'families') || type === 'B2C') && packages.length > 0 && !hasUsedB2CDemo && (
+              {/* Show demo card even when productId is present - user should always see demo option */}
+              {((!type && selectedCategory === 'families') || type === 'B2C') && ((productId && product) || packages.length > 0) && !hasUsedB2CDemo && (
                 <Grid 
                   item 
                   xs={12} 
@@ -2041,7 +2101,7 @@ export default function PackagesPage() {
                               mb: 0.5,
                             }}
                           >
-                            €{pkg.pricing?.amount || 0}
+                            ${pkg.pricing?.amount || 0}
                           </Typography>
                           <Typography
                             variant="body2"

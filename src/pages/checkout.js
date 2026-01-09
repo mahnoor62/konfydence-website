@@ -104,7 +104,7 @@ function CheckoutForm({ packageData, packageId, clientSecret, uniqueCode, paymen
               Processing...
             </Box>
           ) : (
-            `Pay €${packageData.pricing?.amount || 0}`
+            `Pay $${packageData.pricing?.amount || 0}`
           )}
         </Button>
 
@@ -288,7 +288,7 @@ export default function CheckoutPage() {
                       color: '#0B7897',
                     }}
                   >
-                    €{packageData.pricing?.amount || 0}
+                    ${packageData.pricing?.amount || 0}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {packageData.pricing?.billingType === 'one_time'

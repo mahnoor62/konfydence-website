@@ -56,20 +56,25 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
   // B2E: schools category or targetAudience
   // B2C: private-users or other B2C categories
   const getProductType = () => {
+    // Handle targetAudience as array or string
+    const targetAudiences = Array.isArray(product.targetAudience) 
+      ? product.targetAudience 
+      : (product.targetAudience ? [product.targetAudience] : []);
+    
     // Check B2B first (highest priority)
-    if (product.targetAudience === 'businesses' || product.category === 'businesses') {
+    if (targetAudiences.includes('businesses') || product.category === 'businesses') {
       return 'B2B';
     }
     
     // Check B2E second
-    if (product.targetAudience === 'schools' || product.category === 'schools') {
+    if (targetAudiences.includes('schools') || product.category === 'schools') {
       return 'B2E';
     }
     
     // Check B2C last
     const productNameLower = product.name?.toLowerCase() || '';
     const isB2C = 
-      product.targetAudience === 'private-users' ||
+      targetAudiences.includes('private-users') ||
       product.category === 'private-users' ||
       // Product Categories that are B2C
       product.category === 'membership' ||
@@ -97,10 +102,14 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
 
   // Get contact page topic based on target audience
   const getContactTopic = () => {
-    if (product.targetAudience === 'businesses' || product.category === 'businesses') {
+    const targetAudiences = Array.isArray(product.targetAudience) 
+      ? product.targetAudience 
+      : (product.targetAudience ? [product.targetAudience] : []);
+    
+    if (targetAudiences.includes('businesses') || product.category === 'businesses') {
       return 'b2b_demo';
     }
-    if (product.targetAudience === 'schools' || product.category === 'schools') {
+    if (targetAudiences.includes('schools') || product.category === 'schools') {
       return 'b2e_demo';
     }
     // Default to B2B if it's a B2B/B2E product but targetAudience is not set
@@ -376,7 +385,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
             fontSize: darkBackground ? { xs: '1.25rem', md: '1.5rem' } : undefined,
           }}
         >
-          {product.name}
+          {product.title || product.name}
         </Typography>
         <Typography 
           variant="body2" 
@@ -539,7 +548,7 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                  €{product.price}/month
+                  ${product.price}/month
                 </Typography>
                 <Button
                   variant="contained"

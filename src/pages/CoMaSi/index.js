@@ -360,7 +360,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   variant="body1"
                   sx={{
                     fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 3,
+                    // mb: 3,
                     lineHeight: 1.8,
                     color: 'text.primary',
                   }}
@@ -384,10 +384,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   variant="h6"
                   sx={{
                     fontWeight: 600,
-                    mb: 2,
-                 
-                    mt: 3,
+                    mb: 1.5,
+                    // mt: 2,
                     color: '#063C5E',
+                    fontSize: { xs: '1rem', md: '1.1rem' },
                   }}
                 >
                   How Scammers Trigger Us to Act - The HACK
@@ -396,7 +396,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 {/* H.A.C.K. Quick Reference */}
                 <Paper
                   sx={{
-                    p: 3,
+                    p: { xs: 2, md: 2.5 },
                     backgroundColor: '#F6F8FA',
                     borderRadius: 2,
                     border: '2px solid #0B7897',
@@ -406,42 +406,43 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                     variant="h6"
                     sx={{
                       fontWeight: 700,
-                      mb: 2,
+                      mb: 1.5,
                       color: '#063C5E',
+                      fontSize: { xs: '0.95rem', md: '1rem' },
                     }}
                   >
                     H.A.C.K. Quick Reference
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
                         H – Hurry
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
                         Urgency and time pressure tactics
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
                         A – Authority
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
                         Fake credentials and position of power
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
                         C – Comfort
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
                         Familiarity and false trust signals
                       </Typography>
                     </Box>
                     <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
                         K – Kill-Switch
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
                         Panic or excitement that bypasses logic
                       </Typography>
                     </Box>
@@ -452,9 +453,11 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 <Typography
                   variant="h6"
                   sx={{
+                    mt:5,
                     fontWeight: 600,
-                    mb: 2,   ml:2,
+                    mb: 1.5,
                     color: '#063C5E',
+                    fontSize: { xs: '1rem', md: '1.1rem' },
                   }}
                 >
                   How to React - The 5 Seconds Pause
@@ -465,7 +468,8 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   alt="Five seconds is all it takes. No real request breaks if you wait."
                   sx={{
                     width: '100%',
-                    height: 'auto',
+                    // maxWidth: '85%',
+                    // height: 'auto',
                     borderRadius: 2,
                     boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
                     mb: 2,

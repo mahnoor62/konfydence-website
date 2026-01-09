@@ -1584,7 +1584,7 @@ export default function OrganizationDashboardPage() {
                   isCustomPackage: true,
                   contractPricing: cp.contractPricing || {
                     amount: 0,
-                    currency: 'EUR',
+                    currency: 'USD',
                     billingType: 'one_time'
                   },
                   seatLimit: cp.seatLimit || 0,
@@ -2650,7 +2650,7 @@ export default function OrganizationDashboardPage() {
                                     'Unknown Package';
                                   const txType = tx.type || 'purchase';
                                   const amount = tx.amount || 0;
-                                  const currency = tx.currency || 'EUR';
+                                  const currency = tx.currency || 'USD';
                                   const status = tx.status || 'pending';
                                   const createdAt = tx.createdAt || tx.created_at || new Date();
                                   const stripePaymentIntentId = tx.stripePaymentIntentId || 'N/A';
@@ -2686,7 +2686,7 @@ export default function OrganizationDashboardPage() {
                                       </TableCell>
                                       <TableCell>
                                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                          {currency === 'EUR' ? '€' : currency} {amount.toFixed(2)}
+                                          ${amount.toFixed(2)}
                                         </Typography>
                                       </TableCell>
                                       <TableCell>
@@ -3026,7 +3026,7 @@ export default function OrganizationDashboardPage() {
                           {/* Price Chip - Top Right Corner */}
                           {pkg.contractPricing && (
                             <Chip
-                              label={`${(pkg.contractPricing.currency || 'EUR') === 'EUR' ? '€' : pkg.contractPricing.currency || '€'}${pkg.contractPricing.amount || 0} ${pkg.contractPricing.billingType === 'one_time' ? '(One Time)' : pkg.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
+                              label={`$${pkg.contractPricing.amount || 0} ${pkg.contractPricing.billingType === 'one_time' ? '(One Time)' : pkg.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
                               size="small"
                               sx={{
                                 position: 'absolute',
@@ -3522,7 +3522,7 @@ export default function OrganizationDashboardPage() {
                               {/* Price Chip - Top Right Corner */}
                               {cp.contractPricing && (
                                 <Chip
-                                  label={`${(cp.contractPricing.currency || 'EUR') === 'EUR' ? '€' : cp.contractPricing.currency || '€'}${cp.contractPricing.amount || 0} ${cp.contractPricing.billingType === 'one_time' ? '(One Time)' : cp.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
+                                  label={`$${cp.contractPricing.amount || 0} ${cp.contractPricing.billingType === 'one_time' ? '(One Time)' : cp.contractPricing.billingType === 'subscription' ? '(Subscription)' : '(Per Seat)'}`}
                                   size="small"
                                   sx={{
                                     position: 'absolute',
@@ -3606,7 +3606,7 @@ export default function OrganizationDashboardPage() {
                                                 {product.name || 'Untitled Product'}
                                               </Typography>
                                               <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897' }}>
-                                                €{product.price || 0}
+                                                ${product.price || 0}
                                               </Typography>
                                             </Box>
                                           </Box>
@@ -3765,7 +3765,7 @@ export default function OrganizationDashboardPage() {
                                       {request.productIds.map((product, idx) => (
                                         <Chip
                                           key={product._id || idx}
-                                          label={`${product.name || 'Untitled'} (€${product.price || 0})`}
+                                          label={`${product.name || 'Untitled'} ($${product.price || 0})`}
                                           size="small"
                                           sx={{
                                             mb: 0.5,
@@ -3783,7 +3783,7 @@ export default function OrganizationDashboardPage() {
                                     </Box>
                                   ) : request.productId ? (
                                     <Chip
-                                      label={`${request.productId.name || 'Untitled'} (€${request.productId.price || 0})`}
+                                      label={`${request.productId.name || 'Untitled'} ($${request.productId.price || 0})`}
                                       size="small"
                                       sx={{
                                         backgroundColor: 'rgba(11, 120, 151, 0.1)',
@@ -3959,7 +3959,7 @@ export default function OrganizationDashboardPage() {
                                               Package Price
                                             </Typography>
                                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                              {cp.contractPricing?.currency === 'EUR' ? '€' : cp.contractPricing?.currency || '€'}
+                                              $
                                               {cp.contractPricing?.amount || 0} {' '}
                                               {cp.contractPricing?.billingType === 'one_time' ? '(One Time)' :
                                                 cp.contractPricing?.billingType === 'subscription' ? '(Subscription)' :
@@ -4073,7 +4073,7 @@ export default function OrganizationDashboardPage() {
                                                       </Typography>
                                                       {product.price !== undefined && (
                                                         <Typography variant="caption" color="text.secondary">
-                                                          €{product.price || 0}
+                                                          ${product.price || 0}
                                                         </Typography>
                                                       )}
                                                     </Box>
@@ -4724,7 +4724,7 @@ export default function OrganizationDashboardPage() {
             <Typography variant="h6">{selectedProduct?.name || 'Product Details'}</Typography>
             {selectedProduct?.price !== undefined && (
               <Typography variant="body2" color="text.secondary">
-                €{selectedProduct.price || 0}
+                ${selectedProduct.price || 0}
               </Typography>
             )}
           </Box>
@@ -4788,7 +4788,7 @@ export default function OrganizationDashboardPage() {
                     Price
                   </Typography>
                   <Typography variant="h6" sx={{ color: '#063C5E' }}>
-                    €{selectedProduct.price || 0}
+                    ${selectedProduct.price || 0}
                   </Typography>
                 </Box>
               )}

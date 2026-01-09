@@ -3336,7 +3336,7 @@ export default function GamePage() {
               <div className={styles.howToPlayImages} data-aos="fade-up" data-aos-delay="200">
                 <div className={styles.guideImageContainer}>
                   <img 
-                    src="/images/1Bank.png" 
+                    src="/images/gameplay.png" 
                     alt="Guide Image 1" 
                     className={styles.guideImage}
                   />

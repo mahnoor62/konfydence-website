@@ -1682,7 +1682,7 @@ export default function SKKPage() {
                   Real social impact
                 </Typography>
                 <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                  €1 per kit supports digital resilience programs for children
+                  $1 per kit supports digital resilience programs for children
                 </Typography>
               </Box>
             </Grid>

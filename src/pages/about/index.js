@@ -280,7 +280,7 @@ export default function AboutPage() {
                 mb: 4,
               }}
             >
-              Your purchase protects more than just your family. Through our program, we bring scam-spotting tools to vulnerable school communities — starting with Buy One, Give One during Kickstarter, and €1 donated per sale thereafter.
+              Your purchase protects more than just your family. Through our program, we bring scam-spotting tools to vulnerable school communities — starting with Buy One, Give One during Kickstarter, and $1 donated per sale thereafter.
             </Typography>
             <Box sx={{ textAlign: 'center' }}>
               <Button
