@@ -401,7 +401,9 @@ export default function SKKPage() {
                 height: '100%',
                 border: '2px solid #063C5E',
                 borderRadius: 2,
-                p: 3
+                overflow: 'hidden',
+                p:2
+          
               }}>
                 <Typography
                   variant="body2"
@@ -411,6 +413,8 @@ export default function SKKPage() {
                     lineHeight: 1.6,
                     color: 'text.secondary',
                     fontStyle: 'italic',
+                    px: 3,
+                    pt: 3
                   }}
                 >
            A simple graphic showing a &quot;Hot Brain&quot; (Emotion/Limbic) reacting to a scam message and a &quot;Cool Brain&quot; (Logic) pausing for 5 seconds.
@@ -422,8 +426,7 @@ export default function SKKPage() {
                 sx={{
                   width: '100%',
                   height: 'auto',
-                  borderRadius: 2,
-                  boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
+                  display: 'block'
                 }}
               />
               </Box>
