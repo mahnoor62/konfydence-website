@@ -701,7 +701,7 @@ export default function SKKPage() {
                   >
                     New scenarios, progress tracking, printables (annual subscription).
                   </Typography>
-                  <Typography
+                  {/* <Typography
                     variant="body2"
                     sx={{
                       mb: 2,
@@ -710,7 +710,7 @@ export default function SKKPage() {
                     }}
                   >
                     Max seat for digital play: 1
-                  </Typography>
+                  </Typography> */}
                   <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="h6"
@@ -904,7 +904,7 @@ export default function SKKPage() {
                   >
                     Physical Kit + 1-Year Digital + Free Family Tech Contract.
                   </Typography>
-                  <Typography
+                  {/* <Typography
                     variant="body2"
                     sx={{
                       mb: 2,
@@ -913,7 +913,7 @@ export default function SKKPage() {
                     }}
                   >
                     Max seat for digital play: 1
-                  </Typography>
+                  </Typography> */}
                   <Box sx={{ mb: 2 }}>
                     <Typography
                       variant="h6"
@@ -932,7 +932,7 @@ export default function SKKPage() {
                         fontWeight: 600,
                       }}
                     >
-                      Save $9 – Retail $89
+                      Save $20 – Retail $89
               </Typography>
             </Box>
                   <Button

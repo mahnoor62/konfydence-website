@@ -75,6 +75,7 @@ export default function AboutPage() {
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  // borderRadius: 2,
                 }}
               >
                 <Box
@@ -85,15 +86,16 @@ export default function AboutPage() {
                     width: '100%',
                     height: '100%',
                     objectFit: 'contain',
-                    animation: 'floatImage 3s ease-in-out infinite',
-                    '@keyframes floatImage': {
-                      '0%, 100%': { 
-                        transform: 'translateY(0px)',
-                      },
-                      '50%': {
-                        transform: 'translateY(-20px)',
-                      },
-                    },
+                    // borderRadiu,
+                    // animation: 'floatImage 3s ease-in-out infinite',
+                    // '@keyframes floatImage': {
+                    //   '0%, 100%': { 
+                    //     transform: 'translateY(0px)',
+                    //   },
+                    //   '50%': {
+                    //     transform: 'translateY(-20px)',
+                    //   },
+                    // },
                   }}
                 />
               </Box>
@@ -310,91 +312,188 @@ export default function AboutPage() {
           </Box>
 
           {/* Decision Ladder Graphic - 2 Columns */}
-          <Grid container spacing={4} sx={{ mb: { xs: 6, md: 8 } }} alignItems="center">
+          <Grid container spacing={4} sx={{ mb: { xs: 6, md: 8 } }} alignItems="stretch">
             <Grid item xs={12} md={6}>
-                  
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
               <Typography
-                variant="h3"
+                variant="h4"
                 sx={{
-                  fontSize: { xs: '2rem', md: '2.5rem' },
+                  fontSize: { xs: '1.5rem', md: '1.75rem' },
                   fontWeight: 700,
-                  mb: 3,
+                  mb: 2,
                   color: '#063C5E',
                 }}
               >
                 The Decision Ladder
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '1.25rem' },
-                  lineHeight: 1.8,
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                  lineHeight: 1.6,
                   color: '#063C5E',
-                  mb: 2,
+                  mb: 3,
                 }}
               >
                 When faced with a potential scam, follow these four steps:
               </Typography>
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
-                    Breathe
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Take a moment to calm your initial reaction
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
-                    Pause
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Stop before taking any action
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
-                    Think
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Analyze the situation logically
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.5 }}>
-                    Respond
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Make an informed decision
-                  </Typography>
-                </Box>
-              </Stack>
+              <Grid container spacing={2}>
+                {/* First Row - Breathe and Pause */}
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      backgroundColor: '#063C5E',
+                      borderRadius: 2,
+                      p: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        mb: 1,
+                        fontSize: { xs: '1rem', md: '1.125rem' },
+                      }}
+                    >
+                      Breathe
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#FFFFFF',
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Take a moment to calm your initial reaction
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      backgroundColor: '#063C5E',
+                      borderRadius: 2,
+                      p: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        mb: 1,
+                        fontSize: { xs: '1rem', md: '1.125rem' },
+                      }}
+                    >
+                      Pause
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#FFFFFF',
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Stop before taking any action
+                    </Typography>
+                  </Box>
+                </Grid>
+                {/* Second Row - Think and Respond */}
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      backgroundColor: '#063C5E',
+                      borderRadius: 2,
+                      p: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        mb: 1,
+                        fontSize: { xs: '1rem', md: '1.125rem' },
+                      }}
+                    >
+                      Think
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#FFFFFF',
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Analyze the situation logically
+                    </Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Box
+                    sx={{
+                      backgroundColor: '#063C5E',
+                      borderRadius: 2,
+                      p: 2,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        color: '#FFFFFF',
+                        mb: 1,
+                        fontSize: { xs: '1rem', md: '1.125rem' },
+                      }}
+                    >
+                      Respond
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#FFFFFF',
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Make an informed decision
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+              </Box>
             </Grid>
-            <Grid item xs={12} md={6} >
+            <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', mt:2 }}>
               <Box
                 component="img"
-                src="/images/decisionladder2.jpg"
+                src="/images/decisionladder3.jpg"
                 alt="Decision Ladder - Breathe, Pause, Think, Respond"
                 sx={{
                   width: '100%',
                   height: 'auto',
-                  borderRadius: 3,
+                  // borderRadius: 3,
                   boxShadow: '0 15px 40px rgba(0,0,0,0.1)',
                   filter: 'none',
                 }}
               />
-              {/* <Box
-                component="img"
-                src="/images/decisionladder2.jpg"
-                alt="Decision Ladder - Breathe, Pause, Think, Respond"
-                sx={{
-                  width: '100%',
-                  height: 'auto',
-                  borderRadius: 3,
-                  boxShadow: '0 15px 40px rgba(0,0,0,0.1)',
-                  filter: 'none',
-                }}
-              /> */}
+              </Box>
             </Grid>
           </Grid>
 

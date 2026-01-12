@@ -22,6 +22,10 @@ import {
   AccordionDetails,
   LinearProgress,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -57,6 +61,7 @@ export default function SKKPage() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cardIndex, setCardIndex] = useState(0);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -87,12 +92,8 @@ export default function SKKPage() {
         source: 'early-access-form',
       });
       
-      setSnackbar({ 
-        open: true, 
-        message: 'Thank you! You\'re on the waitlist. We\'ll notify you when we launch on Kickstarter.', 
-        severity: 'success' 
-      });
       setEmail('');
+      setModalOpen(true);
       
       // Mark that user has visited waitlist page, so banner won't show again on homepage
       if (typeof window !== 'undefined') {
@@ -106,12 +107,8 @@ export default function SKKPage() {
       
       // If API returns success: true (even for already subscribed), treat as success
       if (isSuccess || (errorMessage.toLowerCase().includes('already'))) {
-        setSnackbar({ 
-          open: true, 
-          message: errorMessage || 'Thank you! You\'re on the waitlist. We\'ll notify you when we launch on Kickstarter.', 
-          severity: 'success' 
-        });
         setEmail('');
+        setModalOpen(true);
         
         // Mark that user has visited waitlist page, so banner won't show again on homepage
         if (typeof window !== 'undefined') {
@@ -132,6 +129,16 @@ export default function SKKPage() {
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleGetCheatSheet = () => {
+    // Open PDF in new tab or download
+    window.open('/pdfs/5-second-defense-cheat-sheet.pdf', '_blank');
+    handleCloseModal();
   };
   
   const [expanded, setExpanded] = useState({});
@@ -176,18 +183,6 @@ export default function SKKPage() {
 
   return (
     <>
-      <Global
-        styles={{
-          '@keyframes floatImage': {
-            '0%, 100%': { 
-              transform: 'translateY(0px)',
-            },
-            '50%': {
-              transform: 'translateY(-20px)',
-            },
-          },
-        }}
-      />
       <Head>
         <title>Konfydence Pre-Launch - Train the 5-Second Pause | Kickstarter Feb 2026</title>
         <meta name="description" content="Join the waitlist for Konfydence - the card game that trains the one habit that beats every scam: the 5-second pause. Launching on Kickstarter February 2026." />
@@ -200,7 +195,12 @@ export default function SKKPage() {
           pt: { xs: 8, md: 10 }, 
           position: 'relative', 
           overflow: 'hidden',
-          minHeight: { xs: '600px', md: '700px' },
+          height:'100%',
+          display:'flex',
+          flexDirection:'column',
+          justifyContent:'center',
+          alignItems:'center',
+          minHeight: { xs: '600px', md: '100vh' },
         }}
       >
         {/* Background Image with Blur */}
@@ -238,11 +238,11 @@ export default function SKKPage() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6} data-aos="fade-right">
               <Typography
-                variant="h1"
+                variant="h5"
                 sx={{
                   // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                   fontWeight: 700,
-                  mb: 3,
+                  mb: 1,
                   color: '#063C5E',
                   lineHeight: 1.1,
                 }}
@@ -250,18 +250,18 @@ export default function SKKPage() {
                 Anyone can fall for a scam. Smart people train first.
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '1.4rem' },
+                  // fontSize: { xs: '1.1rem', md: '1.4rem' },
                   fontWeight: 400,
                   mb: 2,
-                  color: '#0B7897',
+                  // color: '#0B7897',
                   lineHeight: 1.6,
                 }}
               >
-                Cybersecurity doesn&apos;t fail because of technology.
+                Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
               </Typography>
-              <Typography
+              {/* <Typography
                 variant="h5"
                 sx={{
                   fontSize: { xs: '1.1rem', md: '1.4rem' },
@@ -272,14 +272,14 @@ export default function SKKPage() {
                 }}
               >
                 It fails because we&apos;re human.
-              </Typography>
+              </Typography> */}
               <Typography
                 variant="body1"
                 sx={{
                   fontSize: { xs: '1rem', md: '1.125rem' },
                   fontWeight: 400,
-                  mb: 4,
-                  color: '#063C5E',
+                  mb: 2,
+                  color: 'black',
                   lineHeight: 1.6,
                 }}
               >
@@ -354,7 +354,7 @@ export default function SKKPage() {
                   variant="body2"
                   sx={{
                     mt: 2,
-                    color: '#063C5E',
+                    color: 'black',
                     fontSize: '0.875rem',
                     textAlign: 'center',
                     mb: 1,
@@ -365,7 +365,7 @@ export default function SKKPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: '#063C5E',
+                    color: 'black',
                     fontSize: '0.875rem',
                     textAlign: 'center',
                   }}
@@ -380,7 +380,7 @@ export default function SKKPage() {
               <Box
                 sx={{
                   width: '100%',
-                  height: { xs: '400px', md: '500px' },
+                  height: { xs: '400px', md: '480px' },
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -395,7 +395,6 @@ export default function SKKPage() {
                     height: '100%',
                     objectFit: 'cover',
                     borderRadius: 3,
-                    animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
               </Box>
@@ -419,48 +418,48 @@ export default function SKKPage() {
           >
             Key Benefits
           </Typography>
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="stretch">
             <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
+                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
                   80 scenario-based cards (70 real-world scams + 10 Wild Cards)
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
+                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
                   Point-based, skill-building gameplay
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
+                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
                   Quick, simple rules, no technical knowledge
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
+                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
                   Learn together, without risk or shame
                 </Typography>
               </Box>
             </Grid>
             
             <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                <CheckCircleIcon sx={{ fontSize: 32, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body1" sx={{ color: '#063C5E', lineHeight: 1.8 }}>
-                Designed in Germany & socially responsible
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
+                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
+                  Designed in Germany & socially responsible
                 </Typography>
               </Box>
             </Grid>
@@ -601,7 +600,7 @@ export default function SKKPage() {
           
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Card
+              {/* <Card
                 sx={{
                   p: 4,
                   borderRadius: 2,
@@ -609,21 +608,19 @@ export default function SKKPage() {
                   border: '1px solid #E0E0E0',
                   textAlign: 'center',
                 }}
-              >
+              > */}
                 <Typography
                   variant="body1"
                   sx={{
                     fontSize: { xs: '1rem', md: '1.125rem' },
                     lineHeight: 1.8,
                     fontWeight: 600,
-                    color: '#063C5E',
+                    color: '#063C5E', textAlign: 'center'
                   }}
                 >
-                  Knowing about scams isn&apos;t enough.
-                  <br />
-                  What matters is how you react in the moment.
+                  Knowing about scams isn&apos;t enough.What matters is how you react in the moment.
                 </Typography>
-              </Card>
+              {/* </Card> */}
             </Grid>
           </Grid>
         </Container>
@@ -645,25 +642,26 @@ export default function SKKPage() {
             What If One 5-Second Habit Changed Everything?
           </Typography>
           
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={4} alignItems="stretch">
             <Grid item xs={12} md={6}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', border: '2px solid white', borderRadius: 2, p: 3 }}>
               <Typography
-                variant="h5"
+                variant="h6"
                 sx={{
-                  fontSize: { xs: '1.25rem', md: '1.5rem' },
+                  fontSize: { xs: '1.1rem', md: '1.25rem' },
                   fontWeight: 600,
-                  mb: 3,
+                  mb: 2,
                   color: 'white',
                 }}
               >
                 Konfydence trains one simple but powerful skill:
               </Typography>
               <Typography
-                variant="h6"
+                variant="body1"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  fontSize: { xs: '0.95rem', md: '1.1rem' },
                   fontWeight: 600,
-                  mb: 3,
+                  mb: 2,
                   color: '#FFC54D',
                   fontStyle: 'italic',
                 }}
@@ -672,11 +670,11 @@ export default function SKKPage() {
               </Typography>
               
               <Typography
-                variant="h6"
+                variant="body1"
                 sx={{
-                  fontSize: { xs: '1.1rem', md: '1.25rem' },
+                  fontSize: { xs: '0.95rem', md: '1.1rem' },
                   fontWeight: 600,
-                  mb: 3,
+                  mb: 2,
                   color: 'white',
                 }}
               >
@@ -685,12 +683,12 @@ export default function SKKPage() {
               
               <Stack spacing={2}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                  <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5 }} />
+                  <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
-                      fontSize: { xs: '1rem', md: '1.125rem' },
-                      lineHeight: 1.8,
+                      fontSize: { xs: '0.9rem', md: '1rem' },
+                      lineHeight: 1.7,
                       color: 'white',
                     }}
                   >
@@ -698,11 +696,11 @@ export default function SKKPage() {
                   </Typography>
                 </Box>
                 <Box sx={{ ml: 4, mb: 2 }}>
-                  <Stack direction="row" spacing={1} flexWrap="wrap">
-                    <Chip label="Hurry (red)" sx={{ backgroundColor: '#FF725E', color: 'white', mb: 1 }} />
-                    <Chip label="Authority (blue)" sx={{ backgroundColor: '#0B7897', color: 'white', mb: 1 }} />
-                    <Chip label="Comfort (green)" sx={{ backgroundColor: '#4CAF50', color: 'white', mb: 1 }} />
-                    <Chip label="Kill-Switch (yellow)" sx={{ backgroundColor: '#FFC54D', color: '#063C5E', mb: 1 }} />
+                  <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
+                    <Chip label="Hurry (red)" sx={{ backgroundColor: '#FF725E', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Authority (blue)" sx={{ backgroundColor: '#0B7897', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Comfort (green)" sx={{ backgroundColor: '#4CAF50', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Kill-Switch (yellow)" sx={{ backgroundColor: '#FFC54D', color: '#063C5E', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 700, minWidth: 'fit-content', border: '1px solid rgba(6, 60, 94, 0.3)' }} />
                   </Stack>
                 </Box>
                 {[
@@ -711,12 +709,12 @@ export default function SKKPage() {
                   'Protect family, kids, or your team together',
                 ].map((benefit, idx) => (
                   <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5 }} />
+                    <CheckCircleIcon sx={{ color: '#FFC54D', mr: 2, mt: 0.5, fontSize: { xs: '1.2rem', md: '1.5rem' } }} />
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.125rem' },
-                        lineHeight: 1.8,
+                        fontSize: { xs: '0.9rem', md: '1rem' },
+                        lineHeight: 1.7,
                         color: 'white',
                       }}
                     >
@@ -725,40 +723,14 @@ export default function SKKPage() {
                   </Box>
                 ))}
               </Stack>
-              
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mt: 4,
-                  fontWeight: 600,
-                  fontStyle: 'italic',
-                  color: 'white',
-                }}
-              >
-                Scammers win by being fast.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 2,
-                  fontWeight: 600,
-                  fontStyle: 'italic',
-                  color: 'white',
-                }}
-              >
-                Konfydence trains you to be faster, by pausing first.
-              </Typography>
+              </Box>
             </Grid>
             
             <Grid item xs={12} md={6}>
               <Box
                 sx={{
                   width: '100%',
-                  height: { xs: '300px', md: '400px' },
+                  height: '100%',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -771,13 +743,41 @@ export default function SKKPage() {
                   sx={{
                     width: '100%',
                     height: '100%',
+                    borderRadius: 3,
                     objectFit: 'cover',
-                    animation: 'floatImage 3s ease-in-out infinite',
                   }}
                 />
               </Box>
             </Grid>
           </Grid>
+          
+          <Box sx={{ mt: 4, textAlign: 'center' }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '0.95rem', md: '1.1rem' },
+                lineHeight: 1.8,
+                fontWeight: 600,
+                fontStyle: 'italic',
+                color: 'white',
+                mb: 1,
+              }}
+            >
+              Scammers win by being fast.  Konfydence trains you to be faster, by pausing first.
+            </Typography>
+            {/* <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '0.95rem', md: '1.1rem' },
+                lineHeight: 1.8,
+                fontWeight: 600,
+                fontStyle: 'italic',
+                color: 'white',
+              }}
+            >
+              Konfydence trains you to be faster, by pausing first.
+            </Typography> */}
+          </Box>
         </Container>
       </Box>
 
@@ -837,6 +837,7 @@ export default function SKKPage() {
                           width: '100%',
                           height: 'auto',
                           display: 'block',
+                          borderRadius: 2,
                         }}
                       />
                     </SwiperSlide>
@@ -849,6 +850,7 @@ export default function SKKPage() {
                           width: '100%',
                           height: 'auto',
                           display: 'block',
+                          borderRadius: 2,
                         }}
                       />
                     </SwiperSlide>
@@ -873,6 +875,7 @@ export default function SKKPage() {
                     width: '100%',
                     height: 'auto',
                     display: 'block',
+                    // borderRadius: 10,
                   }}
                 />
               </Box>
@@ -895,7 +898,7 @@ export default function SKKPage() {
             It trains the moment that decides everything.
           </Typography>
           
-          <Grid container spacing={3}>
+          <Grid container spacing={3} alignItems="stretch">
             {[
               { step: '1', text: 'One realistic scam. One critical moment' },
               { step: '2', text: 'See What One 5-Second Pause Changes' },
@@ -907,7 +910,16 @@ export default function SKKPage() {
               { step: '8', text: 'Because the real goal is learning to stay calm and think clearly under pressure.' },
             ].map((item, idx) => (
               <Grid item xs={12} sm={6} key={idx}>
-                <Box sx={{ display: 'flex', alignItems: 'flex-start' }}>
+                <Box 
+                  sx={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start',
+                    height: '100%',
+                    border: '2px solid #063C5E',
+                    borderRadius: 2,
+                    p: 2,
+                  }}
+                >
                   <Box
                     sx={{
                       minWidth: 40,
@@ -926,10 +938,10 @@ export default function SKKPage() {
                     {item.step}
                   </Box>
                   <Typography
-                    variant="body1"
+                    variant="body2"
                     sx={{
-                      fontSize: { xs: '1rem', md: '1.125rem' },
-                      lineHeight: 1.8,
+                      fontSize: { xs: '0.9rem', md: '0.95rem' },
+                      lineHeight: 1.6,
                       color: '#063C5E',
                       pt: 0.5,
                     }}
@@ -1297,47 +1309,48 @@ export default function SKKPage() {
           >
             Why was Konfydence created?
           </Typography>
-          <Grid container spacing={4} alignItems="center">
+          <Grid container spacing={4} alignItems="stretch">
             <Grid item xs={12} md={6}>
+              <Box sx={{ border: '2px solid white', borderRadius: 2, p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
+                  mb: 2,
                   color: 'white',
                 }}
               >
                 I spent over 15 years in high-stakes finance and compliance, working with organizations like PIMCO and Ford.
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
+                  mb: 2,
                   color: 'white',
                 }}
               >
                 I saw it happen again and again: smart, experienced people I worked with and even close family members falling for scams despite knowing better.
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
+                  mb: 2,
                   color: 'white',
                 }}
               >
                 Not because they lacked knowledge.
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
+                  mb: 2,
                   fontWeight: 600,
                   color: 'white',
                 }}
@@ -1345,45 +1358,50 @@ export default function SKKPage() {
                 But because pressure always beats theory.
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
+                  mb: 2,
                   color: 'white',
                 }}
               >
                 That&apos;s why I decided to create Konfydence, a simple, game-based way to train your instincts, not just your knowledge.
               </Typography>
               <Typography
-                variant="body1"
+                variant="body2"
                 sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  lineHeight: 1.8,
-                  mb: 3,
+                  fontSize: { xs: '0.9rem', md: '0.95rem' },
+                  lineHeight: 1.7,
                   color: 'white',
                 }}
               >
                 You practice spotting scams, pausing under pressure, and making calm, confident decisions.
               </Typography>
+              </Box>
             </Grid>
             <Grid item xs={12} md={6}>
               <Box
                 sx={{
-                  p: 4,
+                  p: 5,
                   backgroundColor: 'rgba(255,255,255,0.1)',
                   borderRadius: 2,
                   borderLeft: '4px solid #FF725E',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
                 }}
               >
                 <Typography
                   variant="h4"
                   sx={{
-                    fontSize: { xs: '1.5rem', md: '2rem' },
+                    fontSize: { xs: '1.75rem', md: '2.25rem' },
                     fontWeight: 600,
-                    mb: 2,
+                    mb: 3,
                     fontStyle: 'italic',
                     lineHeight: 1.4,
+                    color: 'white',
                   }}
                 >
                   &quot;Scammers don&apos;t win because we&apos;re dumb.
@@ -1395,7 +1413,7 @@ export default function SKKPage() {
                 <Typography
                   variant="body1"
                   sx={{
-                    fontSize: '1rem',
+                    fontSize: { xs: '1rem', md: '1.125rem' },
                     color: 'white',
                   }}
                 >
@@ -1412,7 +1430,7 @@ export default function SKKPage() {
               sx={{
                 fontSize: { xs: '1.25rem', md: '1.5rem' },
                 fontWeight: 600,
-                mb: 4,
+                mb: 5,mt:5,
                 textAlign: 'center',
                 color: 'white',
               }}
@@ -1433,7 +1451,7 @@ export default function SKKPage() {
                           flexDirection: 'column',
                           justifyContent: 'center',
                           alignItems: 'center',
-                          minHeight: { xs: '80px', md: '100px' },
+                          // minHeight: { xs: '80px', md: '100px' },
                         }}
                       >
                         <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', textAlign: 'center' }}>
@@ -1448,7 +1466,7 @@ export default function SKKPage() {
                 <Box
                   sx={{
                     width: '100%',
-                    height: { xs: '300px', md: '500px' },
+                    // height: { xs: '300px', md: '500px' },
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
@@ -1459,12 +1477,12 @@ export default function SKKPage() {
                     src="/images/decisionladder2.jpg"
                     alt="The Decision Ladder"
                     sx={{
-                      maxWidth: { xs: '100%', md: '90%' },
+                      // maxWidth: { xs: '100%', md: '90%' },
                       width: '100%',
+                      borderRadius:3,
                       height: '100%',
                       objectFit: 'contain',
-                      borderRadius: '30px',
-                      animation: 'floatImage 3s ease-in-out infinite',
+                      // borderRadius: 10,
                     }}
                   />
                 </Box>
@@ -1490,74 +1508,114 @@ export default function SKKPage() {
             Inside Your Konfydence Kit
           </Typography>
           
-          <Grid container spacing={2} alignItems="center">
+          <Grid container spacing={2} >
           {/* <Grid item xs={12} md={2}></Grid> */}
             <Grid item xs={12} md={4}>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      mb: 1,
-                      color: '#063C5E',
-                    }}
-                  >
-                    80 Premium Cards
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                    70 scenarios + 10 discussion wild cards
-                  </Typography>
-                </Box>
-                
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      mb: 1,
-                      color: '#063C5E',
-                    }}
-                  >
-                    Simple Rules
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                    Play in minutes — no complicated setup
-                  </Typography>
-                </Box>
-                
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      mb: 1,
-                      color: '#063C5E',
-                    }}
-                  >
-                    Scoring System
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                    Rewards the pause habit and safe choices
-                  </Typography>
-                </Box>
-                
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 700,
-                      mb: 1,
-                      color: '#063C5E',
-                    }}
-                  >
-                    Digital Extension Add-On
-                  </Typography>
-                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                    Optional updates and new scenarios
-                  </Typography>
-                </Box>
-              </Stack>
+              <Box
+                sx={{
+                  height: '100%',
+                  border: '2px solid #063C5E',
+                  borderRadius: 2,
+                  p: 3,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 1,
+                        color: '#063C5E',
+                        fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      }}
+                    >
+                      90 Premium Cards
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                      }}
+                    >
+                      80 scenarios + 10 discussion wild cards
+                    </Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 1,
+                        color: '#063C5E',
+                        fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      }}
+                    >
+                      Simple Rules
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                      }}
+                    >
+                      Play in minutes — no complicated setup
+                    </Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 1,
+                        color: '#063C5E',
+                        fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      }}
+                    >
+                      Scoring System
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                      }}
+                    >
+                      Rewards the pause habit and safe choices
+                    </Typography>
+                  </Box>
+                  
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 1,
+                        color: '#063C5E',
+                        fontSize: { xs: '1.1rem', md: '1.25rem' },
+                      }}
+                    >
+                      Digital Extension Add-On
+                    </Typography>
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        color: 'text.secondary',
+                        fontSize: { xs: '0.95rem', md: '1rem' },
+                      }}
+                    >
+                      Optional updates and new scenarios
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
             </Grid>
             
             <Grid item xs={12} md={8}>
@@ -1599,16 +1657,25 @@ export default function SKKPage() {
                 ].map((image, idx) => (
                   <SwiperSlide key={idx}>
                     <Box
-                      component="img"
-                      src={image.src}
-                      alt={image.alt}
                       sx={{
+                        borderRadius: 2,
+                        overflow: 'hidden',
                         width: '100%',
-                        height: { xs: '400px', md: '500px' },
-                        objectFit: 'contain',
-                        display: 'block',
+                        // height: { xs: '400px', md: '500px' },
                       }}
-                    />
+                    >
+                      <Box
+                        component="img"
+                        src={image.src}
+                        alt={image.alt}
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          display: 'block',
+                        }}
+                      />
+                    </Box>
                   </SwiperSlide>
                 ))}
               </Swiper>
@@ -1650,60 +1717,102 @@ export default function SKKPage() {
           
           <Grid container spacing={4}>
             <Grid item xs={12} md={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <FlagIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 2,
-                    color: '#063C5E',
-                  }}
-                >
-                  Made in Germany
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                  Quality, transparency, ethical production
-                </Typography>
-              </Box>
+              <Card
+                sx={{
+                  p: 4,
+                  height: '100%',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  backgroundColor: 'white',
+                  border: '1px solid #E0E0E0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box sx={{ textAlign: 'center' }}>
+                  <FlagIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      color: '#063C5E',
+                    }}
+                  >
+                    Made in Germany
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                    Quality, transparency, ethical production
+                  </Typography>
+                </Box>
+              </Card>
             </Grid>
             
             <Grid item xs={12} md={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <SchoolIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 2,
-                    color: '#063C5E',
-                  }}
-                >
-                  Real social impact
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                  $1 per kit supports digital resilience programs for children
-                </Typography>
-              </Box>
+              <Card
+                sx={{
+                  p: 4,
+                  height: '100%',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  backgroundColor: 'white',
+                  border: '1px solid #E0E0E0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box sx={{ textAlign: 'center' }}>
+                  <SchoolIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      color: '#063C5E',
+                    }}
+                  >
+                    Real social impact
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                    $1 per kit supports digital resilience programs for children
+                  </Typography>
+                </Box>
+              </Card>
             </Grid>
             
             <Grid item xs={12} md={4}>
-              <Box sx={{ textAlign: 'center' }}>
-                <GroupIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 2,
-                    color: '#063C5E',
-                  }}
-                >
-                  Inclusion
-                </Typography>
-                <Typography variant="body1" sx={{ color: 'text.secondary' }}>
-                  Partnerships with sheltered workshops for assembly
-                </Typography>
-              </Box>
+              <Card
+                sx={{
+                  p: 4,
+                  height: '100%',
+                  borderRadius: 2,
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  backgroundColor: 'white',
+                  border: '1px solid #E0E0E0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box sx={{ textAlign: 'center' }}>
+                  <GroupIcon sx={{ fontSize: 64, color: '#0B7897', mb: 2 }} />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 2,
+                      color: '#063C5E',
+                    }}
+                  >
+                    Inclusion
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                    Partnerships with sheltered workshops for assembly
+                  </Typography>
+                </Box>
+              </Card>
             </Grid>
           </Grid>
           
@@ -2025,6 +2134,79 @@ export default function SKKPage() {
       </Box>
 
       <Footer />
+      
+      {/* Success Modal */}
+      <Dialog
+        open={modalOpen}
+        onClose={handleCloseModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 3,
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            fontSize: { xs: '1.5rem', md: '2rem' },
+            fontWeight: 700,
+            color: '#063C5E',
+            pb: 2,
+          }}
+        >
+          You&apos;re on the list!
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ textAlign: 'center', py: 2 }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                color: 'text.primary',
+                mb: 2,
+                lineHeight: 1.6,
+              }}
+            >
+              While you wait for early access, here&apos;s your instant 5-Second Defense Cheat Sheet.
+            </Typography>
+            <Typography
+              variant="body2"
+              sx={{
+                fontSize: { xs: '0.95rem', md: '1rem' },
+                color: 'text.secondary',
+                lineHeight: 1.6,
+              }}
+            >
+              It covers the most common scams right now — including the rising AI Voice / Grandchild in Trouble scam that hits families hard.
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
+          <Button
+            variant="contained"
+            // onClick={handleGetCheatSheet}
+            sx={{
+              backgroundColor: '#0B7897',
+              color: 'white',
+              py: 1.5,
+              px: 4,
+              fontSize: { xs: '1rem', md: '1.125rem' },
+              fontWeight: 600,
+              borderRadius: 2,
+              textTransform: 'none',
+              '&:hover': {
+                backgroundColor: '#063C5E',
+              },
+            }}
+            fullWidth
+          >
+            Get Your Cheat Sheet Now
+          </Button>
+        </DialogActions>
+      </Dialog>
       
       {/* Snackbar for notifications */}
       <Snackbar

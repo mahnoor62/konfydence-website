@@ -315,177 +315,199 @@ export default function CoMaSyPage() {
               }}
             >
 Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
-            <Grid container spacing={6} alignItems="center">
+            <Grid container spacing={6} alignItems="stretch">
               <Grid item xs={12} md={6}>
-                {/* <Typography
-                  variant="h3"
-                  sx={{
-                    // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
-                    fontWeight: 700,
-                    mb: 3,
-                    color: '#063C5E',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  Why Yearly Videos and Quizzes Don&apos;t Stop Breaches
-                </Typography> */}
                 <Typography
                   variant="body1"
-                  sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 3,
-                    lineHeight: 1.8,
-                    color: 'text.primary',
-                  }}
-                >
-                  Employees pass the test—then click anyway months later.
-                  <br />
-                  <br />
-                  Why? Real scams strike during stress. They bypass logic and trigger a{' '}
-                  <Link
-                    href="/pdfs/the-limbic-hijack.pdf"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      color: '#0B7897',
-                      textDecoration: 'underline',
-                      fontWeight: 600,
-                    }}
-                  >
-                    limbic hijack
-                  </Link>
-                  —urgency, authority, and emotion overwhelm training that lives only in memory.
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    // mb: 3,
-                    lineHeight: 1.8,
-                    color: 'text.primary',
-                  }}
-                >
-                  <b>CoMaSi trains behavior, not recall.</b>
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 4,
-                    lineHeight: 1.8,
-                    color: 'text.primary',
-                  }}
-                >
-                  Our simulations are learning moments—not disciplinary events. CoMaSi reinforces a no-blame culture that improves reporting and resilience.
-                </Typography>
-                
-                {/* How Scammers Trigger Us Section */}
-                <Typography
-                  variant="h6"
                   sx={{
                     fontWeight: 600,
-                    mb: 1.5,
-                    // mt: 2,
+                    mb: 2,
                     color: '#063C5E',
-                    fontSize: { xs: '1rem', md: '1.1rem' },
+                    lineHeight: 1.2,
+                    // ml:2,
+                    textAlign: 'center',
+                    // fontSize: { xs: '0.9rem', md: '0.95rem' },
                   }}
                 >
-                  How Scammers Trigger Us to Act - The HACK
+                  Common scenario in most organisations
                 </Typography>
-                
-                {/* H.A.C.K. Quick Reference */}
-                <Paper
+                <Box
                   sx={{
-                    p: { xs: 2, md: 2.5 },
-                    backgroundColor: '#F6F8FA',
+                    border: '2px solid #063C5E',
                     borderRadius: 2,
-                    border: '2px solid #0B7897',
+                    p: 3,
                   }}
                 >
                   <Typography
-                    variant="h6"
+                    variant="body2"
                     sx={{
-                      fontWeight: 700,
-                      mb: 1.5,
-                      color: '#063C5E',
-                      fontSize: { xs: '0.95rem', md: '1rem' },
+                      fontSize: { xs: '0.85rem', md: '0.875rem' },
+                      mb: 2,
+                      lineHeight: 1.6,
+                      color: '#000000',
                     }}
                   >
-                    H.A.C.K. Quick Reference
+                    Employees pass the test—then click anyway months later.
+                    <br />
+                    <br />
+                    Why? Real scams strike during stress. They bypass logic and trigger a{' '}
+                    <Link
+                      href="/pdfs/the-limbic-hijack.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        color: '#0B7897',
+                        textDecoration: 'underline',
+                        fontWeight: 600,
+                      }}
+                    >
+                      limbic hijack
+                    </Link>
+                    —urgency, authority, and emotion overwhelm training that lives only in memory.
                   </Typography>
-                  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
-                        H – Hurry
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                        Urgency and time pressure tactics
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
-                        A – Authority
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                        Fake credentials and position of power
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
-                        C – Comfort
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                        Familiarity and false trust signals
-                      </Typography>
-                    </Box>
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.85rem', md: '0.9rem' } }}>
-                        K – Kill-Switch
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                        Panic or excitement that bypasses logic
-                      </Typography>
-                    </Box>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 1,
+                      color: '#000000',
+                      fontSize: { xs: '0.9rem', md: '0.95rem' },
+                    }}
+                  >
+                    CoMaSi trains behavior, not recall.
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: '0.875rem', md: '0.9rem' },
+                      mb: 1,
+                      lineHeight: 1.6,
+                      color: '#000000',
+                    }}
+                  >
+                    Our simulations are learning moments—not disciplinary events. CoMaSi reinforces a no-blame culture that improves reporting and resilience.
+                  </Typography>
+                  
+                  {/* How Scammers Trigger Us Section */}
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 1,
+                      color: '#000000',
+                      fontSize: { xs: '0.9rem', md: '0.95rem' },
+                    }}
+                  >
+                    How Scammers Trigger Us to Act - The HACK
+                  </Typography>
+                  
+                  {/* H.A.C.K. Quick Reference */}
+                  <Box
+                    sx={{
+                      border: '2px solid #E9F4FF',
+                      borderRadius: 2,
+                      p: 2,
+                      mb: 0,
+                    }}
+                  >
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: 700,
+                        mb: 1.5,
+                        color: '#000000',
+                        fontSize: { xs: '0.9rem', md: '0.95rem' },
+                      }}
+                    >
+                      H.A.C.K. Quick Reference
+                    </Typography>
+                    <Stack spacing={1.5}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
+                          H – Hurry
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
+                          Urgency and time pressure tactics
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
+                          A – Authority
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
+                          Fake credentials and position of power
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
+                          C – Comfort
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
+                          Familiarity and false trust signals
+                        </Typography>
+                      </Box>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
+                          K – Kill-Switch
+                        </Typography>
+                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
+                          Panic or excitement that bypasses logic
+                        </Typography>
+                      </Box>
+                    </Stack>
                   </Box>
-                </Paper>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: '0.8rem', md: '0.85rem' },
+                      lineHeight: 1.5,
+                      color: '#000000',
+                      fontStyle: 'italic',
+                      mt: 1.5,
+                    }}
+                  >
+                    The Konfydence Paradox: Scammers want you to act fast and bypass logic. Konfydence trains you to &quot;act faster&quot; by pausing first.
+                  </Typography>
+                </Box>
               </Grid>
               <Grid item xs={12} md={6}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mt:5,
-                    fontWeight: 600,
-                    mb: 1.5,
-                    color: '#063C5E',
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                  }}
-                >
-                  How to React - The 5 Seconds Pause
-                </Typography>
-                <Box
-                  component="img"
-                  src="/images/5SecondsDefense.jpg"
-                  alt="Five seconds is all it takes. No real request breaks if you wait."
-                  sx={{
-                    width: '100%',
-                    // maxWidth: '85%',
-                    // height: 'auto',
-                    borderRadius: 2,
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                    mb: 2,
-                  }}
-                />
-                <Typography
-                  variant="body2"
-                  sx={{
-                    fontSize: { xs: '0.875rem', md: '1rem' },
-                    color: 'text.secondary',
-                    fontStyle: 'italic',
-                    textAlign: 'center',
-                  }}
-                >
-                  Five seconds is all it takes. No real request breaks if you wait.
-                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      mb: 1.5,
+                      color: '#063C5E',
+                      fontSize: { xs: '1rem', md: '1.1rem' },ml:2
+                    }}
+                  >
+                    Train to &quot;act faster&quot; by pausing first - The 5 Seconds Pause
+                  </Typography>
+                  <Box
+                    component="img"
+                    src="/images/5SecondsDefense.jpg"
+                    alt="Five seconds is all it takes. No real request breaks if you wait."
+                    sx={{
+                      width: '100%',
+                      borderRadius: 2,
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                      mb: 2,
+                      flexGrow: 1,
+                      objectFit: 'contain',
+                    }}
+                  />
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontSize: { xs: '0.875rem', md: '1rem' },
+                      color: 'text.secondary',
+                      fontStyle: 'italic',
+                      textAlign: 'center',
+                    }}
+                  >
+                    No real request breaks if you wait 5 second
+                  </Typography>
+                </Box>
               </Grid>
             </Grid>
           </Container>
