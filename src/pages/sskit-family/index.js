@@ -239,7 +239,7 @@ export default function SKKPage() {
                       }}
                     />
                   </SwiperSlide>
-                  <SwiperSlide>
+                  {/* <SwiperSlide>
                     <Box
                       component="img"
                       src="/images/skk4.jpeg"
@@ -250,7 +250,7 @@ export default function SKKPage() {
                         display: 'block',
                       }}
                     />
-                  </SwiperSlide>
+                  </SwiperSlide> */}
                 </Swiper>
               </Box>
             </Grid>
