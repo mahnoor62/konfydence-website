@@ -215,7 +215,7 @@ export default function SKKPage() {
                       }}
                     />
                   </SwiperSlide> */}
-                  <SwiperSlide>
+                  {/* <SwiperSlide>
                     <Box
                       component="img"
                       src="/images/skk2.jpeg"
@@ -227,11 +227,11 @@ export default function SKKPage() {
                         display: 'block',
                       }}
                     />
-                  </SwiperSlide>
+                  </SwiperSlide> */}
                   <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/skk3.jpeg"
+                      src="/images/ssk-header.png"
                       alt="Scam Survival Kit Family"
                       sx={{
                         width: '100%',

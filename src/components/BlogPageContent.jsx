@@ -304,7 +304,7 @@ export default function BlogPageContent() {
                    <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/skk2.jpeg"
+                      src="/images/skk6.jpeg"
                       alt="Classroom workshop"
                       sx={{
                         width: '100%',
@@ -314,7 +314,7 @@ export default function BlogPageContent() {
                       }}
                     />
                   </SwiperSlide> 
-                  <SwiperSlide>
+                  {/* <SwiperSlide>
                     <Box
                       component="img"
                       src="/images/comasy1.jpeg"
@@ -326,7 +326,7 @@ export default function BlogPageContent() {
                         display: 'block',
                       }}
                     />
-                  </SwiperSlide>
+                  </SwiperSlide> */}
                 </Swiper>
               </Box>
             </Grid>
