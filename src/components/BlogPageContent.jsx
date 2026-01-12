@@ -288,8 +288,8 @@ export default function BlogPageContent() {
                     '--swiper-navigation-color': '#FFFFFF',
                   }}
                 >
-                  <SwiperSlide>
-                    <Box
+                  {/* <SwiperSlide> */}
+                    {/* <Box
                       component="img"
                       src="/images/skk1.jpeg"
                       alt="Family playing cards"
@@ -299,12 +299,12 @@ export default function BlogPageContent() {
                         objectFit: 'cover',
                         display: 'block',
                       }}
-                    />
-                  </SwiperSlide>
-                  <SwiperSlide>
+                    /> */}
+                  {/* </SwiperSlide> */}
+                   <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/education1.jpeg"
+                      src="/images/skk2.jpeg"
                       alt="Classroom workshop"
                       sx={{
                         width: '100%',
@@ -313,7 +313,7 @@ export default function BlogPageContent() {
                         display: 'block',
                       }}
                     />
-                  </SwiperSlide>
+                  </SwiperSlide> 
                   <SwiperSlide>
                     <Box
                       component="img"
