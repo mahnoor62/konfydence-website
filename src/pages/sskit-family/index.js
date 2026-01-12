@@ -139,7 +139,7 @@ export default function SKKPage() {
       
       {/* Hero Section */}
       <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#E9F4FF' }}>
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}     data-aos="zoom-in"
+        <Container maxWidth="lg" sx={{ py: { xs: 5, md: 15 } }}     data-aos="zoom-in"
                   data-aos-duration="800">
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
@@ -222,7 +222,8 @@ export default function SKKPage() {
                       alt="Scam Survival Kit Product"
                       sx={{
                         width: '100%',
-                        height: 'auto',
+                        height: { xs: '350px', md: '300px' },
+                        objectFit: 'cover',
                         display: 'block',
                       }}
                     />
@@ -234,7 +235,8 @@ export default function SKKPage() {
                       alt="Scam Survival Kit Family"
                       sx={{
                         width: '100%',
-                        height: 'auto',
+                        height: { xs: '350px', md: '300px' },
+                        objectFit: 'cover',
                         display: 'block',
                       }}
                     />

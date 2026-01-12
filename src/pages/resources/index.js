@@ -334,7 +334,7 @@ export default function Resources() {
         sx={{
           minHeight: '100vh',
           background: 'linear-gradient(180deg, #FFFFFF 0%, #F6F8FA 100%)',
-          pt: { xs: 10, md: 12 },
+          pt: { xs: 10, md: 15 },
           pb: 8,
         }}
       >

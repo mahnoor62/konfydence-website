@@ -155,15 +155,15 @@ export default function CoMaSyPage() {
           }}
         >
           <Container maxWidth="lg" data-aos="zoom-in" data-aos-duration="800">
-            <Grid container spacing={6} alignItems="center">
+            <Grid container spacing={6} alignItems="center" sx={{py:{xs:5,md:10}}}>
               <Grid item xs={12} md={6}>
                 <Typography
-                  variant="h2"
+                  variant="h3"
                   sx={{
-                        fontSize: { xs: '2rem', md: '2rem' },
+                        // fontSize: { xs: '2rem', md: '2rem' },
                     // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                     fontWeight: 700,
-                    mb: 3,
+                    mb: 2,
                     lineHeight: 1.2,
                     color: 'white',
                   }}
@@ -171,11 +171,11 @@ export default function CoMaSyPage() {
                   Compliance Made Simple (CoMaSi)
                 </Typography>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   sx={{
-                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    // fontSize: { xs: '1.25rem', md: '1.5rem' },
                     fontWeight: 600,
-                    mb: 3,
+                    mb: 2,
                     opacity: 0.95,
                     color: 'white',
                   }}

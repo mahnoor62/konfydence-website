@@ -224,7 +224,7 @@ export default function BlogPageContent() {
       
       {/* Hero Section */}
       <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#063C5E' }}>
-        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}     data-aos="zoom-in"
+        <Container maxWidth="lg" sx={{ py: { xs: 4, md: 15 } }}     data-aos="zoom-in"
                   data-aos-duration="800">
           <Grid container spacing={4} alignItems="center" sx={{ mb: 4 }}>
             <Grid item xs={12} md={6}>
@@ -308,7 +308,7 @@ export default function BlogPageContent() {
                       alt="Classroom workshop"
                       sx={{
                         width: '100%',
-                        height: { xs: '300px', md: '400px' },
+                        height: { xs: '300px', md: '300px' },
                         objectFit: 'cover',
                         display: 'block',
                       }}
@@ -321,7 +321,7 @@ export default function BlogPageContent() {
                       alt="Office team"
                       sx={{
                         width: '100%',
-                        height: { xs: '300px', md: '400px' },
+                        height: { xs: '300px', md: '300px' },
                         objectFit: 'cover',
                         display: 'block',
                       }}

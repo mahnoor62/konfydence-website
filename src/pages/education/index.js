@@ -154,12 +154,12 @@ export default function EducationPage() {
         >
           <Container maxWidth="lg"     data-aos="zoom-in"
                   data-aos-duration="800">
-            <Grid container spacing={6} alignItems="center">
+            <Grid container spacing={6} alignItems="center" sx={{py:{xs:5,md:10}}}>
               <Grid item xs={12} md={6}>
                 <Typography
-                  variant="h2"
+                  variant="h4"
                   sx={{
-                    fontSize: { xs: '2rem', md: '2rem' },
+                    // fontSize: { xs: '2rem', md: '2rem' },
                     fontWeight: 700,
                     mb: 3,
                     lineHeight: 1.2,
@@ -169,11 +169,11 @@ export default function EducationPage() {
                   Empower Students to Pause Under Pressure
                 </Typography>
                 <Typography
-                  variant="h5"
+                  variant="h6"
                   sx={{
-                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    // fontSize: { xs: '1.25rem', md: '1.5rem' },
                     fontWeight: 600,
-                    mb: 3,
+                    mb: 2,
                     color: 'white',
                   }}
                 >
@@ -182,8 +182,8 @@ export default function EducationPage() {
                 <Typography
                   variant="body1"
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 4,
+                    // fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 2,
                     color: 'white',
                     lineHeight: 1.8,
                   }}
