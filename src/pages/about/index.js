@@ -483,7 +483,7 @@ export default function AboutPage() {
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', mt:2 }}>
               <Box
                 component="img"
-                src="/images/decisionladder3.jpg"
+                src="/images/decisionLadder3.jpg"
                 alt="Decision Ladder - Breathe, Pause, Think, Respond"
                 sx={{
                   width: '100%',
