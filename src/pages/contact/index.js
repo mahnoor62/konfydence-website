@@ -407,7 +407,7 @@ export default function ContactPage() {
                                 maxHeight: 224,
                                 width: 'auto',
                                 '& .MuiMenuItem-root': {
-                                  fontFamily: 'var(--font-poppins), sans-serif !important',
+                                  fontFamily: '"Poppins", sans-serif !important',
                                 },
                               },
                             },
@@ -426,49 +426,49 @@ export default function ContactPage() {
                         }}
                         sx={{
                           '& .MuiSelect-select': {
-                            fontFamily: 'var(--font-poppins), sans-serif',
+                            fontFamily: '"Poppins", sans-serif',
                           },
                         }}
                       >
                         <MenuItem 
                           value="scam-survival-kit"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Scam Survival Kit (Families)
                         </MenuItem>
                         <MenuItem 
                           value="education-youth-pack"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Education / Youth Pack
                         </MenuItem>
                         <MenuItem 
                           value="CoMaSi"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           CoMaSi (Companies & Compliance)
                         </MenuItem>
                         {/* <MenuItem 
                           value="nis2-audit"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           NIS2 / Audit Readiness
                         </MenuItem> */}
                         <MenuItem 
                           value="partnerships"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Partnerships / Ambassadors
                         </MenuItem>
                         <MenuItem 
                           value="media-press"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Media / Press
                         </MenuItem>
                         <MenuItem 
                           value="other"
-                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Other
                         </MenuItem>
