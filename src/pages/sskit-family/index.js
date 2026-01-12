@@ -203,7 +203,7 @@ export default function SKKPage() {
                     '--swiper-navigation-color': '#FFFFFF',
                   }}
                 >
-                  <SwiperSlide>
+                  {/* <SwiperSlide>
                     <Box
                       component="img"
                       src="/images/skk1.jpeg"
@@ -214,7 +214,7 @@ export default function SKKPage() {
                         display: 'block',
                       }}
                     />
-                  </SwiperSlide>
+                  </SwiperSlide> */}
                   <SwiperSlide>
                     <Box
                       component="img"
@@ -274,39 +274,47 @@ export default function SKKPage() {
             >
             Why Families Love Konfydence
           </Typography>
-          <Grid container spacing={6} alignItems="center">
+          <Grid container spacing={6} alignItems="stretch">
             <Grid item xs={12} md={6}>
-              <Box sx={{ mb: 3 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                height: '100%',
+                border: '2px solid #063C5E',
+                borderRadius: 2,
+                p: 3
+              }}>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 2,
-                    lineHeight: 1.8,
+                    fontSize: { xs: '0.875rem', md: '0.95rem' },
+                    mb: 1.5,
+                    lineHeight: 1.6,
                     color: 'text.primary',
                   }}
                 >
                   <strong>90 real-world scenarios.</strong> Practice recognizing scams before they happen.
                 </Typography>
                 <Typography
-                  variant="body1"
+                  variant="body2"
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 2,
-                    lineHeight: 1.8,
+                    fontSize: { xs: '0.875rem', md: '0.95rem' },
+                    mb: 1.5,
+                    lineHeight: 1.6,
                     color: 'text.primary',
                   }}
                 >
                   <strong>Shared H.A.C.K. language.</strong> A simple framework everyone can remember:
                 </Typography>
-                <Box component="ul" sx={{ pl: 3, mb: 2 }}>
+                <Box component="ul" sx={{ pl: 2.5, mb: 1.5 }}>
                   <li>
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.125rem' },
-                        mb: 1,
-                        lineHeight: 1.8,
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        mb: 0.5,
+                        lineHeight: 1.6,
                       }}
                     >
                       <strong>Hurry:</strong> Artificial deadline.
@@ -314,11 +322,11 @@ export default function SKKPage() {
                   </li>
                   <li>
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.125rem' },
-                        mb: 1,
-                        lineHeight: 1.8,
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        mb: 0.5,
+                        lineHeight: 1.6,
                       }}
                     >
                       <strong>Authority:</strong> Fake boss or official.
@@ -326,11 +334,11 @@ export default function SKKPage() {
                   </li>
                   <li>
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.125rem' },
-                        mb: 1,
-                        lineHeight: 1.8,
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        mb: 0.5,
+                        lineHeight: 1.6,
                       }}
                     >
                       <strong>Comfort:</strong>  &quot;I&apos;m a friend/family&quot; trick.
@@ -338,11 +346,11 @@ export default function SKKPage() {
                   </li>
                   <li>
                     <Typography
-                      variant="body1"
+                      variant="body2"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.125rem' },
-                        mb: 1,
-                        lineHeight: 1.8,
+                        fontSize: { xs: '0.875rem', md: '0.95rem' },
+                        mb: 0.5,
+                        lineHeight: 1.6,
                       }}
                     >
                       <strong>Kill-Switch:</strong> Panic or extreme excitement trigger.
@@ -372,11 +380,11 @@ export default function SKKPage() {
                   <strong>One habit that stops most scams:</strong> the 5-second pause.
             </Typography> */}
             <Typography 
-              variant="body1" 
+              variant="body2" 
               sx={{ 
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    mb: 2,
-                    lineHeight: 1.8,
+                    fontSize: { xs: '0.875rem', md: '0.95rem' },
+                    mb: 0,
+                    lineHeight: 1.6,
                     // color: '#FF725E',
                     fontWeight: 600,
                   }}
@@ -386,16 +394,25 @@ export default function SKKPage() {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: { xs: '0.875rem', md: '1rem' },
-                  mb: 2,
-                  lineHeight: 1.6,
-                  color: 'text.secondary',
-                  fontStyle: 'italic',
-                }}
-              >
+              <Box sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                justifyContent: 'center', 
+                height: '100%',
+                border: '2px solid #063C5E',
+                borderRadius: 2,
+                p: 3
+              }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: { xs: '0.875rem', md: '0.95rem' },
+                    mb: 2,
+                    lineHeight: 1.6,
+                    color: 'text.secondary',
+                    fontStyle: 'italic',
+                  }}
+                >
            A simple graphic showing a &quot;Hot Brain&quot; (Emotion/Limbic) reacting to a scam message and a &quot;Cool Brain&quot; (Logic) pausing for 5 seconds.
               </Typography>
               <Box
@@ -409,6 +426,7 @@ export default function SKKPage() {
                   boxShadow: '0 10px 30px rgba(0,0,0,0.1)',
                 }}
               />
+              </Box>
             </Grid>
           </Grid>
         </Container>

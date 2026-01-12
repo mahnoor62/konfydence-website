@@ -1642,10 +1642,10 @@ Get the full kit for just $49.
                         sx={{
                           fontSize: { xs: '1rem', md: '1.05rem' },
                           color: 'text.secondary',
-                          mb: 4,
+                          mb: 2,
                           lineHeight: 1.7,
                           // bgcolor:'red',
-                          height: { md: '200px' },
+                          height: { md: '150px' },
                         }}
                       >
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
@@ -1654,17 +1654,61 @@ Get the full kit for just $49.
                       {/* Static Card for Family */}
                       <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                         <Box
-                          component="img"
-                          src="/images/1Bank.png"
-                          alt="Family Product"
                           sx={{
                             width: '100%',
                             maxWidth: { xs: '85%', md: '85%' },
-                            height: 'auto',
                             borderRadius: 2,
+                            overflow: 'hidden',
+                            position: 'relative',
+                            perspective: '1000px',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            '& .flip-card-inner': {
+                              position: 'relative',
+                              width: '100%',
+                              transition: 'transform 0.6s',
+                              transformStyle: 'preserve-3d',
+                            },
+                            '&:hover .flip-card-inner': {
+                              transform: 'rotateY(180deg)',
+                            },
+                            '& .flip-card-front, & .flip-card-back': {
+                              width: '100%',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
+                            },
+                            '& .flip-card-back': {
+                              transform: 'rotateY(180deg)',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                            },
                           }}
-                        />
+                        >
+                          <Box className="flip-card-inner">
+                            <Box
+                              component="img"
+                              src="/images/1Bank.png"
+                              alt="Family Product"
+                              className="flip-card-front"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                            <Box
+                              component="img"
+                              src="/images/1.png"
+                              alt="Family Product Answer"
+                              className="flip-card-back"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
                       
                       {/* Commented out dynamic products */}
@@ -1763,9 +1807,9 @@ Get the full kit for just $49.
                         sx={{
                           fontSize: { xs: '1rem', md: '1.05rem' },
                           color: 'text.secondary',
-                          mb: 4,
+                          mb: 2,
                           lineHeight: 1.7,
-                          height: { md: '200px' },
+                          height: { md: '150px' },
                           // bgcolor:'red',
                         }}
                       >
@@ -1775,17 +1819,61 @@ Get the full kit for just $49.
                       {/* Static Card for Schools */}
                       <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                         <Box
-                          component="img"
-                          src="/images/social.png"
-                          alt="Schools Product"
                           sx={{
                             width: '100%',
                             maxWidth: { xs: '85%', md: '85%' },
-                            height: 'auto',
                             borderRadius: 2,
+                            overflow: 'hidden',
+                            position: 'relative',
+                            perspective: '1000px',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            '& .flip-card-inner': {
+                              position: 'relative',
+                              width: '100%',
+                              transition: 'transform 0.6s',
+                              transformStyle: 'preserve-3d',
+                            },
+                            '&:hover .flip-card-inner': {
+                              transform: 'rotateY(180deg)',
+                            },
+                            '& .flip-card-front, & .flip-card-back': {
+                              width: '100%',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
+                            },
+                            '& .flip-card-back': {
+                              transform: 'rotateY(180deg)',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                            },
                           }}
-                        />
+                        >
+                          <Box className="flip-card-inner">
+                            <Box
+                              component="img"
+                              src="/images/social.png"
+                              alt="Schools Product"
+                              className="flip-card-front"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                            <Box
+                              component="img"
+                              src="/images/25.png"
+                              alt="Schools Product Answer"
+                              className="flip-card-back"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
                       
                       {/* Commented out dynamic products */}
@@ -1875,9 +1963,9 @@ Get the full kit for just $49.
                         sx={{
                           fontSize: { xs: '1rem', md: '1.05rem' },
                           color: 'text.secondary',
-                          mb: 4,
+                          mb: 2,
                           lineHeight: 1.7,
-                          height: {  md: '200px' },
+                          height: {  md: '150px' },
                         }}
                       >
                         Go beyond check-box training. Our simulations prove your team can handle real pressure—with reports ready for auditors. NIS2-ready, fun, and effective.
@@ -1886,17 +1974,61 @@ Get the full kit for just $49.
                       {/* Static Card for Business */}
                       <Box sx={{ mb: 4, width: '100%', display: 'flex', justifyContent: { xs: 'center', md: 'flex-start' } }}>
                         <Box
-                          component="img"
-                          src="/images/urgency.png"
-                          alt="Business Product"
                           sx={{
                             width: '100%',
                             maxWidth: { xs: '85%', md: '85%' },
-                            height: 'auto',
                             borderRadius: 2,
+                            overflow: 'hidden',
+                            position: 'relative',
+                            perspective: '1000px',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                            '& .flip-card-inner': {
+                              position: 'relative',
+                              width: '100%',
+                              transition: 'transform 0.6s',
+                              transformStyle: 'preserve-3d',
+                            },
+                            '&:hover .flip-card-inner': {
+                              transform: 'rotateY(180deg)',
+                            },
+                            '& .flip-card-front, & .flip-card-back': {
+                              width: '100%',
+                              backfaceVisibility: 'hidden',
+                              WebkitBackfaceVisibility: 'hidden',
+                            },
+                            '& .flip-card-back': {
+                              transform: 'rotateY(180deg)',
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                            },
                           }}
-                        />
+                        >
+                          <Box className="flip-card-inner">
+                            <Box
+                              component="img"
+                              src="/images/urgency.png"
+                              alt="Business Product"
+                              className="flip-card-front"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                            <Box
+                              component="img"
+                              src="/images/20.png"
+                              alt="Business Product Answer"
+                              className="flip-card-back"
+                              sx={{
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block',
+                              }}
+                            />
+                          </Box>
+                        </Box>
                       </Box>
                       
                       {/* Commented out dynamic products */}

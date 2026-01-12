@@ -553,7 +553,7 @@ export default function ProductsPageContent() {
                                 />
                               )}
                               <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
-                                Tactical Card Game Kit
+                              {physicalProduct.title}
                               </Typography>
                               <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
                                 {physicalProduct?.description ? physicalProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : '90 premium cards with real-life scenarios. Spot H.A.C.K. tricks (Hurry, Authority, Comfort, Kill-Switch) and practice the 5-second pause. Includes no-blame Family Tech Contract.'}
@@ -640,7 +640,7 @@ export default function ProductsPageContent() {
 
                           {/* Digital Extension - Digital Product */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: '#0B7897', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               {digitalProduct?.imageUrl && (
                                 <Box
                                   component="img"
@@ -670,40 +670,37 @@ export default function ProductsPageContent() {
                                   }}
                                 />
                               )}
-                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: 'white' }}>
-                                Digital Extension (App Access)
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                              {digitalProduct.title}
                               </Typography>
-                              <Typography variant="body1" sx={{ mb: 2, color: 'white', lineHeight: 1.7, flexGrow: 1 }}>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
                                 {digitalProduct?.description ? digitalProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : 'Monthly new scenarios, progress tracking, and solo/family challenges on your phone.'}
                               </Typography>
                               <Box sx={{ mb: 2 }}>
                                 {digitalProduct?.price ? (
                                   <>
-                                    <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                                    <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
                                       <b>Early bird: ${digitalProduct.price}/year</b>
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: 'white' }}>
+                                    <Typography variant="body2" sx={{ color: '#063C5E' }}>
                                       <b>Later: $39/year</b>
                                     </Typography>
                                   </>
                                 ) : (
-                                  <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
+                                  <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
                                     <b>Early bird: ${digitalProduct?.price || 'N/A'}/year</b>
                                   </Typography>
                                 )}
                               </Box>
                               <Button
-                                variant="outlined"
+                                variant="contained"
                                 href={digitalProduct?._id ? `/packages?type=B2C&productId=${digitalProduct._id}` : '/packages?type=B2C'}
                                 component={NextLink}
                                 sx={{
-                                  backgroundColor: 'transparent',
+                                  backgroundColor: '#0B7897',
                                   color: 'white',
-                                  borderColor: 'white',
-                                  border: '2px solid white',
                                   '&:hover': {
-                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                    borderColor: 'white',
+                                    backgroundColor: '#063C5E',
                                   },
                                 }}
                               >
@@ -714,7 +711,7 @@ export default function ProductsPageContent() {
 
                           {/* Best Value Bundle - Bundle Product */}
                           <Grid item xs={12} md={4}>
-                            <Box sx={{ height: '100%', p: 3, backgroundColor: 'white', borderRadius: 2, border: '2px solid #0B7897', display: 'flex', flexDirection: 'column' }}>
+                            <Box sx={{ height: '100%', p: 3, backgroundColor: '#0B7897', borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
                               {bundleProduct?.imageUrl && (
                                 <Box
                                   component="img"
@@ -744,33 +741,49 @@ export default function ProductsPageContent() {
                                   }}
                                 />
                               )}
-                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: '#063C5E' }}>
+                              <Typography variant="h4" sx={{ mb: 2, fontSize: { xs: '1.25rem', md: '1.5rem' }, fontWeight: 600, color: 'white' }}>
                                 Best Value Bundle
                               </Typography>
-                              <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.7, flexGrow: 1 }}>
+                              <Typography variant="body1" sx={{ mb: 2, color: 'white', lineHeight: 1.7, flexGrow: 1 }}>
                                 {bundleProduct?.description ? bundleProduct.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : 'Physical Kit + 1-Year Digital Access.'}
                               </Typography>
+                              <Box sx={{ mb: 2, display: 'inline-flex', alignSelf: 'flex-start' }}>
+                                <Chip
+                                  label="Digital Extension"
+                                  sx={{
+                                    backgroundColor: '#5FA8BA',
+                                    color: 'white',
+                                    fontWeight: 600,
+                                    fontSize: { xs: '0.875rem', md: '0.95rem' },
+                                    px: 1,
+                                    py: 2,
+                                  }}
+                                />
+                              </Box>
                               <Box sx={{ mb: 2 }}>
                                 {bundleProduct?.price && (
                                   <>
-                                    <Typography variant="body2" sx={{ color: '#063C5E', mb: 0.5 }}>
+                                    <Typography variant="body2" sx={{ color: 'white', mb: 0.5 }}>
                                       <b>Early bird: ${bundleProduct.price}</b>
                                     </Typography>
-                                    <Typography variant="body2" sx={{ color: '#063C5E' }}>
+                                    <Typography variant="body2" sx={{ color: 'white' }}>
                                       <b>Later: $89</b>
                                     </Typography>
                                   </>
                                 )}
                               </Box>
                               <Button
-                                variant="contained"
+                                variant="outlined"
                                 href={bundleProduct?._id ? `/packages?type=B2C&productId=${bundleProduct._id}` : '/packages?type=B2C'}
                                 component={NextLink}
                                 sx={{
-                                  backgroundColor: '#0B7897',
+                                  backgroundColor: 'transparent',
                                   color: 'white',
+                                  borderColor: 'white',
+                                  border: '2px solid white',
                                   '&:hover': {
-                                    backgroundColor: '#063C5E',
+                                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                    borderColor: 'white',
                                   },
                                 }}
                               >
@@ -1360,53 +1373,83 @@ export default function ProductsPageContent() {
               {/* Images in 2 Columns */}
               <Grid container spacing={4} sx={{ mb: 6, alignItems: 'stretch' }}>
                 <Grid item xs={12} md={6}>
-                  <Box
-                    sx={{
-                      height: { xs: 'auto', md: '500px' },
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src="/images/hurry.JPG"
-                      alt="Hurry visual"
+                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Typography
+                      variant="h5"
                       sx={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        // mb: 3,
+                        // fontSize: { xs: '1.5rem', md: '2rem' },
+                        fontWeight: 700,
+                        color: '#063C5E',
+                        textAlign: 'center',
                       }}
-                    />
+                    >
+                      How scammers hack your Biology
+                    </Typography>
+                    <Box
+                      sx={{
+                        height: { xs: 'auto', md: '500px' },
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        borderRadius: 2,
+                        flex: 1,
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src="/images/hurry.JPG"
+                        alt="Hurry visual"
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          borderRadius: 2,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Box
-                    sx={{
-                      height: { xs: 'auto', md: '500px' },
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      overflow: 'hidden',
-                      borderRadius: 2,
-                    }}
-                  >
-                    <Box
-                      component="img"
-                      src="/images/5SecondsDefense2.jpg"
-                      alt="Five seconds pause habit visual"
+                  <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <Typography
+                      variant="h5"
                       sx={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        borderRadius: 2,
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        mb: 2,
+                        // fontSize: { xs: '1.5rem', md: '2rem' },
+                        fontWeight: 700,
+                        color: '#063C5E',
+                        textAlign: 'center',
                       }}
-                    />
+                    >
+                      How you respond: The 5 Seconds Pause
+                    </Typography>
+                    <Box
+                      sx={{
+                        height: { xs: 'auto', md: '500px' },
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                        borderRadius: 2,
+                        flex: 1,
+                      }}
+                    >
+                      <Box
+                        component="img"
+                        src="/images/5SecondsDefense2.jpg"
+                        alt="Five seconds pause habit visual"
+                        sx={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'contain',
+                          borderRadius: 2,
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                        }}
+                      />
+                    </Box>
                   </Box>
                 </Grid>
               </Grid>

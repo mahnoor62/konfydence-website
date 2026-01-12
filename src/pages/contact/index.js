@@ -30,7 +30,8 @@ const EMAIL_REGEX = /^.+@.+\..+$/;
 export default function ContactPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     organization: '',
     topic: 'other',
@@ -61,9 +62,14 @@ export default function ContactPage() {
 
   const validateField = (name, value) => {
     switch (name) {
-      case 'name':
+      case 'firstName':
         if (!value.trim()) {
-          return 'Name is required';
+          return 'First name is required';
+        }
+        return '';
+      case 'lastName':
+        if (!value.trim()) {
+          return 'Last name is required';
         }
         return '';
       case 'email':
@@ -122,7 +128,7 @@ export default function ContactPage() {
 
     // Validate all required fields
     const newErrors = {};
-    ['name', 'email', 'message'].forEach((field) => {
+    ['firstName', 'lastName', 'email', 'message'].forEach((field) => {
       const error = validateField(field, formData[field]);
       if (error) {
         newErrors[field] = error;
@@ -139,7 +145,8 @@ export default function ContactPage() {
       // Prepare payload based on topic
       let payload;
       payload = {
-        name: formData.name,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         email: formData.email,
         topic: formData.topic,
         message: formData.message,
@@ -168,9 +175,33 @@ export default function ContactPage() {
         error: error.response?.data || error.message,
         status: error.response?.status,
       });
+      
+      // Get the actual error message from API response
+      let errorMessage = 'Error submitting form. Please try again.';
+      
+      if (error.response?.data) {
+        // Check for validation errors array
+        if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          const validationErrors = error.response.data.errors
+            .map(err => err.msg || err.message || err)
+            .join(', ');
+          errorMessage = validationErrors || errorMessage;
+        }
+        // Check for single error message
+        else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        }
+        // Check for message field
+        else if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       setSnackbar({
         open: true,
-        message: 'Error submitting form. Please try again.',
+        message: errorMessage,
         severity: 'error',
       });
     } finally {
@@ -311,17 +342,30 @@ export default function ContactPage() {
 
                 <Box component="form" onSubmit={handleSubmit}>
                   <Grid container spacing={3}>
-                    <Grid item xs={12}>
+                    <Grid item xs={12} sm={6}>
                       <TextField
                         fullWidth
-                        label="Name"
-                        name="name"
+                        label="First Name"
+                        name="firstName"
                         required
-                        value={formData.name}
+                        value={formData.firstName}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        error={!!errors.name}
-                        helperText={errors.name}
+                        error={!!errors.firstName}
+                        helperText={errors.firstName}
+                      />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        label="Last Name"
+                        name="lastName"
+                        required
+                        value={formData.lastName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        error={!!errors.lastName}
+                        helperText={errors.lastName}
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -359,10 +403,12 @@ export default function ContactPage() {
                         SelectProps={{
                           MenuProps: {
                             PaperProps: {
-                              style: {
+                              sx: {
                                 maxHeight: 224,
                                 width: 'auto',
-                                fontFamily: 'var(--font-poppins), sans-serif',
+                                '& .MuiMenuItem-root': {
+                                  fontFamily: 'var(--font-poppins), sans-serif !important',
+                                },
                               },
                             },
                             anchorOrigin: {
@@ -378,14 +424,54 @@ export default function ContactPage() {
                             keepMounted: false,
                           },
                         }}
+                        sx={{
+                          '& .MuiSelect-select': {
+                            fontFamily: 'var(--font-poppins), sans-serif',
+                          },
+                        }}
                       >
-                        <MenuItem value="scam-survival-kit">Scam Survival Kit (Families)</MenuItem>
-                        <MenuItem value="education-youth-pack">Education / Youth Pack</MenuItem>
-                        <MenuItem value="CoMaSi">CoMaSi (Companies & Compliance)</MenuItem>
-                        <MenuItem value="nis2-audit">NIS2 / Audit Readiness</MenuItem>
-                        <MenuItem value="partnerships">Partnerships / Ambassadors</MenuItem>
-                        <MenuItem value="media-press">Media / Press</MenuItem>
-                        <MenuItem value="other">Other</MenuItem>
+                        <MenuItem 
+                          value="scam-survival-kit"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          Scam Survival Kit (Families)
+                        </MenuItem>
+                        <MenuItem 
+                          value="education-youth-pack"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          Education / Youth Pack
+                        </MenuItem>
+                        <MenuItem 
+                          value="CoMaSi"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          CoMaSi (Companies & Compliance)
+                        </MenuItem>
+                        {/* <MenuItem 
+                          value="nis2-audit"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          NIS2 / Audit Readiness
+                        </MenuItem> */}
+                        <MenuItem 
+                          value="partnerships"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          Partnerships / Ambassadors
+                        </MenuItem>
+                        <MenuItem 
+                          value="media-press"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          Media / Press
+                        </MenuItem>
+                        <MenuItem 
+                          value="other"
+                          sx={{ fontFamily: 'var(--font-poppins), sans-serif !important' }}
+                        >
+                          Other
+                        </MenuItem>
                       </TextField>
                     </Grid>
                     <Grid item xs={12}>
