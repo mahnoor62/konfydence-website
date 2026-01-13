@@ -16,6 +16,8 @@ import {
   Paper,
   Dialog,
   IconButton,
+  Autocomplete,
+  InputAdornment,
 } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -37,22 +39,48 @@ const API_URL = `${API_BASE_URL}/api`;
 
 export default function CoMaSyPage() {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     company: '',
     email: '',
     teamSize: '',
     message: '',
+    address: '',
+    country: '',
+    state: '',
+    city: '',
+    phone: '',
+    department: '',
+    position: '',
+    website: '',
   });
   const [errors, setErrors] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     company: '',
     email: '',
+    address: '',
+    country: '',
+    state: '',
+    city: '',
+    phone: '',
+    department: '',
+    position: '',
   });
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [mounted, setMounted] = useState(false);
   const [imageModalOpen, setImageModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  
+  // Address fields state
+  const [countries, setCountries] = useState([]);
+  const [states, setStates] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedCountryData, setSelectedCountryData] = useState(null);
+  const [loadingCountries, setLoadingCountries] = useState(false);
+  const [loadingStates, setLoadingStates] = useState(false);
+  const [loadingCities, setLoadingCities] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -70,21 +98,205 @@ export default function CoMaSyPage() {
     }
   }, []);
 
+  // Fetch countries on component mount
+  useEffect(() => {
+    const fetchCountries = async () => {
+      setLoadingCountries(true);
+      try {
+        const response = await axios.get('https://restcountries.com/v3.1/all', {
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+        const formattedCountries = response.data
+          .map(country => ({
+            name: country.name.common,
+            alpha2Code: country.cca2,
+            callingCodes: country.idd?.root ? [country.idd.root.replace('+', '') + (country.idd.suffixes?.[0] || '')] : [],
+          }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        setCountries(formattedCountries);
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+        // Fallback to a static list of major countries
+        const fallbackCountries = [
+          { name: 'United States', alpha2Code: 'US', callingCodes: ['1'] },
+          { name: 'United Kingdom', alpha2Code: 'GB', callingCodes: ['44'] },
+          { name: 'Canada', alpha2Code: 'CA', callingCodes: ['1'] },
+          { name: 'Australia', alpha2Code: 'AU', callingCodes: ['61'] },
+          { name: 'Germany', alpha2Code: 'DE', callingCodes: ['49'] },
+          { name: 'France', alpha2Code: 'FR', callingCodes: ['33'] },
+          { name: 'India', alpha2Code: 'IN', callingCodes: ['91'] },
+          { name: 'Pakistan', alpha2Code: 'PK', callingCodes: ['92'] },
+        ];
+        setCountries(fallbackCountries);
+        setSnackbar({
+          open: true,
+          message: 'Using limited country list. Please check your internet connection.',
+          severity: 'warning',
+        });
+      } finally {
+        setLoadingCountries(false);
+      }
+    };
+    
+    fetchCountries();
+  }, []);
+
+  // Fetch states when country is selected
+  useEffect(() => {
+    const fetchStates = async () => {
+      if (!formData.country) {
+        setStates([]);
+        setCities([]);
+        setFormData((prev) => ({ ...prev, state: '', city: '' }));
+        setSelectedCountryData(null);
+        return;
+      }
+
+      // Find selected country data for phone code
+      const countryData = countries.find(c => c.name === formData.country);
+      setSelectedCountryData(countryData || null);
+
+      setLoadingStates(true);
+      try {
+        const countryCode = countryData?.alpha2Code;
+        if (countryCode) {
+          const response = await axios.get(
+            `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/states.json`,
+            {
+              headers: {
+                'Accept': 'application/json',
+              },
+            }
+          );
+          const countryStates = response.data
+            .filter(state => state.country_code === countryCode)
+            .sort((a, b) => a.name.localeCompare(b.name));
+          setStates(countryStates);
+        } else {
+          setStates([]);
+        }
+      } catch (error) {
+        console.error('Error fetching states:', error);
+        setStates([]);
+      } finally {
+        setLoadingStates(false);
+      }
+    };
+
+    if (countries.length > 0) {
+      fetchStates();
+    }
+  }, [formData.country, countries]);
+
+  // Fetch cities when state is selected
+  useEffect(() => {
+    const fetchCities = async () => {
+      if (!formData.state || !formData.country) {
+        setCities([]);
+        setFormData((prev) => ({ ...prev, city: '' }));
+        return;
+      }
+
+      setLoadingCities(true);
+      try {
+        const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
+        const selectedState = states.find(s => s.name === formData.state);
+        const stateCode = selectedState?.state_code || selectedState?.iso2;
+        
+        if (countryCode && stateCode) {
+          const response = await axios.get(
+            `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json`,
+            {
+              headers: {
+                'Accept': 'application/json',
+              },
+              timeout: 60000,
+              maxContentLength: 100 * 1024 * 1024,
+              maxBodyLength: 100 * 1024 * 1024,
+            }
+          );
+          
+          if (response.data && Array.isArray(response.data)) {
+            const stateCities = response.data
+              .filter(city => {
+                const matchesCountry = city.country_code === countryCode;
+                const matchesState = city.state_code === stateCode || 
+                                   city.state_code === selectedState?.iso2 ||
+                                   (selectedState?.id && city.state_id === selectedState.id);
+                return matchesCountry && matchesState;
+              })
+              .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            
+            setCities(stateCities);
+          }
+        } else {
+          setCities([]);
+        }
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+        setCities([]);
+      } finally {
+        setLoadingCities(false);
+      }
+    };
+
+    if (formData.state && formData.country && countries.length > 0) {
+      fetchCities();
+    }
+  }, [formData.state, formData.country, countries, states]);
+
   const validateEmail = (email) => {
     const emailRegex = /.+@.+\..+/;
     return emailRegex.test(email);
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      
+      // Clear dependent fields when country or state changes
+      if (name === 'country') {
+        updated.state = '';
+        updated.city = '';
+      } else if (name === 'state') {
+        updated.city = '';
+      }
+      
+      return updated;
+    });
+    
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors = {
-      name: '',
+      firstName: '',
+      lastName: '',
       company: '',
       email: '',
+      address: '',
+      country: '',
+      state: '',
+      city: '',
+      phone: '',
+      department: '',
+      position: '',
     };
     let isValid = true;
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.firstName || !formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      isValid = false;
+    }
+
+    if (!formData.lastName || !formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
       isValid = false;
     }
 
@@ -98,6 +310,42 @@ export default function CoMaSyPage() {
       isValid = false;
     } else if (!validateEmail(formData.email)) {
       newErrors.email = 'Please enter a valid email address';
+      isValid = false;
+    }
+
+    // Address fields validation
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+      isValid = false;
+    }
+
+    if (!formData.country.trim()) {
+      newErrors.country = 'Country is required';
+      isValid = false;
+    }
+
+    if (!formData.state.trim()) {
+      newErrors.state = 'State is required';
+      isValid = false;
+    }
+
+    if (!formData.city.trim()) {
+      newErrors.city = 'City is required';
+      isValid = false;
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+      isValid = false;
+    }
+
+    if (!formData.department.trim()) {
+      newErrors.department = 'Department is required';
+      isValid = false;
+    }
+
+    if (!formData.position.trim()) {
+      newErrors.position = 'Position is required';
       isValid = false;
     }
 
@@ -116,13 +364,32 @@ export default function CoMaSyPage() {
     setLoading(true);
     try {
       const url = `${API_URL}/contact`;
+      
+      // Include country code in phone number if available
+      let phoneNumber = formData.phone.trim();
+      if (selectedCountryData?.callingCodes?.[0] && phoneNumber && !phoneNumber.startsWith('+')) {
+        phoneNumber = `+${selectedCountryData.callingCodes[0]}${phoneNumber}`;
+      }
+      
       const payload = {
-        name: formData.name.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         email: formData.email.trim(),
+        organization: formData.company.trim(),
         company: formData.company.trim(),
         topic: 'CoMaSi',
         teamSize: formData.teamSize.trim() || '',
         message: formData.message.trim() || '',
+        formSource: 'b2b_form', // Set formSource for CoMaSi page
+        // Address fields
+        address: formData.address.trim(),
+        country: formData.country.trim(),
+        state: formData.state.trim(),
+        city: formData.city.trim(),
+        phone: phoneNumber,
+        department: formData.department.trim(),
+        position: formData.position.trim(),
+        website: formData.website.trim() || '',
       };
       await axios.post(url, payload, {
         headers: {
@@ -131,8 +398,38 @@ export default function CoMaSyPage() {
       });
       
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
-      setFormData({ name: '', company: '', email: '', teamSize: '', message: '' });
-      setErrors({ name: '', company: '', email: '' });
+      setFormData({ 
+        firstName: '', 
+        lastName: '', 
+        company: '', 
+        email: '', 
+        teamSize: '', 
+        message: '',
+        address: '',
+        country: '',
+        state: '',
+        city: '',
+        phone: '',
+        department: '',
+        position: '',
+        website: '',
+      });
+      setErrors({ 
+        firstName: '', 
+        lastName: '', 
+        company: '', 
+        email: '',
+        address: '',
+        country: '',
+        state: '',
+        city: '',
+        phone: '',
+        department: '',
+        position: '',
+      });
+      setStates([]);
+      setCities([]);
+      setSelectedCountryData(null);
     } catch (error) {
       console.error('Error submitting form:', error);
       setSnackbar({ open: true, message: 'Error submitting form. Please try again.', severity: 'error' });
@@ -1137,15 +1434,29 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Name"
+                      label="First Name"
                       required
-                      value={formData.name}
+                      value={formData.firstName}
                       onChange={(e) => {
-                        setFormData({ ...formData, name: e.target.value });
-                        if (errors.name) setErrors({ ...errors, name: '' });
+                        setFormData({ ...formData, firstName: e.target.value });
+                        if (errors.firstName) setErrors({ ...errors, firstName: '' });
                       }}
-                      error={!!errors.name}
-                      helperText={errors.name}
+                      error={!!errors.firstName}
+                      helperText={errors.firstName}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, lastName: e.target.value });
+                        if (errors.lastName) setErrors({ ...errors, lastName: '' });
+                      }}
+                      error={!!errors.lastName}
+                      helperText={errors.lastName}
                     />
                   </Grid>
                   <Grid item xs={12} sm={6}>
@@ -1177,7 +1488,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       helperText={errors.email}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={12}>
                     <TextField
                       fullWidth
                       label="Team Size"
@@ -1186,6 +1497,203 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       placeholder="e.g., 50-100 employees"
                     />
                   </Grid>
+                  
+                  {/* Address Information Section */}
+                  <Grid item xs={12}>
+                    <Box sx={{ mt: 2, mb: 2 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          fontWeight: 600,
+                          mb: 2,
+                          color: '#052A42',
+                          fontSize: '1.1rem',
+                        }}
+                      >
+                        Address Information
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Address"
+                      name="address"
+                      required
+                      value={formData.address}
+                      onChange={handleChange}
+                      error={!!errors.address}
+                      helperText={errors.address}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      freeSolo
+                      options={countries.map((country) => country.name)}
+                      value={formData.country}
+                      onChange={(event, newValue) => {
+                        const country = countries.find(c => c.name === newValue);
+                        setSelectedCountryData(country || null);
+                        setFormData((prev) => ({
+                          ...prev,
+                          country: newValue || '',
+                          state: '',
+                          city: '',
+                        }));
+                        setStates([]);
+                        setCities([]);
+                        if (errors.country) {
+                          setErrors((prev) => ({ ...prev, country: '' }));
+                        }
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        setFormData((prev) => ({ ...prev, country: newInputValue }));
+                        const country = countries.find(c => c.name.toLowerCase() === newInputValue.toLowerCase());
+                        setSelectedCountryData(country || null);
+                        if (errors.country) {
+                          setErrors((prev) => ({ ...prev, country: '' }));
+                        }
+                      }}
+                      disabled={loadingCountries}
+                      loading={loadingCountries}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Country"
+                          required
+                          error={!!errors.country}
+                          helperText={errors.country}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      freeSolo
+                      options={states.map((state) => state.name)}
+                      value={formData.state}
+                      onChange={(event, newValue) => {
+                        setFormData((prev) => ({ ...prev, state: newValue || '', city: '' }));
+                        if (errors.state) {
+                          setErrors((prev) => ({ ...prev, state: '' }));
+                        }
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        setFormData((prev) => ({ ...prev, state: newInputValue }));
+                        if (errors.state) {
+                          setErrors((prev) => ({ ...prev, state: '' }));
+                        }
+                      }}
+                      disabled={!formData.country || loadingStates}
+                      loading={loadingStates}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="State"
+                          required
+                          error={!!errors.state}
+                          helperText={errors.state || (loadingStates ? 'Loading states...' : '')}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <Autocomplete
+                      freeSolo
+                      options={cities.length > 0 ? cities.map((city) => city.name) : []}
+                      value={formData.city}
+                      onChange={(event, newValue) => {
+                        setFormData((prev) => ({ ...prev, city: newValue || '' }));
+                        if (errors.city) {
+                          setErrors((prev) => ({ ...prev, city: '' }));
+                        }
+                      }}
+                      onInputChange={(event, newInputValue) => {
+                        setFormData((prev) => ({ ...prev, city: newInputValue }));
+                        if (errors.city) {
+                          setErrors((prev) => ({ ...prev, city: '' }));
+                        }
+                      }}
+                      disabled={!formData.state || loadingCities}
+                      loading={loadingCities}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="City"
+                          required
+                          error={!!errors.city}
+                          helperText={errors.city || (loadingCities ? 'Loading cities...' : '')}
+                        />
+                      )}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Phone Number"
+                      name="phone"
+                      type="tel"
+                      required
+                      value={formData.phone}
+                      onChange={handleChange}
+                      error={!!errors.phone}
+                      helperText={errors.phone || (selectedCountryData?.callingCodes?.[0] ? `Country code: +${selectedCountryData.callingCodes[0]}` : 'Select a country to see phone code')}
+                      InputProps={{
+                        startAdornment: selectedCountryData?.callingCodes?.[0] ? (
+                          <InputAdornment position="start">
+                            <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>
+                              +{selectedCountryData.callingCodes[0]}
+                            </Typography>
+                          </InputAdornment>
+                        ) : null,
+                      }}
+                      placeholder={selectedCountryData?.callingCodes?.[0] ? `Enter number without +${selectedCountryData.callingCodes[0]}` : 'Enter phone number'}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Department"
+                      name="department"
+                      required
+                      value={formData.department}
+                      onChange={handleChange}
+                      error={!!errors.department}
+                      helperText={errors.department}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Position"
+                      name="position"
+                      required
+                      value={formData.position}
+                      onChange={handleChange}
+                      error={!!errors.position}
+                      helperText={errors.position}
+                    />
+                  </Grid>
+                  
+                  <Grid item xs={12} sm={12}>
+                    <TextField
+                      fullWidth
+                      label="Website"
+                      name="website"
+                      type="url"
+                      value={formData.website}
+                      onChange={handleChange}
+                      placeholder="https://example.com"
+                    />
+                  </Grid>
+                  
                   <Grid item xs={12}>
                     <TextField
                       fullWidth

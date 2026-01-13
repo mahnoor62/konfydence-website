@@ -35,14 +35,16 @@ const API_URL = `${API_BASE_URL}/api`;
 
 export default function EducationPage() {
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     institution: '',
     email: '',
     studentStaffSize: '',
     message: '',
   });
   const [errors, setErrors] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     institution: '',
     email: '',
   });
@@ -72,14 +74,20 @@ export default function EducationPage() {
 
   const validateForm = () => {
     const newErrors = {
-      name: '',
+      firstName: '',
+      lastName: '',
       institution: '',
       email: '',
     };
     let isValid = true;
 
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+    if (!formData.firstName || !formData.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+      isValid = false;
+    }
+
+    if (!formData.lastName || !formData.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
       isValid = false;
     }
 
@@ -112,12 +120,15 @@ export default function EducationPage() {
     try {
       const url = `${API_URL}/contact`;
       const payload = {
-        name: formData.name.trim(),
+        firstName: formData.firstName.trim(),
+        lastName: formData.lastName.trim(),
         email: formData.email.trim(),
+        organization: formData.institution.trim(),
         company: formData.institution.trim(),
         topic: 'education',
         studentStaffSize: formData.studentStaffSize.trim() || '',
         message: formData.message.trim() || '',
+        formSource: 'b2e_form', // Set formSource for Education page
       };
       await axios.post(url, payload, {
         headers: {
@@ -126,8 +137,8 @@ export default function EducationPage() {
       });
       
       setSnackbar({ open: true, message: 'Thank you! We will contact you soon.', severity: 'success' });
-      setFormData({ name: '', institution: '', email: '', studentStaffSize: '', message: '' });
-      setErrors({ name: '', institution: '', email: '' });
+      setFormData({ firstName: '', lastName: '', institution: '', email: '', studentStaffSize: '', message: '' });
+      setErrors({ firstName: '', lastName: '', institution: '', email: '' });
     } catch (error) {
       console.error('Error submitting form:', error);
       const errorMessage = error.response?.data?.errors?.[0]?.msg || error.response?.data?.message || error.message || 'Error submitting form. Please try again.';
@@ -1073,18 +1084,32 @@ export default function EducationPage() {
             >
               <Box component="form" onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
-                      label="Name"
+                      label="First Name"
                       required
-                      value={formData.name}
+                      value={formData.firstName}
                       onChange={(e) => {
-                        setFormData({ ...formData, name: e.target.value });
-                        if (errors.name) setErrors({ ...errors, name: '' });
+                        setFormData({ ...formData, firstName: e.target.value });
+                        if (errors.firstName) setErrors({ ...errors, firstName: '' });
                       }}
-                      error={!!errors.name}
-                      helperText={errors.name}
+                      error={!!errors.firstName}
+                      helperText={errors.firstName}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      fullWidth
+                      label="Last Name"
+                      required
+                      value={formData.lastName}
+                      onChange={(e) => {
+                        setFormData({ ...formData, lastName: e.target.value });
+                        if (errors.lastName) setErrors({ ...errors, lastName: '' });
+                      }}
+                      error={!!errors.lastName}
+                      helperText={errors.lastName}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -1116,7 +1141,7 @@ export default function EducationPage() {
                       helperText={errors.email}
                     />
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid item xs={12} sm={12}>
                     <TextField
                       fullWidth
                       label="Student/Staff Size"
