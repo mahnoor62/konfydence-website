@@ -450,6 +450,41 @@ export default function MemberDashboardPage() {
   const orgOrSchool = organization || school;
   const isSchool = !!school;
 
+  // Check if user has incomplete game progress (has started but not completed all 3 levels)
+  const hasIncompleteProgress = gameProgress && (() => {
+    const hasAnyProgress = [1, 2, 3].some(levelNum => {
+      const levelArray = gameProgress[`level${levelNum}`] || [];
+      return levelArray.length > 0;
+    });
+    if (!hasAnyProgress) return false;
+    
+    // Check if all 3 levels are completed
+    const allLevelsCompleted = [1, 2, 3].every(levelNum => {
+      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+      return levelStats.completedAt;
+    });
+    
+    return !allLevelsCompleted;
+  })();
+  
+  // Determine which level to resume from (find the first incomplete level)
+  const getResumeLevel = () => {
+    if (!gameProgress) return null;
+    // Check each level (1, 2, 3) to find the first one that hasn't been completed
+    for (let levelNum = 1; levelNum <= 3; levelNum++) {
+      const levelArray = gameProgress[`level${levelNum}`] || [];
+      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
+      // If level has no cards or no stats, it's incomplete
+      if (levelArray.length === 0 || !levelStats.completedAt) {
+        return levelNum;
+      }
+    }
+    // If all levels are completed, return null
+    return null;
+  };
+  
+  const resumeLevel = getResumeLevel();
+
   return (
     <>
       <Header />
@@ -632,10 +667,26 @@ export default function MemberDashboardPage() {
             <Grid item xs={12}>
               <Card sx={{ boxShadow: '0 4px 20px rgba(0,0,0,0.1)', borderRadius: 3 }}>
                 <CardContent sx={{ p: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E' }}>
                       Game Progress
                     </Typography>
+                    {/* Resume Game Button - Show if user has incomplete progress */}
+                    {hasIncompleteProgress && resumeLevel && (
+                      <Button
+                        variant="contained"
+                        onClick={() => router.push(`/play?resume=${resumeLevel}`)}
+                        sx={{
+                          backgroundColor: '#0B7897',
+                          color: '#fff',
+                          '&:hover': {
+                            backgroundColor: '#085f76',
+                          },
+                        }}
+                      >
+                        Resume Game
+                      </Button>
+                    )}
                   </Box>
                   {gameLoading ? (
                     <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>

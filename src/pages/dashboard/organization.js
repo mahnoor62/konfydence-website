@@ -3538,7 +3538,7 @@ export default function OrganizationDashboardPage() {
                                 />
                               )}
 
-                              <Box sx={{ mb: 2 }}>
+                              <Box sx={{ mb: 2, mt: 2 }}>
                                 <Typography variant="h5" sx={{ fontWeight: 700, color: '#063C5E', mb: 1.5 }}>
                                   {cp.name || 'Custom Package'}
                                 </Typography>
