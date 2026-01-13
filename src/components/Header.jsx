@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'CoMaSi', href: '/comasi' },
+  { label: 'CoMaSi', href: '/CoMaSi' },
   { label: 'Education', href: '/education' },
   { label: 'Resource Hub', href: '/resources' },
   { label: 'Shop', href: '/sskit-family' },
@@ -177,7 +177,9 @@ export default function Header() {
               >
                 {navItems.map((item) => {
                   const safePath = pathname || '';
-                  const isActive = safePath === item.href || (item.href !== '/' && safePath.startsWith(item.href));
+                  const normalizedPath = safePath.toLowerCase();
+                  const normalizedHref = item.href.toLowerCase();
+                  const isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
                   return (
                     <Button
                       key={item.href}
@@ -407,7 +409,9 @@ export default function Header() {
           <List sx={{ px: 1 }}>
             {navItems.map((item) => {
               const safePath = pathname || '';
-              const isActive = safePath === item.href || (item.href !== '/' && safePath.startsWith(item.href));
+              const normalizedPath = safePath.toLowerCase();
+              const normalizedHref = item.href.toLowerCase();
+              const isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
               return (
                 <ListItem key={item.href} disablePadding>
                   <ListItemButton

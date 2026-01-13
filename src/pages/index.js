@@ -1,5 +1,6 @@
-import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, IconButton } from '@mui/material';
+import { Avatar, Box, Button, Card, CardContent, Chip, Container, Grid, Stack, Typography, IconButton, Dialog } from '@mui/material';
 import { LockOutlined, SchoolOutlined, BusinessCenterOutlined, SecurityOutlined, PersonOutline, EmailOutlined, ChatBubbleOutline, ShieldOutlined, Close } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import BlogCard from '@/components/BlogCard';
@@ -163,6 +164,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
   const latestPosts = Array.isArray(blogPosts) ? blogPosts : [];
   const [mounted, setMounted] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
   
   useEffect(() => {
     setMounted(true);
@@ -1096,75 +1099,83 @@ Get the full kit for just $49.
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
-                    // mt: { xs: 0, md: 8 },
+                    border: '2px solid #063C5E',
+                    borderRadius: 2,
+                    p: 3,
                   }}
                 >
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      mb: { xs: 3, md: 4 },
-                      lineHeight: { xs: 1.8, md: 2.4 },
-                    }}
-                  >
-                    You&apos;ve seen the yearly videos and quizzes. Everyone clicks through, passes the test, and… still falls for scams months later.
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      mb: { xs: 3, md: 4 },
-                      lineHeight: { xs: 1.8, md: 2.4 },
-                    }}
-                  >
-                    Why? Because scams don&apos;t happen in calm moments. They hit when you&apos;re busy, stressed, or rushed. In those seconds, your brain reacts before you can think—and even smart people click.
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      mb: { xs: 3, md: 4 },
-                      lineHeight: { xs: 1.8, md: 2.4 },
-                    }}
-                  >
-                    In order to dismantle the Kill-Switch of shame, we enhance the &quot;No-Blame&quot; culture established in our{' '}
-                    <Link
-                      href="/resources"
-                      style={{
-                        color: '#00A4E8',
-                        textDecoration: 'underline',
-                        fontWeight: 600,
+                  <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <Box>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                          color: 'text.primary',
+                          // mb:1,
+                          mb: { xs: 3, md: 3.5 },
+                          lineHeight: { xs: 1.8, md: 2},
+                        }}
+                      >
+                        You&apos;ve seen the yearly videos and quizzes. Everyone clicks through, passes the test, and… still falls for scams months later.
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                          color: 'text.primary',
+// mb:1,
+                          mb: { xs: 3, md: 3.5 },
+                          lineHeight: { xs: 1.8, md: 2 },
+                        }}
+                      >
+                        Why? Because scams don&apos;t happen in calm moments. They hit when you&apos;re busy, stressed, or rushed. In those seconds, your brain reacts before you can think—and even smart people click.
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{
+                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                          color: 'text.primary',
+                          // mb:1,
+                          mb: { xs: 3, md: 3.5 },
+                          lineHeight: { xs: 1.8, md: 2 },
+                        }}
+                      >
+                        In order to dismantle the Kill-Switch of shame, we enhance the &quot;No-Blame&quot; culture established in our{' '}
+                        <Link
+                          href="/resources"
+                          style={{
+                            color: '#00A4E8',
+                            textDecoration: 'underline',
+                            fontWeight: 600,
+                          }}
+                        >
+                          Family Tech Contract 
+                        </Link>
+                      </Typography>
+                    </Box>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontSize: { xs: '1.1rem', md: '1.2rem' },
+                        color: 'text.primary',
+                        lineHeight: { xs: 1.8, md: 2 },
                       }}
                     >
-                      Family Tech Contract 
-                    </Link>
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontSize: { xs: '1rem', md: '1.1rem' },
-                      color: 'text.primary',
-                      mb: { xs: 3, md: 4 },
-                      lineHeight: { xs: 1.8, md: 2.4 },
-                    }}
-                  >
-                    <strong>Stop the Limbic Hijack:</strong> Our framework trains your brain to outsmart the biological triggers scammers use to bypass your logic.{' '}
-                    <Link
-                      href="/pdfs/the-limbic-hijack.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: '#00A4E8',
-                        textDecoration: 'underline',
-                        fontWeight: 600,
-                      }}
-                    >
-                      Read the Science: Why Human Hardware Fails Before Software 
-                    </Link>
-                  </Typography>
+                      <strong>Stop the Limbic Hijack:</strong> Our framework trains your brain to outsmart the biological triggers scammers use to bypass your logic.{' '}
+                      <Link
+                        href="/pdfs/the-limbic-hijack.pdf"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: '#00A4E8',
+                          textDecoration: 'underline',
+                          fontWeight: 600,
+                        }}
+                      >
+                        Read the Science: Why Human Hardware Fails Before Software 
+                      </Link>
+                    </Typography>
+                  </Box>
                 </Box>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -1175,16 +1186,25 @@ Get the full kit for just $49.
                     height: '100%',
                     display: 'flex',
                     flexDirection: 'column',
+                    border: '2px solid #063C5E',
+                    borderRadius: 2,
+                    p: 3,
                   }}
                 >
-                  <Box sx={{ mb: { xs: 2, md: 3 } }}>
+                  <Box sx={{ mb: { xs: 2, md: 2.5 } }}>
                     <Typography
                       variant="body1"
+                      // sx={{
+                      //   fontSize: { xs: '0.9rem', md: '0.95rem' },
+                      //   color: 'text.primary',
+                      //   mb: { xs: 1.5, md: 1.5 },
+                      //   lineHeight: { xs: 1.6, md: 1.8 },
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
-                        color: 'text.primary',
-                        mb: { xs: 1.5, md: 2 },
-                        // lineHeight: { xs: 1.6, md: 1.8 },
+                      fontSize: { xs: '1.1rem', md: '1.2rem' },
+                      color: 'text.primary',
+                      mb:1,
+                      // mb: { xs: 3, md: 3.5 },
+                      lineHeight: { xs: 1.8, md: 2},
                       }}
                     >
                       Konfydence fixes this by training the one simple habit that works under pressure: <strong>Pause for five seconds when something feels off.</strong>
@@ -1192,9 +1212,9 @@ Get the full kit for just $49.
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: { xs: '1rem', md: '1.1rem' },
+                        fontSize: { xs: '0.9rem', md: '0.95rem' },
                         color: 'text.primary',
-                        // lineHeight: { xs: 1.6, md: 1.8 },
+                        lineHeight: { xs: 1.6, md: 1.8 },
                       }}
                     >
                       No long lectures. Just quick, real-life practice that sticks.
@@ -1213,6 +1233,10 @@ Get the full kit for just $49.
                       component="img"
                       src="/images/5SecondsDefense.jpg"
                       alt="Five seconds is all it takes. No real request breaks if you wait."
+                      onClick={() => {
+                        setSelectedImage('/images/5SecondsDefense.jpg');
+                        setImageModalOpen(true);
+                      }}
                       sx={{
                         width: '100%',
                         maxWidth: { xs: '100%', md: '70%' },
@@ -1220,6 +1244,12 @@ Get the full kit for just $49.
                         borderRadius: {xs:1, md:2},
                         boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
                         mb: 2,
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          opacity: 0.9,
+                        },
                       }}
                     />
                     <Typography
@@ -3488,6 +3518,104 @@ Empowering individuals, organizations, and compliance teams with interactive sca
           </Box>
         </Container>
       </Box>
+
+      {/* Image Modal Dialog */}
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth={false}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'black !important',
+            boxShadow: 'none !important',
+            maxWidth: 'fit-content',
+            margin: 'auto',
+            padding: '0 !important',
+            overflow: 'hidden',
+            background: 'black !important',
+          },
+        }}
+        // sx={{
+        //   '& .MuiDialog-container': {
+        //     backgroundColor: 'transparent',
+        //   },
+        //   '& .MuiDialog-paper': {
+        //     backgroundColor: 'black !important',
+        //     backgroundImage: 'none !important',
+        //     boxShadow: 'none !important',
+        //     padding: '0 !important',
+        //     margin: 0,
+        //   },
+        //   '& .MuiDialog-paperScrollPaper': {
+        //     backgroundColor: 'black !important',
+        //     backgroundImage: 'none !important',
+        //   },
+        //   '& .MuiPaper-root': {
+        //     backgroundColor: 'black !important',
+        //     backgroundImage: 'none !important',
+        //   },
+        //   '& .MuiPaper-elevation': {
+        //     backgroundColor: 'black !important',
+        //     backgroundImage: 'none !important',
+        //     boxShadow: 'none !important',
+        //   },
+        //   '& .MuiDialog-paperScrollBody': {
+        //     backgroundColor: 'black !important',
+        //   },
+        // }}
+      >
+        <Box 
+          sx={{ 
+            position: 'relative', 
+            display: 'inline-block', 
+            backgroundColor: 'transparent !important', 
+            background: 'transparent !important',
+            '& *': {
+              backgroundColor: 'transparent !important',
+            }
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'white',
+              // backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                // backgroundColor: 'rgba(255, 255, 255, 1)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {selectedImage && (
+            <Box
+              component="img"
+              src={selectedImage}
+              alt="Five seconds is all it takes. No real request breaks if you wait."
+              sx={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                borderRadius: 1,
+                display: 'block',
+                backgroundColor: 'transparent !important',
+                background: 'transparent !important',
+              }}
+            />
+          )}
+        </Box>
+      </Dialog>
 
       <Footer />
     </>

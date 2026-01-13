@@ -555,7 +555,7 @@ export default function ContactPage() {
                       lineHeight: 1.7,
                       maxWidth: 600,
                       mx: 'auto',
-                    }}>   We W&apos;ll get back to you personally.Usually within one buisness day.</Typography>
+                    }}>   We&apos;ll get back to you personally usually within one buisness day.</Typography>
            
                    
                   {/* <Typography

@@ -1377,7 +1377,7 @@ export default function ProductsPageContent() {
                     <Typography
                       variant="h5"
                       sx={{
-                        // mb: 3,
+                        mb: 2,
                         // fontSize: { xs: '1.5rem', md: '2rem' },
                         fontWeight: 700,
                         color: '#063C5E',
@@ -1405,8 +1405,7 @@ export default function ProductsPageContent() {
                           width: '100%',
                           height: '100%',
                           objectFit: 'contain',
-                          borderRadius: 2,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          display: 'block',
                         }}
                       />
                     </Box>
@@ -1445,8 +1444,7 @@ export default function ProductsPageContent() {
                           width: '100%',
                           height: '100%',
                           objectFit: 'contain',
-                          borderRadius: 2,
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                          display: 'block',
                         }}
                       />
                     </Box>

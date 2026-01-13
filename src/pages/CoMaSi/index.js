@@ -14,6 +14,8 @@ import {
   Alert,
   Stack,
   Paper,
+  Dialog,
+  IconButton,
 } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -25,6 +27,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import axios from 'axios';
+import CloseIcon from '@mui/icons-material/Close';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -48,6 +51,8 @@ export default function CoMaSyPage() {
   const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [mounted, setMounted] = useState(false);
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -557,10 +562,20 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       component="img"
                       src="/images/dashboard.png"
                       alt="Engaging Simulations"
+                      onClick={() => {
+                        setSelectedImage('/images/dashboard.png');
+                        setImageModalOpen(true);
+                      }}
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          opacity: 0.9,
+                        },
                       }}
                     />
                   </Box>
@@ -615,10 +630,20 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       component="img"
                       src="/images/dashboard2.png"
                       alt="Proven Behavior Change"
+                      onClick={() => {
+                        setSelectedImage('/images/dashboard2.png');
+                        setImageModalOpen(true);
+                      }}
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          opacity: 0.9,
+                        },
                       }}
                     />
                   </Box>
@@ -673,10 +698,20 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       component="img"
                       src="/images/dashboard3.png"
                       alt="Auditor-Ready Reports"
+                      onClick={() => {
+                        setSelectedImage('/images/dashboard3.png');
+                        setImageModalOpen(true);
+                      }}
                       sx={{
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
+                        cursor: 'pointer',
+                        transition: 'transform 0.2s, opacity 0.2s',
+                        '&:hover': {
+                          transform: 'scale(1.02)',
+                          opacity: 0.9,
+                        },
                       }}
                     />
                   </Box>
@@ -922,6 +957,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                     component="img"
                     src="/images/dashboard.png"
                     alt="Platform Dashboard Preview"
+                    onClick={() => {
+                      setSelectedImage('/images/dashboard.png');
+                      setImageModalOpen(true);
+                    }}
                     sx={{
                       width: '100%',
                       height: 'auto',
@@ -930,6 +969,12 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       borderRadius: 2,
                       mb: 2,
                       objectFit: 'contain',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, opacity 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                        opacity: 0.9,
+                      },
                     }}
                   />
                   <Typography
@@ -974,6 +1019,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                     component="img"
                     src="/images/dashboard2.png"
                     alt="Konfydence Behavioral Report Dashboard"
+                    onClick={() => {
+                      setSelectedImage('/images/dashboard2.png');
+                      setImageModalOpen(true);
+                    }}
                     sx={{
                       width: '100%',
                       height: 'auto',
@@ -982,6 +1031,12 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       borderRadius: 2,
                       mb: 2,
                       objectFit: 'contain',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, opacity 0.2s',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                        opacity: 0.9,
+                      },
                     }}
                   />
                   <Typography
@@ -1292,6 +1347,97 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
           </Container>
         </Box>
       </Box>
+
+      {/* Image Modal Dialog */}
+      <Dialog
+        open={imageModalOpen}
+        onClose={() => setImageModalOpen(false)}
+        maxWidth={false}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        }}
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent !important',
+            boxShadow: 'none !important',
+            maxWidth: 'fit-content',
+            margin: 'auto',
+            padding: '0 !important',
+            overflow: 'visible',
+            background: 'transparent !important',
+          },
+        }}
+        sx={{
+          '& .MuiDialog-container': {
+            backgroundColor: 'transparent',
+          },
+          '& .MuiDialog-paper': {
+            backgroundColor: 'transparent !important',
+            backgroundImage: 'none !important',
+            boxShadow: 'none !important',
+            padding: '0 !important',
+            margin: 0,
+          },
+          '& .MuiDialog-paperScrollPaper': {
+            backgroundColor: 'transparent !important',
+            backgroundImage: 'none !important',
+          },
+          '& .MuiPaper-root': {
+            backgroundColor: 'transparent !important',
+            backgroundImage: 'none !important',
+          },
+          '& .MuiPaper-elevation': {
+            backgroundColor: 'transparent !important',
+            backgroundImage: 'none !important',
+            boxShadow: 'none !important',
+          },
+          '& .MuiDialog-paperScrollBody': {
+            backgroundColor: 'transparent !important',
+          },
+        }}
+      >
+        <Box 
+          sx={{ 
+            position: 'relative', 
+            display: 'inline-block',
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModalOpen(false)}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: '#063C5E',
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+              },
+              zIndex: 1,
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          {selectedImage && (
+            <img
+              src={selectedImage}
+              alt="Dashboard preview"
+              style={{
+                width: 'auto',
+                height: 'auto',
+                maxWidth: '90vw',
+                maxHeight: '90vh',
+                objectFit: 'contain',
+                borderRadius: '8px',
+                display: 'block',
+              }}
+            />
+          )}
+        </Box>
+      </Dialog>
+
       <Footer />
     </>
   );

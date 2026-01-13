@@ -513,7 +513,7 @@ export default function Resources() {
                 color: 'white',
               }}
             >
-              Ready to get started?
+              Unlock Resources and Protect Your Team
             </Typography>
             <Typography
               variant="body2"
@@ -521,7 +521,7 @@ export default function Resources() {
                 color: 'white',
               }}
             >
-              Purchase a license to unlock access to all resources and start implementing Konfydence in your organization today.
+              Get your license today access lesson plans , guides, simulations, and more. Start building the Pause Habit in minutes.
             </Typography>
           </Box>
         </Container>

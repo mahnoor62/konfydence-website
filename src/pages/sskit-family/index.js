@@ -471,68 +471,16 @@ export default function SKKPage() {
                 }}
               >
                 <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                  <Swiper
-                    modules={[Autoplay, Pagination]}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    autoplay={{
-                      delay: 3000,
-                      disableOnInteraction: false,
+                  <Box
+                    component="img"
+                    src="/images/physical.png"
+                    alt="Physical Scam Survival Kit"
+                    sx={{
+                      width: '100%',
+                      height: { xs: '250px', md: '300px' },
+                      objectFit: 'cover',
                     }}
-                    pagination={{ clickable: true }}
-                    style={{
-                      '--swiper-pagination-color': '#0B7897',
-                    }}
-                  >
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk6.jpeg"
-                        alt="Physical Scam Survival Kit"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk7.jpeg"
-                        alt="Scam Survival Kit Cards"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk8.jpeg"
-                        alt="Family Playing Scam Survival Kit"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/physical.png"
-                        alt="Physical Scam Survival Kit"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                  </Swiper>
+                  />
                 </Box>
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Typography
@@ -845,45 +793,17 @@ export default function SKKPage() {
                   BEST VALUE
                 </Box>
                 <Box sx={{ position: 'relative', overflow: 'hidden' }}>
-                  <Swiper
-                    modules={[Autoplay, Pagination]}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    autoplay={{
-                      delay: 3000,
-                      disableOnInteraction: false,
+                  <Box
+                    component="img"
+                    src="/images/full.png"
+                    alt="Full Bundle"
+                    sx={{
+                      width: '100%',
+                      height: { xs: '250px', md: '300px' },
+                      objectFit: 'cover',
                     }}
-                    pagination={{ clickable: true }}
-                    style={{
-                      '--swiper-pagination-color': '#0B7897',
-                    }}
-                  >
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/skk13.jpeg"
-                        alt="Full Bundle - Physical Kit + Digital"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/full.png"
-                        alt="Full Bundle"
-                        sx={{
-                          width: '100%',
-                          height: { xs: '250px', md: '300px' },
-                          objectFit: 'cover',
-                        }}
-                      />
-                    </SwiperSlide>
-                  </Swiper>
-            </Box>
+                  />
+                </Box>
                 <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                   <Typography
                     variant="h5"
