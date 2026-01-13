@@ -24,6 +24,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import DownloadIcon from '@mui/icons-material/Download';
 import EmailIcon from '@mui/icons-material/Email';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import IconButton from '@mui/material/IconButton';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -34,12 +36,12 @@ const resourceBundles = [
     resources: [
       'Konfydence-Family-Tech-Contract.pdf',
       'Family_SSK_Rules.pdf',
-      'KonfydencePermissionToPause.docx',
+      'Konfydence Permission To Pause.docx',
       '"Pause Before You Click" fridge magnet graphic (printable PDF)',
       '"Intelligence isn\'t your defense" pause bars graphic',
       'Decision Ladder ("breathe pause think respond")',
     ],
-    availability: 'Free',
+    // availability: 'Free',
     availabilityType: 'free',
   },
   {
@@ -47,12 +49,12 @@ const resourceBundles = [
     resources: [
       'School_Lesson_Plan.pdf',
       'School_Parent HACK Guide.pdf',
-      'SchoolClassroom_Pause_Posters.pdf',
+      'School Classroom_Pause_Posters.pdf',
       'The Classroom Digital Safety Agreement.docx',
       'School_Curriculum Alignment Map.pdf',
       'H.A.C.K. Framework poster (vintage & 4-panel versions)',
     ],
-    availability: 'Free ',
+    // availability: 'Free ',
     availabilityType: 'free-email',
   },
   {
@@ -60,36 +62,36 @@ const resourceBundles = [
     resources: [
       'School_Lesson_Plan.pdf',
       'Teacher_Classroom_Drill.docx',
-      'School Implementation Roadmap.pdf',
+      'School Implementation Road map.pdf',
       'Student_Organization_Safety_Toolkit.docx',
       'Konfydence_For_Schools.pdf',
       'Konfydence_For_Universities.pdf',
       '"5 Second Defense" graphics (uni & school versions)',
       'Hot/Cool Brain cartoon',
     ],
-    availability: 'Gated',
+    availability: 'Email Share',
     availabilityType: 'gated-email',
   },
   {
     bundleName: 'Gated Compliance & Audit Pack',
     resources: [
-      'NIS2_ISO_Alignment.pdf',
-      'BehavioralEvidenceTemplate.pdf',
+      'NIS2 ISO Alignment.pdf',
+      'Behavioral Evidence Template.pdf',
       'CoMaSi.docx',
-      'PilotProofofConceptAgreement.pdf',
+      'Pilot Proof of Concept Agreement.pdf',
       '"Your 5 Second Defense" flowchart',
       'H.A.C.K. detailed examples graphic',
     ],
-    availability: 'Gated',
+    availability: 'Email Share',
     availabilityType: 'gated-company',
   },
   {
     bundleName: 'Post-Demo/Pilot Pro Pack (Exclusive)',
     resources: [
-      'School_Behavioral Practice Log.pdf',
-      'SchoolBehavioralPractice.pdf',
-      'Konfydence Students_Teachers_Cards.docx (full scenarios)',
-      'KonfydenceUniversityAdoptionBrief.docx',
+      'School Behavioral Practice Log.pdf',
+      'School Behavioral Practice.pdf',
+      'Konfydence Students Teachers Cards.docx (full scenarios)',
+      'Konfydence University Adoption Brief.docx',
       'All premium graphics (Hot Brain, Limbic Hijack, full H.A.C.K. set)',
     ],
     availability: 'Only after demo/pilot',
@@ -98,8 +100,8 @@ const resourceBundles = [
   {
     bundleName: 'Ambassador Resource Pack',
     resources: [
-      'KonfydenceAmbassador.pdf',
-      'KonfydenceAmbassadorAgreement.pdf (post-approval)',
+      'Konfydence Ambassador.pdf',
+      'Konfydence Ambassador Agreement.pdf (post-approval)',
       'Shareable graphics pack (pause bars, H.A.C.K. posters, myth-buster)',
     ],
     availability: 'Free overview',
@@ -214,21 +216,165 @@ export default function FreeResources() {
                       </List>
                     </TableCell>
                     <TableCell sx={{ verticalAlign: 'top', py: 3 }}>
-                      <Chip
-                        label={bundle.availability}
-                        color={getAvailabilityColor(bundle.availabilityType)}
-                        size="small"
-                        icon={
-                          bundle.availabilityType === 'free' ? (
-                            <DownloadIcon fontSize="small" />
-                          ) : bundle.availabilityType.includes('email') ? (
-                            <EmailIcon fontSize="small" />
-                          ) : bundle.availabilityType === 'exclusive' ? (
-                            <LockIcon fontSize="small" />
-                          ) : null
-                        }
-                        sx={{ fontWeight: 500 }}
-                      />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <Chip
+                          label={bundle.availability}
+                          color={getAvailabilityColor(bundle.availabilityType)}
+                          size="small"
+                          icon={
+                            bundle.availabilityType === 'free' ? (
+                              <LockIcon fontSize="small" />
+                            ) : bundle.availabilityType === 'free-email' ? (
+                              <LockIcon fontSize="small" />
+                            ) : bundle.availabilityType.includes('email') || bundle.availabilityType === 'gated-company' ? (
+                              <EmailIcon fontSize="small" />
+                            ) : bundle.availabilityType === 'exclusive' ? (
+                              <LockIcon fontSize="small" />
+                            ) : bundle.availabilityType === 'ambassador' ? (
+                              <DownloadIcon fontSize="small" />
+                            ) : null
+                          }
+                          sx={{ fontWeight: 500, mb: bundle.bundleName === 'Gated Advanced Educator Toolkit' ? 1 : 0 }}
+                        />
+                        {bundle.bundleName === 'Gated Advanced Educator Toolkit' && (
+                          <List dense sx={{ py: 0, width: '100%' }}>
+                            {/* Empty items for first 4 resources */}
+                            {[0, 1, 2, 3].map((idx) => (
+                              <ListItem 
+                                key={`empty-${idx}`} 
+                                sx={{ 
+                                  py: 1.5, 
+                                  pl: 0,
+                                  pr: 0,
+                                  justifyContent: 'flex-end',
+                                  minHeight: 'auto',
+                                }}
+                              >
+                                <Box sx={{ width: '100%' }} />
+                              </ListItem>
+                            ))}
+                            {/* Icons for Konfydence_For_Schools.pdf (index 4) */}
+                            <ListItem 
+                              sx={{ 
+                                py: 0.5, 
+                                pl: 0,
+                                pr: 0,
+                                justifyContent: 'flex-end',
+                                minHeight: 'auto',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const link = document.createElement('a');
+                                    link.href = '/pdfs/Konfydence_For_Schools.pdf';
+                                    link.download = 'Konfydence_For_Schools.pdf';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                  }}
+                                  sx={{
+                                    color: '#FF9800',
+                                    padding: '4px',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    },
+                                  }}
+                                  title="Download Konfydence For Schools PDF"
+                                >
+                                  <DownloadIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    window.open('/pdfs/Konfydence_For_Schools.pdf', '_blank');
+                                  }}
+                                  sx={{
+                                    color: '#FF9800',
+                                    padding: '4px',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    },
+                                  }}
+                                  title="View Konfydence For Schools PDF"
+                                >
+                                  <OpenInNewIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            </ListItem>
+                            {/* Icons for Konfydence_For_Universities.pdf (index 5) */}
+                            <ListItem 
+                              sx={{ 
+                                py: 0.5, 
+                                pl: 0,
+                                pr: 0,
+                                justifyContent: 'flex-end',
+                                minHeight: 'auto',
+                              }}
+                            >
+                              <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    const link = document.createElement('a');
+                                    link.href = '/pdfs/Konfydence_For_Universities.pdf';
+                                    link.download = 'Konfydence_For_Universities.pdf';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                  }}
+                                  sx={{
+                                    color: '#FF9800',
+                                    padding: '4px',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    },
+                                  }}
+                                  title="Download Konfydence For Universities PDF"
+                                >
+                                  <DownloadIcon fontSize="small" />
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    window.open('/pdfs/Konfydence_For_Universities.pdf', '_blank');
+                                  }}
+                                  sx={{
+                                    color: '#FF9800',
+                                    padding: '4px',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(255, 152, 0, 0.1)',
+                                    },
+                                  }}
+                                  title="View Konfydence For Universities PDF"
+                                >
+                                  <OpenInNewIcon fontSize="small" />
+                                </IconButton>
+                              </Box>
+                            </ListItem>
+                            {/* Empty items for last 2 resources */}
+                            {[6, 7].map((idx) => (
+                              <ListItem 
+                                key={`empty-${idx}`} 
+                                sx={{ 
+                                  py: 0.5, 
+                                  pl: 0,
+                                  pr: 0,
+                                  justifyContent: 'flex-end',
+                                  minHeight: 'auto',
+                                }}
+                              >
+                                <Box sx={{ width: '100%' }} />
+                              </ListItem>
+                            ))}
+                          </List>
+                        )}
+                      </Box>
                     </TableCell>
                   </TableRow>
                 ))}
