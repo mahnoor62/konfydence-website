@@ -29,6 +29,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
 import axios from 'axios';
+import { Country, State, City } from 'country-state-city';
 import CloseIcon from '@mui/icons-material/Close';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
@@ -98,152 +99,97 @@ export default function CoMaSyPage() {
     }
   }, []);
 
-  // Fetch countries on component mount
+  // Fetch countries on component mount using npm package
   useEffect(() => {
-    const fetchCountries = async () => {
-      setLoadingCountries(true);
-      try {
-        const response = await axios.get('https://restcountries.com/v3.1/all', {
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-        const formattedCountries = response.data
-          .map(country => ({
-            name: country.name.common,
-            alpha2Code: country.cca2,
-            callingCodes: country.idd?.root ? [country.idd.root.replace('+', '') + (country.idd.suffixes?.[0] || '')] : [],
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(formattedCountries);
-      } catch (error) {
-        console.error('Error fetching countries:', error);
-        // Fallback to a static list of major countries
-        const fallbackCountries = [
-          { name: 'United States', alpha2Code: 'US', callingCodes: ['1'] },
-          { name: 'United Kingdom', alpha2Code: 'GB', callingCodes: ['44'] },
-          { name: 'Canada', alpha2Code: 'CA', callingCodes: ['1'] },
-          { name: 'Australia', alpha2Code: 'AU', callingCodes: ['61'] },
-          { name: 'Germany', alpha2Code: 'DE', callingCodes: ['49'] },
-          { name: 'France', alpha2Code: 'FR', callingCodes: ['33'] },
-          { name: 'India', alpha2Code: 'IN', callingCodes: ['91'] },
-          { name: 'Pakistan', alpha2Code: 'PK', callingCodes: ['92'] },
-        ];
-        setCountries(fallbackCountries);
-        setSnackbar({
-          open: true,
-          message: 'Using limited country list. Please check your internet connection.',
-          severity: 'warning',
-        });
-      } finally {
-        setLoadingCountries(false);
-      }
-    };
-    
-    fetchCountries();
+    setLoadingCountries(true);
+    try {
+      // Using country-state-city package
+      const allCountries = Country.getAllCountries();
+      const transformedCountries = allCountries
+        .map(country => ({
+          name: country.name,
+          alpha2Code: country.isoCode,
+          callingCodes: [country.phonecode] || [],
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setCountries(transformedCountries);
+    } catch (error) {
+      console.error('Error loading countries:', error);
+      setCountries([]);
+    } finally {
+      setLoadingCountries(false);
+    }
   }, []);
 
-  // Fetch states when country is selected
+  // Fetch states when country is selected using npm package
   useEffect(() => {
-    const fetchStates = async () => {
-      if (!formData.country) {
+    if (!formData.country) {
+      setStates([]);
+      setCities([]);
+      setFormData((prev) => ({ ...prev, state: '', city: '' }));
+      setSelectedCountryData(null);
+      return;
+    }
+
+    setLoadingStates(true);
+    try {
+      const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
+      if (countryCode) {
+        // Find selected country data for phone code
+        const countryData = countries.find(c => c.name === formData.country);
+        setSelectedCountryData(countryData || null);
+
+        // Using country-state-city package
+        const countryStates = State.getStatesOfCountry(countryCode);
+        const formattedStates = countryStates.map(state => ({
+          name: state.name,
+          isoCode: state.isoCode,
+          countryCode: state.countryCode,
+        }));
+        setStates(formattedStates);
+      } else {
         setStates([]);
-        setCities([]);
-        setFormData((prev) => ({ ...prev, state: '', city: '' }));
         setSelectedCountryData(null);
-        return;
       }
-
-      // Find selected country data for phone code
-      const countryData = countries.find(c => c.name === formData.country);
-      setSelectedCountryData(countryData || null);
-
-      setLoadingStates(true);
-      try {
-        const countryCode = countryData?.alpha2Code;
-        if (countryCode) {
-          const response = await axios.get(
-            `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/states.json`,
-            {
-              headers: {
-                'Accept': 'application/json',
-              },
-            }
-          );
-          const countryStates = response.data
-            .filter(state => state.country_code === countryCode)
-            .sort((a, b) => a.name.localeCompare(b.name));
-          setStates(countryStates);
-        } else {
-          setStates([]);
-        }
-      } catch (error) {
-        console.error('Error fetching states:', error);
-        setStates([]);
-      } finally {
-        setLoadingStates(false);
-      }
-    };
-
-    if (countries.length > 0) {
-      fetchStates();
+    } catch (error) {
+      console.error('Error loading states:', error);
+      setStates([]);
+    } finally {
+      setLoadingStates(false);
     }
   }, [formData.country, countries]);
 
-  // Fetch cities when state is selected
+  // Fetch cities when state is selected using npm package
   useEffect(() => {
-    const fetchCities = async () => {
-      if (!formData.state || !formData.country) {
-        setCities([]);
-        setFormData((prev) => ({ ...prev, city: '' }));
-        return;
-      }
+    if (!formData.state || !formData.country) {
+      setCities([]);
+      setFormData((prev) => ({ ...prev, city: '' }));
+      return;
+    }
 
-      setLoadingCities(true);
-      try {
-        const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
-        const selectedState = states.find(s => s.name === formData.state);
-        const stateCode = selectedState?.state_code || selectedState?.iso2;
-        
-        if (countryCode && stateCode) {
-          const response = await axios.get(
-            `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json`,
-            {
-              headers: {
-                'Accept': 'application/json',
-              },
-              timeout: 60000,
-              maxContentLength: 100 * 1024 * 1024,
-              maxBodyLength: 100 * 1024 * 1024,
-            }
-          );
-          
-          if (response.data && Array.isArray(response.data)) {
-            const stateCities = response.data
-              .filter(city => {
-                const matchesCountry = city.country_code === countryCode;
-                const matchesState = city.state_code === stateCode || 
-                                   city.state_code === selectedState?.iso2 ||
-                                   (selectedState?.id && city.state_id === selectedState.id);
-                return matchesCountry && matchesState;
-              })
-              .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            
-            setCities(stateCities);
-          }
-        } else {
-          setCities([]);
-        }
-      } catch (error) {
-        console.error('Error fetching cities:', error);
+    setLoadingCities(true);
+    try {
+      const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
+      const selectedState = states.find(s => s.name === formData.state);
+      const stateCode = selectedState?.isoCode;
+      
+      if (countryCode && stateCode) {
+        // Using country-state-city package
+        const stateCities = City.getCitiesOfState(countryCode, stateCode);
+        const formattedCities = stateCities.map(city => ({
+          name: city.name,
+          countryCode: city.countryCode,
+          stateCode: city.stateCode,
+        }));
+        setCities(formattedCities);
+      } else {
         setCities([]);
-      } finally {
-        setLoadingCities(false);
       }
-    };
-
-    if (formData.state && formData.country && countries.length > 0) {
-      fetchCities();
+    } catch (error) {
+      console.error('Error loading cities:', error);
+      setCities([]);
+    } finally {
+      setLoadingCities(false);
     }
   }, [formData.state, formData.country, countries, states]);
 
@@ -1652,7 +1598,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                           </InputAdornment>
                         ) : null,
                       }}
-                      placeholder={selectedCountryData?.callingCodes?.[0] ? `Enter number without +${selectedCountryData.callingCodes[0]}` : 'Enter phone number'}
+                      placeholder={selectedCountryData?.callingCodes?.[0] ? 'Enter phone number' : 'Enter phone number'}
                     />
                   </Grid>
                   

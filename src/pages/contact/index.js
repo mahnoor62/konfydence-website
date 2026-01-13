@@ -19,6 +19,7 @@ import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import axios from 'axios';
+import { Country, State, City } from 'country-state-city';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 if (!API_BASE_URL) {
@@ -64,188 +65,98 @@ export default function ContactPage() {
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
 
-  // Fetch countries on component mount
+  // Fetch countries on component mount using npm package
   useEffect(() => {
-    const fetchCountries = async () => {
-      setLoadingCountries(true);
-      try {
-        // Using REST Countries API - free and CORS enabled
-        const response = await axios.get('https://restcountries.com/v3.1/all?fields=name,cca2,cca3,idd,flags');
-        // Transform data to match our format
-        const transformedCountries = response.data
-          .map(country => ({
-            name: country.name.common,
-            alpha2Code: country.cca2,
-            alpha3Code: country.cca3,
-            callingCodes: country.idd?.root ? [country.idd.root + (country.idd.suffixes?.[0] || '')] : [],
-            flag: country.flags?.svg || country.flags?.png,
-          }))
-          .sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(transformedCountries);
-      } catch (error) {
-        console.error('Error fetching countries:', error);
-        // Fallback: Use a static list of major countries if API fails
-        const fallbackCountries = [
-          { name: 'United States', alpha2Code: 'US', alpha3Code: 'USA', callingCodes: ['1'] },
-          { name: 'United Kingdom', alpha2Code: 'GB', alpha3Code: 'GBR', callingCodes: ['44'] },
-          { name: 'Canada', alpha2Code: 'CA', alpha3Code: 'CAN', callingCodes: ['1'] },
-          { name: 'Australia', alpha2Code: 'AU', alpha3Code: 'AUS', callingCodes: ['61'] },
-          { name: 'Germany', alpha2Code: 'DE', alpha3Code: 'DEU', callingCodes: ['49'] },
-          { name: 'France', alpha2Code: 'FR', alpha3Code: 'FRA', callingCodes: ['33'] },
-          { name: 'India', alpha2Code: 'IN', alpha3Code: 'IND', callingCodes: ['91'] },
-          { name: 'China', alpha2Code: 'CN', alpha3Code: 'CHN', callingCodes: ['86'] },
-          { name: 'Japan', alpha2Code: 'JP', alpha3Code: 'JPN', callingCodes: ['81'] },
-          { name: 'Brazil', alpha2Code: 'BR', alpha3Code: 'BRA', callingCodes: ['55'] },
-        ].sort((a, b) => a.name.localeCompare(b.name));
-        setCountries(fallbackCountries);
-        setSnackbar({
-          open: true,
-          message: 'Using limited country list. Please check your internet connection.',
-          severity: 'warning',
-        });
-      } finally {
-        setLoadingCountries(false);
-      }
-    };
-    
-    fetchCountries();
+    setLoadingCountries(true);
+    try {
+      // Using country-state-city package
+      const allCountries = Country.getAllCountries();
+      const transformedCountries = allCountries
+        .map(country => ({
+          name: country.name,
+          alpha2Code: country.isoCode,
+          alpha3Code: country.isoCode3,
+          callingCodes: [country.phonecode] || [],
+        }))
+        .sort((a, b) => a.name.localeCompare(b.name));
+      setCountries(transformedCountries);
+    } catch (error) {
+      console.error('Error loading countries:', error);
+      setCountries([]);
+    } finally {
+      setLoadingCountries(false);
+    }
   }, []);
 
-  // Fetch states when country is selected
+  // Fetch states when country is selected using npm package
   useEffect(() => {
-    const fetchStates = async () => {
-      if (!formData.country) {
-        setStates([]);
-        setCities([]);
-        setFormData((prev) => ({ ...prev, state: '', city: '' }));
-        return;
-      }
+    if (!formData.country) {
+      setStates([]);
+      setCities([]);
+      setFormData((prev) => ({ ...prev, state: '', city: '' }));
+      setSelectedCountryData(null);
+      return;
+    }
 
-      setLoadingStates(true);
-      try {
-        // Use GitHub-based JSON file for states (CORS-friendly)
-        const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
-        if (countryCode) {
-          const response = await axios.get(
-            `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/states.json`,
-            {
-              headers: {
-                'Accept': 'application/json',
-              },
-            }
-          );
-          const countryStates = response.data
-            .filter(state => state.country_code === countryCode)
-            .sort((a, b) => a.name.localeCompare(b.name));
-          setStates(countryStates);
-          
-          // If no states found, allow manual entry
-          if (countryStates.length === 0) {
-            console.log(`No states found for country: ${formData.country}`);
-          }
-        } else {
-          setStates([]);
-        }
-      } catch (error) {
-        console.error('Error fetching states:', error);
-        // On error, allow manual entry by keeping states empty
-        setStates([]);
-      } finally {
-        setLoadingStates(false);
-      }
-    };
+    setLoadingStates(true);
+    try {
+      const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
+      if (countryCode) {
+        // Find selected country data for phone code
+        const countryData = countries.find(c => c.name === formData.country);
+        setSelectedCountryData(countryData || null);
 
-    if (countries.length > 0) {
-      fetchStates();
+        // Using country-state-city package
+        const countryStates = State.getStatesOfCountry(countryCode);
+        const formattedStates = countryStates.map(state => ({
+          name: state.name,
+          isoCode: state.isoCode,
+          countryCode: state.countryCode,
+        }));
+        setStates(formattedStates);
+      } else {
+        setStates([]);
+        setSelectedCountryData(null);
+      }
+    } catch (error) {
+      console.error('Error loading states:', error);
+      setStates([]);
+    } finally {
+      setLoadingStates(false);
     }
   }, [formData.country, countries]);
 
-  // Fetch cities when state is selected
+  // Fetch cities when state is selected using npm package
   useEffect(() => {
-    const fetchCities = async () => {
-      if (!formData.state || !formData.country) {
-        setCities([]);
-        setFormData((prev) => ({ ...prev, city: '' }));
-        return;
-      }
+    if (!formData.state || !formData.country) {
+      setCities([]);
+      setFormData((prev) => ({ ...prev, city: '' }));
+      return;
+    }
 
-      setLoadingCities(true);
-      try {
-        const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
-        const selectedState = states.find(s => s.name === formData.state);
-        const stateCode = selectedState?.state_code || selectedState?.iso2;
-        
-        console.log('Fetching cities for:', { country: formData.country, countryCode, state: formData.state, stateCode, selectedState });
-        
-        if (countryCode && stateCode) {
-          let stateCities = [];
-          
-          // Try using a different approach - use a smaller, filtered API
-          // Option 1: Try using a different GitHub repo with smaller files
-          try {
-            // Use a more reliable endpoint - fetch from a CDN that supports large files
-            const response = await axios.get(
-              `https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/cities.json`,
-              {
-                headers: {
-                  'Accept': 'application/json',
-                },
-                timeout: 60000, // 60 seconds for large file
-                maxContentLength: 100 * 1024 * 1024, // 100MB max
-                maxBodyLength: 100 * 1024 * 1024,
-              }
-            );
-            
-            if (response.data && Array.isArray(response.data)) {
-              // Filter cities by country and state
-              stateCities = response.data
-                .filter(city => {
-                  const matchesCountry = city.country_code === countryCode;
-                  const matchesState = city.state_code === stateCode || 
-                                     city.state_code === selectedState?.iso2 ||
-                                     (selectedState?.id && city.state_id === selectedState.id);
-                  return matchesCountry && matchesState;
-                })
-                .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-              
-              console.log(`Found ${stateCities.length} cities for ${formData.state}, ${formData.country}`);
-            }
-          } catch (apiError) {
-            console.log('Failed to fetch cities from API:', apiError.message);
-            console.log('Cities will be empty - user can type manually');
-            stateCities = [];
-          }
-          
-          // Transform cities to consistent format
-          const formattedCities = stateCities.map(city => ({
-            id: city.id || city.name,
-            name: city.name,
-            country_code: city.country_code,
-            state_code: city.state_code,
-          }));
-          
-          console.log(`Total cities found: ${formattedCities.length} for ${formData.state}, ${formData.country}`);
-          setCities(formattedCities);
-          
-          // If no cities found, allow manual entry
-          if (formattedCities.length === 0) {
-            console.log(`No cities found for state: ${formData.state}, country: ${formData.country} - user can type manually`);
-          }
-        } else {
-          console.log('Missing countryCode or stateCode:', { countryCode, stateCode });
-          setCities([]);
-        }
-      } catch (error) {
-        console.error('Error fetching cities:', error);
-        // On error, allow manual entry by keeping cities empty
+    setLoadingCities(true);
+    try {
+      const countryCode = countries.find(c => c.name === formData.country)?.alpha2Code;
+      const selectedState = states.find(s => s.name === formData.state);
+      const stateCode = selectedState?.isoCode;
+      
+      if (countryCode && stateCode) {
+        // Using country-state-city package
+        const stateCities = City.getCitiesOfState(countryCode, stateCode);
+        const formattedCities = stateCities.map(city => ({
+          name: city.name,
+          countryCode: city.countryCode,
+          stateCode: city.stateCode,
+        }));
+        setCities(formattedCities);
+      } else {
         setCities([]);
-      } finally {
-        setLoadingCities(false);
       }
-    };
-
-    if (formData.state && formData.country && countries.length > 0) {
-      fetchCities();
+    } catch (error) {
+      console.error('Error loading cities:', error);
+      setCities([]);
+    } finally {
+      setLoadingCities(false);
     }
   }, [formData.state, formData.country, countries, states]);
 
@@ -485,15 +396,15 @@ export default function ContactPage() {
           }
           // Add country code with single + (only if phoneNumber is not empty after cleaning)
           if (phoneNumber) {
-            phoneNumber = `${countryCode}${phoneNumber}`;
+            phoneNumber = `+${countryCode}${phoneNumber}`;
           } else {
-            phoneNumber = `${countryCode}`;
+            phoneNumber = `+${countryCode}`;
           }
         } else if (phoneNumber) {
-          // If no country code but phone has value, remove any existing + and add single +
+          // If no country code but phone has value, ensure it starts with +
           phoneNumber = phoneNumber.replace(/^\+/, ''); // Remove leading + if exists
           if (phoneNumber) {
-            phoneNumber = `${phoneNumber}`;
+            phoneNumber = `+${phoneNumber}`;
           }
         }
         payload.phone = phoneNumber;
@@ -1053,17 +964,22 @@ export default function ContactPage() {
                                   }}
                                   onBlur={handleBlur}
                                   error={!!errors.phone}
-                                  helperText={errors.phone || (selectedCountryData?.callingCodes?.[0] &&  `Country code: ${selectedCountryData.callingCodes[0]}` )}
+                                  helperText={errors.phone || (selectedCountryData?.callingCodes?.[0] ? `Country code: +${selectedCountryData.callingCodes[0]}` : 'Select a country to see phone code')}
                                   InputProps={{
                                     startAdornment: selectedCountryData?.callingCodes?.[0] ? (
                                       <InputAdornment position="start">
-                                        <Typography sx={{ color: 'text.secondary', fontWeight: 500 }}>
-                                          {selectedCountryData.callingCodes[0]}
+                                        <Typography sx={{ color: 'text.secondary', fontWeight: 500, fontSize: '1rem' }}>
+                                          +{selectedCountryData.callingCodes[0]}
                                         </Typography>
                                       </InputAdornment>
                                     ) : null,
                                   }}
                                   placeholder={selectedCountryData?.callingCodes?.[0] ? `Enter number` : 'Enter phone number'}
+                                  sx={{
+                                    '& .MuiInputBase-root': {
+                                      minWidth: '200px',
+                                    },
+                                  }}
                                 />
                               </Grid>
                               <Grid item xs={12} sm={6}>
