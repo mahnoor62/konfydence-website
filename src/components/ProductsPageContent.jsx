@@ -1,6 +1,6 @@
 'use client';
 
-import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab, Dialog, IconButton } from '@mui/material';
+import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Select, MenuItem, FormControl, InputLabel, Alert } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -84,6 +84,19 @@ export default function ProductsPageContent() {
   const [processingPurchase, setProcessingPurchase] = useState(false);
   const [schoolsDemoModalOpen, setSchoolsDemoModalOpen] = useState(false);
   const [businessesDemoModalOpen, setBusinessesDemoModalOpen] = useState(false);
+  const [customPackageRequestDialogOpen, setCustomPackageRequestDialogOpen] = useState(false);
+  const [requestForm, setRequestForm] = useState({
+    entityType: '',
+    organizationName: '',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
+    additionalNotes: '',
+    seatLimit: '',
+    customPricing: ''
+  });
+  const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [requestSnackbar, setRequestSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   const fetchProducts = useCallback(async (page, type, category, targetAudience) => {
     try {
@@ -978,7 +991,13 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                onClick={() => setBusinessesDemoModalOpen(true)}
+                                onClick={() => {
+                                  if (!user) {
+                                    router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                    return;
+                                  }
+                                  setCustomPackageRequestDialogOpen(true);
+                                }}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -2016,7 +2035,8 @@ export default function ProductsPageContent() {
         </Box>
       </Dialog>
 
-      {/* Businesses Demo Modal */}
+      {/* Businesses Demo Modal - Commented out, redirecting to packages page instead */}
+      {false && (
       <Dialog
         open={businessesDemoModalOpen}
         onClose={() => setBusinessesDemoModalOpen(false)}
@@ -2273,6 +2293,236 @@ export default function ProductsPageContent() {
           </Grid>
         </Box>
       </Dialog>
+      )}
+
+      {/* Custom Package Request Dialog */}
+      <Dialog 
+        open={customPackageRequestDialogOpen} 
+        onClose={() => {
+          setCustomPackageRequestDialogOpen(false);
+          setRequestForm({
+            entityType: '',
+            organizationName: '',
+            contactName: '',
+            contactEmail: '',
+            contactPhone: '',
+            additionalNotes: '',
+            seatLimit: '',
+            customPricing: ''
+          });
+        }} 
+        maxWidth="md" 
+        fullWidth
+      >
+        <DialogTitle>
+          Request Custom Package
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 2 }}>
+            <FormControl fullWidth required>
+              <InputLabel>Entity Type</InputLabel>
+              <Select
+                value={requestForm.entityType}
+                label="Entity Type"
+                onChange={(e) => setRequestForm({ ...requestForm, entityType: e.target.value })}
+              >
+                <MenuItem value="">Select Type</MenuItem>
+                <MenuItem value="organization">Organization</MenuItem>
+                <MenuItem value="institute">Institute</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              fullWidth
+              label="Organization Name *"
+              value={requestForm.organizationName}
+              onChange={(e) => setRequestForm({ ...requestForm, organizationName: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Contact Name *"
+              value={requestForm.contactName}
+              onChange={(e) => setRequestForm({ ...requestForm, contactName: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Email *"
+              type="email"
+              value={requestForm.contactEmail}
+              onChange={(e) => setRequestForm({ ...requestForm, contactEmail: e.target.value })}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Phone"
+              value={requestForm.contactPhone}
+              onChange={(e) => setRequestForm({ ...requestForm, contactPhone: e.target.value })}
+            />
+            <TextField
+              fullWidth
+              label="Number of Seats/Users"
+              type="number"
+              value={requestForm.seatLimit}
+              onChange={(e) => setRequestForm({ ...requestForm, seatLimit: e.target.value })}
+              helperText="How many users will need access?"
+            />
+            <TextField
+              fullWidth
+              label="Custom Pricing Requirements"
+              value={requestForm.customPricing}
+              onChange={(e) => setRequestForm({ ...requestForm, customPricing: e.target.value })}
+              multiline
+              rows={2}
+              helperText="Describe your pricing needs (e.g., annual contract, volume discount)"
+            />
+            <TextField
+              fullWidth
+              label="Additional Requirements"
+              value={requestForm.additionalNotes}
+              onChange={(e) => setRequestForm({ ...requestForm, additionalNotes: e.target.value })}
+              multiline
+              rows={4}
+              helperText="Tell us about any specific cards you'd like to add or remove, custom features, or other requirements"
+            />
+            <Alert severity="info">
+              After submitting this request, our team will review your requirements and contact you within 1-2 business days with a custom quote.
+            </Alert>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={() => {
+              setCustomPackageRequestDialogOpen(false);
+              setRequestForm({
+                entityType: '',
+                organizationName: '',
+                contactName: '',
+                contactEmail: '',
+                contactPhone: '',
+                additionalNotes: '',
+                seatLimit: '',
+                customPricing: ''
+              });
+            }} 
+            disabled={submittingRequest}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={async () => {
+              if (!requestForm.entityType || !requestForm.organizationName || !requestForm.contactName || !requestForm.contactEmail) {
+                setRequestSnackbar({
+                  open: true,
+                  message: 'Please fill in all required fields',
+                  severity: 'error'
+                });
+                return;
+              }
+
+              try {
+                setSubmittingRequest(true);
+                
+                let authHeaders = { ...NO_CACHE_HEADERS };
+                let token = null;
+                try {
+                  if (typeof window !== 'undefined') {
+                    token = localStorage.getItem('token') || sessionStorage.getItem('token');
+                  }
+                  if (token) {
+                    authHeaders.Authorization = `Bearer ${token}`;
+                  }
+                } catch (e) {
+                  console.log('No auth token available');
+                }
+                
+                const requestedModifications = {
+                  cardsToAdd: [],
+                  cardsToRemove: []
+                };
+                
+                if (requestForm.seatLimit && requestForm.seatLimit.toString().trim() !== '') {
+                  const seatLimitNum = parseInt(requestForm.seatLimit.toString().trim(), 10);
+                  if (!isNaN(seatLimitNum)) {
+                    requestedModifications.seatLimit = seatLimitNum;
+                  }
+                }
+                
+                requestedModifications.additionalNotes = requestForm.additionalNotes 
+                  ? String(requestForm.additionalNotes).trim() 
+                  : '';
+                
+                requestedModifications.customPricing = {
+                  notes: requestForm.customPricing 
+                    ? String(requestForm.customPricing).trim() 
+                    : '',
+                  currency: 'USD'
+                };
+                
+                const requestData = {
+                  entityType: requestForm.entityType || undefined,
+                  organizationName: requestForm.organizationName,
+                  contactName: requestForm.contactName,
+                  contactEmail: requestForm.contactEmail,
+                  contactPhone: requestForm.contactPhone || '',
+                  requestedModifications: requestedModifications
+                };
+
+                await axios.post(`${API_URL}/custom-package-requests`, requestData, {
+                  headers: authHeaders,
+                });
+
+                setRequestSnackbar({
+                  open: true,
+                  message: 'Custom package request submitted successfully! We will contact you soon.',
+                  severity: 'success'
+                });
+                setCustomPackageRequestDialogOpen(false);
+                setRequestForm({
+                  entityType: '',
+                  organizationName: '',
+                  contactName: '',
+                  contactEmail: '',
+                  contactPhone: '',
+                  additionalNotes: '',
+                  seatLimit: '',
+                  customPricing: ''
+                });
+              } catch (err) {
+                console.error('Error submitting request:', err);
+                setRequestSnackbar({
+                  open: true,
+                  message: err.response?.data?.error || 'Failed to submit request. Please try again.',
+                  severity: 'error'
+                });
+              } finally {
+                setSubmittingRequest(false);
+              }
+            }}
+            variant="contained"
+            disabled={submittingRequest}
+            sx={{ backgroundColor: '#0B7897', '&:hover': { backgroundColor: '#063C5E' } }}
+          >
+            {submittingRequest ? 'Submitting...' : 'Submit Request'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Request Snackbar */}
+      {requestSnackbar.open && (
+        <Alert
+          severity={requestSnackbar.severity}
+          onClose={() => setRequestSnackbar({ ...requestSnackbar, open: false })}
+          sx={{
+            position: 'fixed',
+            bottom: 20,
+            right: 20,
+            zIndex: 9999,
+          }}
+        >
+          {requestSnackbar.message}
+        </Alert>
+      )}
     </>
   );
 }
