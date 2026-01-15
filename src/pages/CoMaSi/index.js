@@ -563,8 +563,8 @@ export default function CoMaSyPage() {
               }}
             >
 Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
-            <Grid container spacing={6} alignItems="stretch">
-              <Grid item xs={12} md={6}>
+            <Grid container spacing={6} sx={{ alignItems: 'stretch' }}>
+              <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
                 <Typography
                   variant="body1"
                   sx={{
@@ -584,6 +584,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                     border: '2px solid #063C5E',
                     borderRadius: 2,
                     p: 3,
+                    flex: '1 1 auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    minHeight: 0,
                   }}
                 >
                   <Typography
@@ -718,43 +722,54 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      fontWeight: 600,
-                      mb: 1.5,
-                      color: '#063C5E',
-                      fontSize: { xs: '1rem', md: '1.1rem' },ml:2
-                    }}
-                  >
-                    Train to &quot;act faster&quot; by pausing first - The 5 Seconds Pause
-                  </Typography>
+              <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 1.5,
+                    color: '#063C5E',
+                    fontSize: { xs: '1rem', md: '1.1rem' },
+                  }}
+                >
+                  Train to &quot;act faster&quot; by pausing first - The 5 Seconds Pause
+                </Typography>
+                <Box
+                  sx={{
+                    width: '100%',
+                    flex: '1 1 auto',
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s ease',
+                    minHeight: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    '&:hover': {
+                      transform: 'scale(1.02)',
+                      '& img': {
+                        opacity: 0.9,
+                      },
+                    },
+                  }}
+                  onClick={() => {
+                    setSelectedImage('/images/comasi.png');
+                    setImageModalOpen(true);
+                  }}
+                >
                   <Box
                     component="img"
-                    src="/images/5SecondsDefense.jpg"
+                    src="/images/comasi.png"
                     alt="Five seconds is all it takes. No real request breaks if you wait."
                     sx={{
                       width: '100%',
-                      borderRadius: 2,
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                      mb: 2,
-                      flexGrow: 1,
+                      height: '100%',
                       objectFit: 'contain',
+                      display: 'block',
                     }}
                   />
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: '0.875rem', md: '1rem' },
-                      color: 'text.secondary',
-                      fontStyle: 'italic',
-                      textAlign: 'center',
-                    }}
-                  >
-                    No real request breaks if you wait 5 second
-                  </Typography>
                 </Box>
               </Grid>
             </Grid>

@@ -304,7 +304,7 @@ export default function BlogPageContent() {
                    <SwiperSlide>
                     <Box
                       component="img"
-                      src="/images/skk6.jpeg"
+                      src="/images/blog-image.jpeg"
                       alt="Classroom workshop"
                       sx={{
                         width: '100%',

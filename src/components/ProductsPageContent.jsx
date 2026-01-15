@@ -1418,7 +1418,7 @@ export default function ProductsPageContent() {
                     >
                       <Box
                         component="img"
-                        src="/images/hurry.JPG"
+                        src="/images/hurry.jpeg"
                         alt="Hurry visual"
                         sx={{
                           width: '100%',

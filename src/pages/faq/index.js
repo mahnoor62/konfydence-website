@@ -29,6 +29,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SearchIcon from '@mui/icons-material/Search';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import AmbassadorPopup from '@/components/AmbassadorPopup';
 
 const FAQ_CATEGORIES = [
   'General',
@@ -136,6 +137,7 @@ export default function FAQPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState(0);
   const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [ambassadorPopupOpen, setAmbassadorPopupOpen] = useState(false);
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded({ ...expanded, [panel]: isExpanded });
@@ -200,51 +202,68 @@ export default function FAQPage() {
       <Box sx={{ pt: { xs: 8, md: 10 }, backgroundColor: '#096888'}}>
         <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
           {/* First Row: Left Content, Right Image Carousel */}
-          <Grid container spacing={4} alignItems="center" sx={{ mb: 4 }}>
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="h1"
-                sx={{
-                  fontSize: { xs: '2rem', md: '2rem' },
-                  fontWeight: 700,
-                  mb: 2,
-                  color: '#FFFFFF',
-                  lineHeight: 1.2,
-                }}
-              >
-                Got Questions About Konfydence? We&apos;ve Got Answers.
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontSize: { xs: '1.1rem', md: '1.3rem' },
-                  fontWeight: 500,
-                  mb: 2,
-                  color: '#FFFFFF',
-                  lineHeight: 1.6,
-                }}
-              >
-                Everything you need to know about building real scam resilience—for families, schools, and teams.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  mb: 3,
-                  lineHeight: 1.7,
-                  color: 'rgba(255,255,255,0.9)',
-                }}
-              >
-                From how the 5-second pause works to pricing and science—find quick answers below. Still have questions? We&apos;re here to help.
-              </Typography>
-            </Grid>
-            <Grid item xs={12} md={6}>
+          <Grid container spacing={4} sx={{ alignItems: 'stretch', mb: 4 }}>
+            <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
               <Box
                 sx={{
+                  width: '100%',
+                  display: 'flex',
+                  // bgcolor:'red',
+                  height:{xs:'auto', md:400},
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography
+                  variant="h1"
+                  sx={{
+                    fontSize: { xs: '2rem', md: '2rem' },
+                    fontWeight: 700,
+                    mb: 3,
+                    color: '#FFFFFF',
+                    lineHeight: 1.2,
+                  }}
+                >
+                  Got Questions About Konfydence? We&apos;ve Got Answers.
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontSize: { xs: '1.1rem', md: '1.3rem' },
+                    fontWeight: 500,
+                    mb: 3,
+                    color: '#FFFFFF',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Everything you need to know about building real scam resilience—for families, schools, and teams.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    mb: 2,mt:2,
+                    lineHeight: 1.7,
+                    color: 'rgba(255,255,255,0.9)',
+                  }}
+                >
+                  From how the 5-second pause works to pricing and science—find quick answers below. Still have questions? We&apos;re here to help.
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+              <Box
+                sx={{
+                  // bgcolor:'red',
+                  height:{xs:'auto', md:400},
+                  width: '100%',
                   borderRadius: 3,
                   overflow: 'hidden',
-                  boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+                  // boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                   position: 'relative',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}
               >
                 <Box
@@ -252,8 +271,9 @@ export default function FAQPage() {
                   src="/images/5SecondsDefense2.jpg"
                   alt="5 Second Defense"
                   sx={{
-                    width: '100%',
-                    height: 'auto',
+                    width: '80%',
+                    // height: '100%',
+                    objectFit: 'contain',
                     display: 'block',
                     borderRadius: 3,
                   }}
@@ -555,6 +575,49 @@ export default function FAQPage() {
                                   </Link>
                                 )}
                               </>
+                            ) : faq.hasLink && faq.linkText ? (
+                              <>
+                                {faq.answer.replace(faq.linkText, '').trim()}{' '}
+                                {faq.linkUrl === '/contact' && faq.linkText === 'Apply here' ? (
+                                  <Typography
+                                    component="span"
+                                    onClick={() => setAmbassadorPopupOpen(true)}
+                                    sx={{
+                                      color: '#0B7897',
+                                      fontWeight: 600,
+                                      textDecoration: 'none',
+                                      cursor: 'pointer',
+                                      display: 'inline',
+                                      '&:hover': {
+                                        color: '#063C5E',
+                                        textDecoration: 'underline',
+                                      },
+                                    }}
+                                  >
+                                    {faq.linkText}
+                                  </Typography>
+                                ) : (
+                                  <Link
+                                    href={faq.linkUrl}
+                                    style={{
+                                      color: '#0B7897',
+                                      fontWeight: 600,
+                                      textDecoration: 'none',
+                                      cursor: 'pointer',
+                                    }}
+                                    onMouseEnter={(e) => {
+                                      e.target.style.color = '#063C5E';
+                                      e.target.style.textDecoration = 'underline';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.target.style.color = '#0B7897';
+                                      e.target.style.textDecoration = 'none';
+                                    }}
+                                  >
+                                    {faq.linkText}
+                                  </Link>
+                                )}
+                              </>
                             ) : (
                               faq.answer
                             )}
@@ -815,6 +878,12 @@ export default function FAQPage() {
           />
         </Box>
       </Modal>
+
+      {/* Ambassador Popup */}
+      <AmbassadorPopup
+        open={ambassadorPopupOpen}
+        onClose={() => setAmbassadorPopupOpen(false)}
+      />
 
       <Footer />
     </>

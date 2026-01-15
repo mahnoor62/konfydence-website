@@ -391,7 +391,7 @@ export default function SKKPage() {
                     fontWeight: 600,
                   }}
                 >
-                Americans reported over $12 billion in scam losses last year. Protect your family for less than a dinner out.
+Scammers win by rushing families to act fast. The SSK trains your family to act faster by pausing first.
             </Typography>
               </Box>
             </Grid>
@@ -932,6 +932,20 @@ export default function SKKPage() {
               </Card>
             </Grid>
           </Grid>
+          <Box sx={{ mt: 6, textAlign: 'center' }}>
+            <Typography
+              variant="body1"
+              sx={{
+                fontSize: { xs: '1rem', md: '1.125rem' },
+                lineHeight: 1.7,
+                color: '#063C5E',
+                maxWidth: '800px',
+                mx: 'auto',
+              }}
+            >
+              Scams cost American families over $12 billion last year mostly in moments of pressure. Konfydence is built for those moments.
+            </Typography>
+          </Box>
         </Container>
       </Box>
 

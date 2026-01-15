@@ -16,7 +16,11 @@ import {
   Paper,
   Tabs,
   Tab,
+  Dialog,
+  DialogContent,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 import 'swiper/css';
@@ -52,6 +56,7 @@ export default function EducationPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [activeTab, setActiveTab] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [imageModal, setImageModal] = useState({ open: false, src: '', alt: '' });
 
   useEffect(() => {
     setMounted(true);
@@ -278,7 +283,7 @@ export default function EducationPage() {
                     overflow: 'hidden',
                     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                     position: 'relative',
-                    animation: 'floatCard 4s ease-in-out infinite',
+                    // animation: 'floatCard 4s ease-in-out infinite',
                     transformOrigin: 'center',
                     filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
                     '@keyframes floatCard': {
@@ -306,7 +311,7 @@ export default function EducationPage() {
                       '--swiper-navigation-color': '#FFFFFF',
                     }}
                   >
-                    <SwiperSlide>
+                    {/* <SwiperSlide>
                       <Box
                         component="img"
                         src="/images/education1.jpg"
@@ -317,7 +322,7 @@ export default function EducationPage() {
                           display: 'block',
                         }}
                       />
-                    </SwiperSlide>
+                    </SwiperSlide> */}
                     <SwiperSlide>
                       <Box
                         component="img"
@@ -330,7 +335,7 @@ export default function EducationPage() {
                         }}
                       />
                     </SwiperSlide>
-                    <SwiperSlide>
+                    {/* <SwiperSlide>
                       <Box
                         component="img"
                         src="/images/education3.jpeg"
@@ -341,7 +346,7 @@ export default function EducationPage() {
                           display: 'block',
                         }}
                       />
-                    </SwiperSlide>
+                    </SwiperSlide> */}
                   </Swiper>
                 </Box>
               </Grid>
@@ -491,10 +496,17 @@ export default function EducationPage() {
                     component="img"
                     src="/images/full.JPG"
                     alt="The Scammer Mindset"
+                    onClick={() => setImageModal({ open: true, src: '/images/full.JPG', alt: 'The Scammer Mindset' })}
                     sx={{
                       width: '100%',
                       height: { xs: 'auto', md: '500px' },
                       objectFit: 'contain',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                        opacity: 0.9,
+                      },
                     }}
                   />
                 </Box>
@@ -513,16 +525,34 @@ export default function EducationPage() {
                     How to stop Them - The 5 Seconds Pause
                   </Typography>
                   <Box
-                    component="img"
-                    src="/images/5SecondsDefense.jpg"
-                    alt="YOUR 5 SECOND DEFENSE"
                     sx={{
                       width: '100%',
-                      // borderRadius: 5,
                       height: { xs: 'auto', md: '500px' },
-                      objectFit: 'contain',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s ease',
+                      '&:hover': {
+                        transform: 'scale(1.02)',
+                        '& img': {
+                          opacity: 0.9,
+                        },
+                      },
                     }}
-                  />
+                    onClick={() => setImageModal({ open: true, src: '/images/comasi.png', alt: 'YOUR 5 SECOND DEFENSE' })}
+                  >
+                    <Box
+                      component="img"
+                      src="/images/comasi.png"
+                      alt="YOUR 5 SECOND DEFENSE"
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
+                  </Box>
                 </Box>
               </Grid>
             </Grid>
@@ -1283,6 +1313,75 @@ export default function EducationPage() {
           </Container>
         </Box>
       </Box>
+
+      {/* Image Enlarge Modal */}
+      <Dialog
+        open={imageModal.open}
+        onClose={() => setImageModal({ open: false, src: '', alt: '' })}
+        maxWidth={false}
+        fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: 'transparent',
+            boxShadow: 'none',
+            maxWidth: '95vw',
+            maxHeight: '95vh',
+            margin: 0,
+            width: 'auto',
+            height: 'auto',
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          },
+        }}
+      >
+        <DialogContent
+          sx={{
+            p: 0,
+            position: 'relative',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+            overflow: 'hidden',
+          }}
+        >
+          <IconButton
+            onClick={() => setImageModal({ open: false, src: '', alt: '' })}
+            sx={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              color: 'white',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
+              zIndex: 1,
+              '&:hover': {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Box
+            component="img"
+            src={imageModal.src}
+            alt={imageModal.alt}
+            sx={{
+              maxWidth: '95vw',
+              maxHeight: '95vh',
+              width: 'auto',
+              height: 'auto',
+              objectFit: 'contain',
+              borderRadius: 2,
+              border: 'none',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </>
   );

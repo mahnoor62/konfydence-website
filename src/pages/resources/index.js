@@ -111,6 +111,12 @@ const resourceSections = [
         file: 'University_DEFEND YOUR DEGREE.pdf',
         description: 'A high-stakes guide designed for students to identify and neutralize sophisticated academic, tuition, and financial scams.',
       },
+      { 
+        display: 'Student_Organization_Safety_Toolkit.pdf', 
+        file: 'Student_Organization_Safety_Toolkit.pdf',
+        description: 'Free toolkit for student organizations to build digital safety awareness and protect members from scams and social engineering attacks.',
+        alwaysClickable: true,
+      },
     ],
   },
   {

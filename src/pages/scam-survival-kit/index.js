@@ -192,94 +192,46 @@ export default function SKKPage() {
       {/* Hero Section */}
       <Box 
         sx={{ 
-          pt: { xs: 8, md: 10 }, 
-          position: 'relative', 
+          background: 'linear-gradient(135deg, #063C5E 0%, #0B7897 100%)',
+          color: 'white',
+          pt: { xs: 12, md: 16 },
+          pb: { xs: 8, md: 12 },
+          position: 'relative',
           overflow: 'hidden',
-          height:'100%',
-          display:'flex',
-          flexDirection:'column',
-          justifyContent:'center',
-          alignItems:'center',
-          minHeight: { xs: '600px', md: '100vh' },
         }}
       >
-        {/* Background Image with Blur */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'url(/images/ssk-header.png)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            filter: 'blur(.5px)',
-            transform: 'scale(1.05)',
-            zIndex: 0,
-          }}
-        />
-        
-        {/* Overlay for better text readability */}
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(233, 244, 255, 0.75)',
-            zIndex: 1,
-          }}
-        />
-        
-        <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 }, position: 'relative', zIndex: 2 }}>
+        <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6} data-aos="fade-right">
               <Typography
                 variant="h5"
                 sx={{
-                  // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                   fontWeight: 700,
                   mb: 1,
-                  color: '#063C5E',
+                  color: 'white',
                   lineHeight: 1.1,
                 }}
               >
                 Anyone can fall for a scam. Smart people train first.
               </Typography>
               <Typography
-                variant="h6"
+                variant="body1"
                 sx={{
-                  // fontSize: { xs: '1.1rem', md: '1.4rem' },
                   fontWeight: 400,
-                  mb: 2,
-                  // color: '#0B7897',
+                  // mb: 2,
+                  color: 'white',
                   lineHeight: 1.6,
                 }}
               >
                 Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
               </Typography>
-              {/* <Typography
-                variant="h5"
-                sx={{
-                  fontSize: { xs: '1.1rem', md: '1.4rem' },
-                  fontWeight: 400,
-                  mb: 4,
-                  color: '#0B7897',
-                  lineHeight: 1.6,
-                }}
-              >
-                It fails because we&apos;re human.
-              </Typography> */}
               <Typography
                 variant="body1"
                 sx={{
                   fontSize: { xs: '1rem', md: '1.125rem' },
                   fontWeight: 400,
-                  mb: 2,
-                  color: 'black',
+                  // mb: 1,
+                  color: 'white',
                   lineHeight: 1.6,
                 }}
               >
@@ -298,7 +250,7 @@ export default function SKKPage() {
                     fontSize: { xs: '1.1rem', md: '1.25rem' },
                     fontWeight: 600,
                     mb: 2,
-                    color: '#063C5E',
+                    color: 'white',
                   }}
                 >
                   Claim Your Early Bird Discount
@@ -317,10 +269,11 @@ export default function SKKPage() {
                       error={!!emailError}
                       helperText={emailError}
                       sx={{
-                        // backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                        flex: { xs: '1 1 auto', md: '1 1 0' },
                         borderRadius: 2,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
                         '& .MuiOutlinedInput-root': {
-                          // backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                          backgroundColor: 'rgba(255, 255, 255, 0.95)',
                           '&:hover fieldset': {
                             borderColor: '#0B7897',
                           },
@@ -333,14 +286,17 @@ export default function SKKPage() {
                     <Button
                       type="submit"
                       variant="contained"
-                      fullWidth
                       disabled={loading}
                       sx={{
+                        flex: { xs: '1 1 auto', md: '0 0 auto' },
+                        minWidth: { xs: '100%', md: '200px' },
                         backgroundColor: '#FF725E',
                         color: 'white',
                         py: 1.5,
+                        px: { xs: 2, md: 4 },
                         fontWeight: 600,
                         fontSize: '1.1rem',
+                        whiteSpace: 'nowrap',
                         '&:hover': {
                           backgroundColor: '#e65a4a',
                         },
@@ -354,10 +310,11 @@ export default function SKKPage() {
                   variant="body2"
                   sx={{
                     mt: 2,
-                    color: 'black',
+                    color: 'white',
                     fontSize: '0.875rem',
                     textAlign: 'center',
                     mb: 1,
+                    opacity: 0.9,
                   }}
                 >
                 Designed by a finance & compliance expert with 16+ years of experience
@@ -365,9 +322,10 @@ export default function SKKPage() {
                 <Typography
                   variant="body2"
                   sx={{
-                    color: 'black',
+                    color: 'white',
                     fontSize: '0.875rem',
                     textAlign: 'center',
+                    opacity: 0.9,
                   }}
                 >
                   No spam. Early access + behind-the-scenes updates.
@@ -380,7 +338,7 @@ export default function SKKPage() {
               <Box
                 sx={{
                   width: '100%',
-                  height: { xs: '400px', md: '480px' },
+                  height: { xs: '400px', md: '500px' },
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
@@ -388,80 +346,165 @@ export default function SKKPage() {
               >
                 <Box
                   component="img"
-                  src="/images/ssk-header.png"
+                  src="/images/scam-survival-kit.png"
                   alt="Konfydence Scam Survival Kit"
                   sx={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: 3,
+                    objectFit: 'contain',
+                    borderRadius: 4,
+                    overflow: 'hidden',
                   }}
                 />
               </Box>
             </Grid>
-          </Grid>
-        </Container>
-      </Box>
 
-      {/* Key Benefits Section */}
-      <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#ffffff' }}>
-        <Container maxWidth="lg" data-aos="fade-up">
-          <Typography
-            variant="h2"
-            sx={{
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              fontWeight: 700,
-              mb: 4,
-              textAlign: 'center',
-              color: '#063C5E',
-            }}
-          >
-            Key Benefits
-          </Typography>
-          <Grid container spacing={3} alignItems="stretch">
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
-                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
-                  80 scenario-based cards (70 real-world scams + 10 Wild Cards)
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
-                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
-                  Point-based, skill-building gameplay
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
-                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
-                  Quick, simple rules, no technical knowledge
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
-                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
-                  Learn together, without risk or shame
-                </Typography>
-              </Box>
-            </Grid>
-            
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', height: '100%', border: '2px solid #063C5E', borderRadius: 2, p: 2 }}>
-                <CheckCircleIcon sx={{ fontSize: 28, color: '#0B7897', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                <Typography variant="body2" sx={{ color: '#063C5E', lineHeight: 1.6, fontSize: { xs: '0.9rem', md: '0.95rem' } }}>
-                  Designed in Germany & socially responsible
-                </Typography>
-              </Box>
+            {/* Key Benefits Row */}
+            <Grid item xs={12} sx={{ mt: 6 }}>
+              <Typography
+                variant="h4"
+                sx={{
+                  fontSize: { xs: '1.75rem', md: '2.25rem' },
+                  fontWeight: 700,
+                  mb: 4,
+                  textAlign: 'center',
+                  color: 'white',
+                }}
+                data-aos="fade-up"
+              >
+                Key Benefits
+              </Typography>
+              <Grid container spacing={3}>
+                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="100">
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      height: '100%', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 3,
+                      p: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
+                      90 scenario-based cards (80 real-world scams + 10 Wild Cards)
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="200">
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      height: '100%', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 3,
+                      p: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
+                      Point-based, skill-building gameplay
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="300">
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      height: '100%', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 3,
+                      p: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
+                      Quick, simple rules, no technical knowledge
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="400">
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      height: '100%', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 3,
+                      p: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
+                      Learn together, without risk or shame
+                    </Typography>
+                  </Box>
+                </Grid>
+                
+                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="500">
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start', 
+                      height: '100%', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      backdropFilter: 'blur(10px)',
+                      border: '2px solid rgba(255, 255, 255, 0.3)',
+                      borderRadius: 3,
+                      p: 3,
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
+                        transform: 'translateY(-5px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
+                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
+                      Designed in Germany & socially responsible
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
             </Grid>
           </Grid>
         </Container>
@@ -738,7 +781,7 @@ export default function SKKPage() {
               >
                 <Box
                   component="img"
-                  src="/images/family-laughing.webp"
+                  src="/images/ssk-header.png"
                   alt="Happy family playing cards, laughing, discussing"
                   sx={{
                     width: '100%',
@@ -784,35 +827,65 @@ export default function SKKPage() {
       {/* How Konfydence Works Section */}
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#ffffff' }}>
         <Container maxWidth="lg" data-aos="fade-up">
-          <Typography
-            variant="h2"
-            sx={{
-              fontSize: { xs: '2rem', md: '2.5rem' },
-              fontWeight: 700,
-              mb: 4,
-              textAlign: 'center',
-              color: '#063C5E',
-            }}
-          >
-            How Konfydence Works
-          </Typography>
-          
-          <Grid container spacing={1} alignItems="center" sx={{ mb: 6 }}>
-            <Grid item xs={12} md={5.5}>
+          <Grid container spacing={4} sx={{ alignItems: 'stretch', mb: 6 }}>
+            {/* Left Column - Text */}
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box
+                sx={{
+                  border: '2px solid #063C5E',
+                  borderRadius: 3,
+                  p: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  sx={{
+                    // fontSize: { xs: '2rem', md: '2.5rem' },
+                    fontWeight: 700,
+                    mb: 3,
+                    color: '#063C5E',
+                  }}
+                >
+                  How Konfydence Works
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    // fontSize: { xs: '1rem', md: '1.25rem' },
+                    fontWeight: 500,
+                    lineHeight: 1.7,
+                    color: 'text.secondary',
+                  }}
+                >
+                  Scammers rely on urgency to remove choice.
+                  <br />
+                  Konfydence works by restoring options — and the moment you see options, the pause has already begun.
+                </Typography>
+              </Box>
+            </Grid>
+            
+            {/* Middle Column - Slider */}
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
               <Box
                 sx={{
                   position: 'relative',
-                  borderRadius: 3,
-                  overflow: 'hidden',
                   display: 'flex',
                   justifyContent: 'center',
                   alignItems: 'center',
+                  height: { xs: '300px', md: '400px' },
+                  maxHeight: { xs: '300px', md: '400px' },
+                  minHeight: 0,
+                  backgroundColor: 'transparent',
                 }}
               >
                 <Box
                   sx={{
-                    maxWidth: { xs: '100%', md: '50%' },
                     width: '100%',
+                    height: '100%',
                   }}
                 >
                   <Swiper
@@ -826,56 +899,86 @@ export default function SKKPage() {
                     pagination={{ clickable: true }}
                     style={{
                       '--swiper-pagination-color': '#FF725E',
+                      height: '100%',
                     }}
                   >
                     <SwiperSlide>
                       <Box
-                        component="img"
-                        src="/images/1Bank.png"
-                        alt="Bank Email Scam Card"
                         sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '100%',
                           width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                          borderRadius: 2,
                         }}
-                      />
+                      >
+                        <Box
+                          component="img"
+                          src="/images/scam-bank-front-card.png"
+                          alt="Bank Email Scam Card"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            display: 'block',
+                            borderRadius: 3,
+                          }}
+                        />
+                      </Box>
                     </SwiperSlide>
                     <SwiperSlide>
                       <Box
-                        component="img"
-                        src="/images/1.png"
-                        alt="Bank Email Scam Card Back"
                         sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          height: '100%',
                           width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                          borderRadius: 2,
                         }}
-                      />
+                      >
+                        <Box
+                          component="img"
+                          src="/images/scam-bank-back-card.png"
+                          alt="Bank Email Scam Card Back"
+                          sx={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                            display: 'block',
+                            borderRadius: 3,
+                          }}
+                        />
+                      </Box>
                     </SwiperSlide>
                   </Swiper>
                 </Box>
               </Box>
             </Grid>
             
-            <Grid item xs={12} md={5.5}>
+            {/* Right Column - Image */}
+            <Grid item xs={12} md={4} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
               <Box
                 sx={{
                   position: 'relative',
-                  borderRadius: 3,
-                  overflow: 'hidden',
+                  height: { xs: '300px', md: '400px' },
+                  maxHeight: { xs: '300px', md: '400px' },
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 0,
+                  backgroundColor: 'transparent',
                 }}
               >
                 <Box
                   component="img"
-                  src="/images/5SecondsDefense2.jpg"
+                  src="/images/scam-pause-card.png"
                   alt="The 5-Second Pause"
                   sx={{
                     width: '100%',
-                    height: 'auto',
+                    height: '100%',
+                    objectFit: 'contain',
                     display: 'block',
-                    // borderRadius: 10,
+                    borderRadius: 3,
                   }}
                 />
               </Box>
@@ -1474,7 +1577,7 @@ export default function SKKPage() {
                 >
                   <Box
                     component="img"
-                    src="/images/decisionladder2.jpg"
+                    src="/images/ladder.jpeg"
                     alt="The Decision Ladder"
                     sx={{
                       // maxWidth: { xs: '100%', md: '90%' },
@@ -1483,6 +1586,12 @@ export default function SKKPage() {
                       height: '100%',
                       objectFit: 'contain',
                       // borderRadius: 10,
+                    }}
+                    onError={(e) => {
+                      // Try .jpeg if .png fails
+                      if (e.target.src.includes('.png')) {
+                        e.target.src = '/images/ssk-header.jpeg';
+                      }
                     }}
                   />
                 </Box>

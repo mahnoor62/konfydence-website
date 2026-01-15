@@ -18,16 +18,29 @@ import {
 } from '@mui/material';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import InstagramIcon from '@mui/icons-material/Instagram';
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import TwitterIcon from '@mui/icons-material/Twitter';
+import FacebookIcon from '@mui/icons-material/Facebook';
 import SendIcon from '@mui/icons-material/Send';
 import NextLink from 'next/link';
+import AmbassadorPopup from './AmbassadorPopup';
+
+// TikTok Icon Component
+const TikTokIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    width="24"
+    height="24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+  </svg>
+);
 
 const socialLinks = [
-  { icon: LinkedInIcon, href: 'https://linkedin.com', label: 'LinkedIn' },
-  { icon: InstagramIcon, href: 'https://instagram.com', label: 'Instagram' },
-  { icon: YouTubeIcon, href: 'https://youtube.com', label: 'YouTube' },
-  { icon: TwitterIcon, href: 'https://twitter.com', label: 'Twitter' },
+  { icon: LinkedInIcon, href: 'https://www.linkedin.com/in/tichi-mbanwie-854a231a7/', label: 'LinkedIn' },
+  { icon: FacebookIcon, href: 'https://www.facebook.com/profile.php?id=100017665030097', label: 'Facebook' },
+  { icon: InstagramIcon, href: 'https://www.instagram.com/konfydence_game', label: 'Instagram' },
+  // { icon: TikTokIcon, href: 'https://www.tiktok.com/@konfydence_', label: 'TikTok' },
 ];
 
 const trustBadges = [
@@ -38,13 +51,13 @@ const trustBadges = [
 
 const solutionsForHome = [
   { label: 'Family Scam Survival Kit', href: '/sskit-family' },
-  { label: 'Digital Extension', href: '/sskit-family' },
+  // { label: 'Digital Extension', href: '/sskit-family' },
   { label: 'Free Family Tech Contract', href: '/resources' },
 ];
 
 const solutionsForEducation = [
-  { label: 'Free Lesson Pack', href: '/resources' },
-  { label: 'Student Workshops', href: '/education' },
+  // { label: 'Education', href: '/education' },
+  // { label: 'Student Workshops', href: '/education' },
 ];
 
 const solutionsForWork = [
@@ -56,9 +69,9 @@ const resources = [
   { label: 'Blog (Latest Insights)', href: '/blog' },
   { label: 'FAQ', href: '/faq' },
   { label: 'The Limbic Hijack', href: '/pdfs/the-limbic-hijack.pdf', external: true },
-  { label: 'H.A.C.K. Framework Guide', href: '/resources' },
+  // { label: 'H.A.C.K. Framework Guide', href: '/resources' },
   { label: 'Ambassador Program', href: '/about' },
-  { label: 'Hub', href: '/resources' },
+  { label: 'Resource Hub', href: '/resources' },
 ];
 
 const company = [
@@ -75,6 +88,7 @@ export default function Footer() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
+  const [ambassadorPopupOpen, setAmbassadorPopupOpen] = useState(false);
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -191,47 +205,25 @@ export default function Footer() {
             </Typography>
             
             {/* Trust Badges */}
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              {/* First Row: 2 badges */}
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                {trustBadges.slice(0, 2).map((badge, index) => (
-                  <Chip
-                    key={badge}
-                    label={badge}
-                    size="small"
-                    sx={{
-                      backgroundColor: index % 2 === 0 ? '#008B8B' : 'white',
-                      color: index % 2 === 0 ? 'white' : 'black',
-                      fontSize: '0.65rem',
-                      height: 24,
-                      fontWeight: 600,
-                      '& .MuiChip-label': {
-                        px: 1,
-                      },
-                    }}
-                  />
-                ))}
-              </Box>
-              {/* Second Row: 1 badge */}
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                {trustBadges.slice(2, 3).map((badge) => (
-                  <Chip
-                    key={badge}
-                    label={badge}
-                    size="small"
-                    sx={{
-                      backgroundColor: '#008B8B',
-                      color: 'white',
-                      fontSize: '0.65rem',
-                      height: 24,
-                      fontWeight: 600,
-                      '& .MuiChip-label': {
-                        px: 1,
-                      },
-                    }}
-                  />
-                ))}
-              </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'row', gap: 0.75, flexWrap: 'wrap' }}>
+              {trustBadges.map((badge, index) => (
+                <Chip
+                  key={badge}
+                  label={badge}
+                  size="small"
+                  sx={{
+                    backgroundColor: index % 2 === 0 ? '#008B8B' : 'white',
+                    color: index % 2 === 0 ? 'white' : 'black',
+                    fontSize: '0.55rem',
+                    height: 20,
+                    fontWeight: 600,
+                    '& .MuiChip-label': {
+                      px: 0.75,
+                      py: 0,
+                    },
+                  }}
+                />
+              ))}
             </Box>
           </Grid>
 
@@ -270,9 +262,26 @@ export default function Footer() {
             </Box>
 
             <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600, opacity: 0.9, fontSize: '0.8rem' }}>
+              <Link
+                component={NextLink}
+                href="/education"
+                sx={{
+                  display: 'block',
+                  mb: 1,
+                  fontWeight: 600,
+                  opacity: 0.9,
+                  fontSize: '0.8rem',
+                  color: 'white',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    opacity: 1,
+                    textDecoration: 'underline',
+                  },
+                  transition: 'all 0.2s',
+                }}
+              >
                 For Education
-              </Typography>
+              </Link>
               <Stack spacing={1}>
                 {solutionsForEducation.map((item) => (
                   <Link
@@ -333,26 +342,55 @@ export default function Footer() {
             </Typography>
             <Stack spacing={1.5}>
               {resources.map((item) => (
-                <Link
-                  key={item.href}
-                  component={item.external ? 'a' : NextLink}
-                  href={item.href}
-                  target={item.external ? '_blank' : undefined}
-                  rel={item.external ? 'noopener noreferrer' : undefined}
-                  sx={{
-                    display: 'block',
-                    color: 'rgba(255,255,255,0.85)',
-                    fontSize: '0.85rem',
-                    textDecoration: 'none',
-                    '&:hover': {
-                      color: 'white',
-                      textDecoration: 'underline',
-                    },
-                    transition: 'all 0.2s',
-                  }}
-                >
-                  {item.label}
-                </Link>
+                item.label === 'Ambassador Program' ? (
+                  <Link
+                    key={item.href}
+                    component="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setAmbassadorPopupOpen(true);
+                    }}
+                    sx={{
+                      display: 'block',
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      textAlign: 'left',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      padding: 0,
+                      '&:hover': {
+                        color: 'white',
+                        textDecoration: 'underline',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <Link
+                    key={item.href}
+                    component={item.external ? 'a' : NextLink}
+                    href={item.href}
+                    target={item.external ? '_blank' : undefined}
+                    rel={item.external ? 'noopener noreferrer' : undefined}
+                    sx={{
+                      display: 'block',
+                      color: 'rgba(255,255,255,0.85)',
+                      fontSize: '0.85rem',
+                      textDecoration: 'none',
+                      '&:hover': {
+                        color: 'white',
+                        textDecoration: 'underline',
+                      },
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                )
               ))}
             </Stack>
           </Grid>
@@ -578,6 +616,12 @@ export default function Footer() {
           {successMessage || errorMessage}
         </Alert>
       </Snackbar>
+
+      {/* Ambassador Popup */}
+      <AmbassadorPopup
+        open={ambassadorPopupOpen}
+        onClose={() => setAmbassadorPopupOpen(false)}
+      />
     </Box>
   );
 }
