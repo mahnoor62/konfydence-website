@@ -147,11 +147,13 @@ const resourceSections = [
         display: 'Family_SSK_Rules.pdf', 
         file: 'families/Family_SSK_Rules.pdf',
         description: 'Family-friendly Scam Survival Kit rules and guidelines to implement digital safety practices at home.',
+        alwaysClickable: true,
       },
       { 
         display: 'Konfydence-Family-Tech-Contract.pdf', 
         file: 'families/Konfydence-Family-Tech-Contract.pdf',
         description: 'A no-blame agreement to start open conversations about online safety. Builds trust, sets boundaries, and reinforces the pause habit.',
+        alwaysClickable: true,
       },
     ],
   },
