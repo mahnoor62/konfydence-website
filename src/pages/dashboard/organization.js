@@ -3213,8 +3213,10 @@ export default function OrganizationDashboardPage() {
                                           pkg.packageId?.expiryDate
                                         );
                                         const now = new Date();
-                                        const diffTime = endDate - now;
-                                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                                        // Set both dates to midnight UTC for accurate day calculation
+                                        const endDateUTC = Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate());
+                                        const nowUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+                                        const diffDays = Math.floor((endDateUTC - nowUTC) / (1000 * 60 * 60 * 24));
                                         if (diffDays < 0) return '⚠️ Expired';
                                         if (diffDays === 0) return '⚠️ Expires today';
                                         if (diffDays === 1) return '⚠️ Expires tomorrow';
