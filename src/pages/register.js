@@ -297,7 +297,7 @@ export default function RegisterPage() {
         setPasswordStrength({ strength: 0, label: '', color: '#e0e0e0', requirements: {} });
         
         // Always show success message to check email
-        const message = 'Registration successful! Please check your email to verify it.';
+        const message = 'Registration successful! Please check your mailbox to verify your email..';
         
         setSnackbar({
           open: true,

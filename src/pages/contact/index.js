@@ -528,7 +528,7 @@ export default function ContactPage() {
                   mb: 2,
                 }}
               >
-                Have questions about HACKs, training, or partnerships?
+                Thanks your request is in good hands.
               </Typography>
               {/* <Typography
                 variant="body1"
@@ -628,7 +628,7 @@ export default function ContactPage() {
                     <Grid item xs={12}>
                       <TextField
                         fullWidth
-                        label="Organization / School / Company"
+                        label="Organization / School / Business"
                         name="organization"
                         value={formData.organization}
                         onChange={handleChange}
@@ -687,7 +687,7 @@ export default function ContactPage() {
                           },
                         }}
                       >
-                        <MenuItem 
+                        {/* <MenuItem 
                           value="scam-survival-kit"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
@@ -704,13 +704,13 @@ export default function ContactPage() {
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           CoMaSi (Companies & Compliance)
-                        </MenuItem>
-                        <MenuItem 
+                        </MenuItem> */}
+                        {/* <MenuItem 
                           value="demo-families"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Demo for families
-                        </MenuItem>
+                        </MenuItem> */}
                         <MenuItem 
                           value="demo-schools"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
@@ -729,24 +729,24 @@ export default function ContactPage() {
                         >
                           NIS2 / Audit Readiness
                         </MenuItem> */}
-                        <MenuItem 
+                        {/* <MenuItem 
                           value="partnerships"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Partnerships / Ambassadors
-                        </MenuItem>
-                        <MenuItem 
+                        </MenuItem> */}
+                        {/* <MenuItem 
                           value="media-press"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Media / Press
-                        </MenuItem>
-                        <MenuItem 
+                        </MenuItem> */}
+                        {/* <MenuItem 
                           value="other"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Other
-                        </MenuItem>
+                        </MenuItem> */}
                       </TextField>
                     </Grid>
                     <Grid item xs={12}>
