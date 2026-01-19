@@ -186,7 +186,7 @@
 
 /* Landing Screen */
 .logoContainer {
-  margin-bottom: 3rem;
+  margin-bottom: 1rem;
   animation: fadeInDown 0.8s ease;
 }
 
@@ -3430,7 +3430,7 @@
   }
 
   .logoContainer {
-    margin-bottom: 2rem;
+    margin-bottom: 0.75rem;
   }
 
   .logoPlaceholder {
@@ -3816,7 +3816,7 @@
   }
 
   .logoContainer {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .logoPlaceholder {
