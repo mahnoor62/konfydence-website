@@ -475,7 +475,8 @@ export default function PaymentSuccessPage() {
                         {new Date(transaction.createdAt).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    {transaction.contractPeriod?.endDate && (
+                    {/* Hide Expire Date for physical products */}
+                    {transaction.contractPeriod?.endDate && transaction.packageType !== 'physical' && (
                       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
                           Expire Date:
