@@ -191,9 +191,9 @@
 }
 
 .logoPlaceholder {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
   font-weight: 700;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.1em;
   color: #000B3D;
   text-shadow: none;
 }
@@ -203,7 +203,7 @@
 }
 
 .landingTitle {
-  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-size: clamp(1.1rem, 2.8vw, 1.5rem);
   font-weight: 700;
   margin-bottom: 1rem;
   color: #0F1F2B;
@@ -211,7 +211,7 @@
 }
 
 .landingDescription {
-  font-size: clamp(1rem, 2.5vw, 1.25rem);
+  font-size: clamp(0.85rem, 2vw, 1rem);
   color: #4F6272;
   margin-bottom: 3rem;
   max-width: 600px;
@@ -3434,16 +3434,16 @@
   }
 
   .logoPlaceholder {
-    font-size: clamp(1.8rem, 6vw, 2.5rem);
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
   }
 
   .landingTitle {
-    font-size: clamp(1.5rem, 5vw, 2rem);
+    font-size: clamp(0.95rem, 3vw, 1.3rem);
     margin-bottom: 0.75rem;
   }
 
   .landingDescription {
-    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    font-size: clamp(0.8rem, 2vw, 0.95rem);
     margin-bottom: 2rem;
   }
 
@@ -3820,16 +3820,16 @@
   }
 
   .logoPlaceholder {
-    font-size: clamp(1.5rem, 7vw, 2rem);
+    font-size: clamp(0.75rem, 3.5vw, 1rem);
   }
 
   .landingTitle {
-    font-size: clamp(1.3rem, 6vw, 1.8rem);
+    font-size: clamp(0.85rem, 3.5vw, 1.1rem);
     margin-bottom: 0.5rem;
   }
 
   .landingDescription {
-    font-size: clamp(0.9rem, 3vw, 1rem);
+    font-size: clamp(0.7rem, 2.5vw, 0.85rem);
     margin-bottom: 1.5rem;
   }
 

@@ -2918,7 +2918,7 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.logoContainer}>
-                <div className={styles.logoPlaceholder}>KONFYDENCE</div>
+                <div className={styles.logoPlaceholder} style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>KONFYDENCE</div>
               </div>
               <div className={styles.landingContent}>
                 <h1 className={styles.landingTitle}>Test Your Digital Safety Skills</h1>
@@ -2976,11 +2976,11 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.logoContainer}>
-                <div className={styles.logoPlaceholder}>KONFYDENCE</div>
+                <div className={styles.logoPlaceholder} style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>KONFYDENCE</div>
               </div>
               <div className={styles.landingContent}>
-                <h1 className={styles.landingTitle}>Test Your Digital Safety Skills</h1>
-                <p className={styles.landingDescription}>
+                <h1 className={styles.landingTitle} style={{ fontSize: 'clamp(2rem, 5vw, 3rem)' }}>Test Your Digital Safety Skills</h1>
+                <p className={styles.landingDescription} >
                   Navigate through 30 quick scenarios and learn how to stay safe online
                 </p>
                 <div className={styles.buttonGroup}>
