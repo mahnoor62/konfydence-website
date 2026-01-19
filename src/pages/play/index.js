@@ -3154,10 +3154,10 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.logoContainer} data-aos="zoom-in" data-aos-delay="100">
-                <div className={styles.logoPlaceholder}>KONFYDENCE - 90+ real life scenarios</div>
+                <div className={styles.landingTitle}>KONFYDENCE - 90+ real life scenarios</div>
               </div>
               <div className={styles.landingContent} data-aos="zoom-in" data-aos-delay="200">
-                <h1 className={styles.landingTitle}>Strengthen Your Digital Safety Skills</h1>
+                <h1 className={styles.logoPlaceholder}>Strengthen Your Digital Safety Skills</h1>
                 <p className={styles.landingDescription}>
                   Experience the pause. Practice &ldquo;H.A.C.K&rdquo; calmly and confidently.
                 </p>
