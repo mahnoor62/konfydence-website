@@ -687,7 +687,7 @@ export default function ContactPage() {
                           },
                         }}
                       >
-                        {/* <MenuItem 
+                        <MenuItem 
                           value="scam-survival-kit"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
@@ -704,7 +704,7 @@ export default function ContactPage() {
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           CoMaSi (Companies & Compliance)
-                        </MenuItem> */}
+                        </MenuItem>
                         {/* <MenuItem 
                           value="demo-families"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
@@ -741,12 +741,12 @@ export default function ContactPage() {
                         >
                           Media / Press
                         </MenuItem> */}
-                        {/* <MenuItem 
+                        <MenuItem 
                           value="other"
                           sx={{ fontFamily: '"Poppins", sans-serif !important' }}
                         >
                           Other
-                        </MenuItem> */}
+                        </MenuItem>
                       </TextField>
                     </Grid>
                     <Grid item xs={12}>

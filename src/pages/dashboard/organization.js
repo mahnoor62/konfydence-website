@@ -2267,17 +2267,48 @@ export default function OrganizationDashboardPage() {
     // Don't resume demo progress
     if (gameProgress.isDemo === true) return null;
     
-    // No progress yet - start from level 1
-    if (!gameProgress.totalLevelsPlayed || gameProgress.totalLevelsPlayed === 0) {
-      return null; // Show "Play Game" not "Resume Game"
+    // Check each level to find the first incomplete one
+    // Level 1 check
+    if (!gameProgress.level1 || gameProgress.level1.length === 0) {
+      // Level 1 not started, no resume needed
+      return null;
     }
     
-    // Use totalLevelsPlayed to determine next level
-    // If completed 1 level, resume from level 2
-    // If completed 2 levels, resume from level 3
-    // If completed 3 levels, return null (all done)
-    const nextLevel = gameProgress.totalLevelsPlayed + 1;
-    return nextLevel <= 3 ? nextLevel : null;
+    // Check if level 1 is completed
+    const level1Stats = gameProgress.level1Stats || {};
+    if (!level1Stats.completedAt) {
+      // Level 1 started but not completed
+      return 1;
+    }
+    
+    // Level 1 completed, check level 2
+    if (!gameProgress.level2 || gameProgress.level2.length === 0) {
+      // Level 2 not started, resume from level 2
+      return 2;
+    }
+    
+    // Check if level 2 is completed
+    const level2Stats = gameProgress.level2Stats || {};
+    if (!level2Stats.completedAt) {
+      // Level 2 started but not completed
+      return 2;
+    }
+    
+    // Level 2 completed, check level 3
+    if (!gameProgress.level3 || gameProgress.level3.length === 0) {
+      // Level 3 not started, resume from level 3
+      return 3;
+    }
+    
+    // Check if level 3 is completed
+    const level3Stats = gameProgress.level3Stats || {};
+    if (!level3Stats.completedAt) {
+      // Level 3 started but not completed
+      return 3;
+    }
+    
+    // All levels completed
+    return null;
   };
   
   const resumeLevel = getResumeLevel();
@@ -2285,8 +2316,7 @@ export default function OrganizationDashboardPage() {
   // Check if user has incomplete game progress (has started but not completed all 3 levels)
   const hasIncompleteProgress = hasPurchasedPackages && 
                                 gameProgress && 
-                                gameProgress.totalLevelsPlayed > 0 && 
-                                gameProgress.totalLevelsPlayed < 3 && 
+                                resumeLevel !== null && 
                                 gameProgress.isDemo !== true;
 
   return (
