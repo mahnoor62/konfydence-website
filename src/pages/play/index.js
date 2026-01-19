@@ -3264,6 +3264,7 @@ export default function GamePage() {
           </div>
         )}
 
+
         {/* How to Play Screen */}
         {howToPlayScreen && gameState === 'landing' && (
           <div className={`${styles.screen} ${styles.active} ${styles.howToPlayScreen}`}>
