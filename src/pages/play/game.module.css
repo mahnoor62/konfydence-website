@@ -171,12 +171,12 @@
 
 /* Content container for level selection screen */
 .levelSelectScreen .contentContainer {
-  height: 100%;
-  min-height: 100vh;
-  max-height: 100vh;
+  height: auto;
+  min-height: auto;
+  max-height: none;
   justify-content: center;
   align-items: center;
-  overflow-y: hidden !important;
+  overflow-y: visible;
   overflow-x: hidden;
   padding: 2rem 1rem;
   display: flex;
@@ -363,6 +363,8 @@
   }
   
   .howToPlayScreen .screenTitle {
+    /* height:100%; */
+    /* min-height: 100vh; */
     margin-top: 1rem !important;
     margin-bottom: 1rem;
   }
@@ -379,15 +381,16 @@
 
 /* How to Play Screen - Same as landing screen structure */
 .howToPlayScreen {
+  width: 100%;
   min-height: 100vh;
   height: auto;
   margin-top: 100px;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: visible;
+  padding-bottom: 3rem;
 }
 
 /* Main content area - Same structure as landing screen */
@@ -395,16 +398,18 @@
   position: relative;
   z-index: 2;
   width: 100%;
+  max-width: 100%;
   text-align: center;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: auto;
-  overflow: visible;
   height: auto;
-  padding: 2rem 1rem;
+  overflow: visible;
+  padding: 1rem 1rem;
+  padding-bottom: 3rem;
 }
 
 /* Got It button spacing */
@@ -3048,15 +3053,412 @@
   }
 }
 
+/* Main Title - HOW TO PLAY */
+.mainTitle {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0F1F2B;
+  text-align: center;
+  margin: 1rem auto 2rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  position: relative;
+  padding-bottom: 1rem;
+}
+
+.mainTitle::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, #0B7897 0%, #FF725E 100%);
+  border-radius: 2px;
+}
+
+/* Core Problems Section */
+.coreProblemsSection {
+  width: 100%;
+  max-width: calc(1100px - 4rem);
+  margin: 1.5rem auto 3rem;
+  padding: 2.5rem 2rem;
+  background: linear-gradient(135deg, rgba(11, 120, 151, 0.08) 0%, rgba(11, 120, 151, 0.03) 100%);
+  border-radius: 20px;
+  border: 2px solid rgba(11, 120, 151, 0.15);
+  box-shadow: 0 8px 32px rgba(11, 120, 151, 0.1);
+}
+
+.coreProblemsTitle {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0B7897;
+  text-align: center;
+  margin: 0 0 2rem 0;
+  line-height: 1.3;
+}
+
+.coreProblemsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.problemCard {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.problemCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  border-color: rgba(11, 120, 151, 0.2);
+}
+
+.problemIcon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.problemText {
+  font-size: 1rem;
+  color: #5A6C7D;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.problemText strong {
+  color: #0F1F2B;
+  font-weight: 600;
+}
+
+.solutionText {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #0F1F2B;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(11, 120, 151, 0.1) 0%, rgba(11, 120, 151, 0.05) 100%);
+  border-radius: 12px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.solutionText strong {
+  color: #0B7897;
+  font-weight: 700;
+}
+
+.highlight {
+  color: #0B7897;
+  font-weight: 700;
+  background: linear-gradient(135deg, rgba(11, 120, 151, 0.15) 0%, rgba(11, 120, 151, 0.05) 100%);
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+}
+
+/* Training Steps and Image - Side by Side Layout */
+.trainingStepsGrid {
+  width: 100%;
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 2.5rem;
+  align-items: stretch;
+}
+
+.trainingColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-height: 600px;
+  height: 100%;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0.4) 100%);
+  border-radius: 20px;
+  border: 2px solid rgba(11, 120, 151, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.trainingStep {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 11, 61, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.trainingStep:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-color: rgba(11, 120, 151, 0.3);
+}
+
+.stepNumber {
+  flex-shrink: 0;
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0B7897 0%, #095F7A 100%);
+  color: white;
+  font-size: 1.4rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(11, 120, 151, 0.3);
+}
+
+.stepContent {
+  flex: 1;
+  text-align: left;
+}
+
+.stepTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0F1F2B;
+  margin: 0 0 0.5rem 0;
+  line-height: 1.3;
+}
+
+.stepDescription {
+  font-size: 0.95rem;
+  color: #5A6C7D;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Bank Card Container - Right Side Column */
+.bankCardContainer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  position: sticky;
+  top: 2rem;
+  min-height: 600px;
+  height: 100%;
+  /* background: transparent; */
+}
+
+.bankCardImage {
+  width: 100%;
+  max-width: 100%;
+  max-height: 600px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 20px;
+  /* box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); */
+  transition: all 0.3s ease;
+  border: none;
+}
+
+/* .bankCardImage:hover {
+  transform: translateY(-4px);
+  /* box-shadow: 0 10px 35px rgba(0, 0, 0, 0.2); */
+/* }  */
+
+/* Responsive Styles for Training Steps */
+@media (max-width: 1024px) {
+  .coreProblemsSection {
+    padding: 2rem 1.5rem;
+    margin: 1.5rem auto 2.5rem;
+  }
+  
+  .coreProblemsTitle {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .coreProblemsGrid {
+    gap: 1.25rem;
+  }
+  
+  .problemCard {
+    padding: 1.25rem;
+  }
+  
+  .problemIcon {
+    font-size: 1.3rem;
+  }
+  
+  .problemText {
+    font-size: 0.95rem;
+  }
+  
+  .solutionText {
+    font-size: 1.1rem;
+    padding: 1.25rem;
+  }
+
+  .trainingStepsGrid {
+    grid-template-columns: 1fr;
+    padding: 0 1.5rem;
+    gap: 2rem;
+  }
+  
+  .trainingColumn {
+    gap: 1.5rem;
+    min-height: auto;
+    height: auto;
+    padding: 1.5rem;
+  }
+  
+  .trainingStep {
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  
+  .stepNumber {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+  
+  .stepTitle {
+    font-size: 1.3rem;
+  }
+  
+  .stepDescription {
+    font-size: 1rem;
+  }
+  
+  .bankCardContainer {
+    position: relative;
+    min-height: auto;
+    height: auto;
+    padding: 1.5rem;
+  }
+  
+  .bankCardImage {
+    max-height: 500px;
+  }
+}
+
 @media (max-width: 768px) {
+  .mainTitle {
+    font-size: 1.8rem;
+    margin: 0.5rem auto 1.5rem;
+    margin-top: 2rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .mainTitle::after {
+    width: 80px;
+    height: 3px;
+  }
+
+  .coreProblemsSection {
+    padding: 1.5rem 1rem;
+    margin: 1rem auto 1.5rem;
+    border-radius: 16px;
+  }
+  
+  .coreProblemsTitle {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .coreProblemsGrid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  
+  .problemCard {
+    padding: 0.875rem;
+  }
+  
+  .problemIcon {
+    font-size: 1.2rem;
+  }
+  
+  .problemText {
+    font-size: 0.85rem;
+  }
+  
+  .solutionText {
+    font-size: 0.95rem;
+    padding: 0.875rem;
+  }
+
+  .trainingStepsGrid {
+    grid-template-columns: 1fr;
+    padding: 0 1rem;
+    gap: 1rem;
+    margin: 1rem auto;
+  }
+  
+  .trainingColumn {
+    gap: 1rem;
+    min-height: auto;
+    height: auto;
+    padding: 1.25rem;
+  }
+  
+  .trainingStep {
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+  }
+  
+  .stepNumber {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .stepTitle {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .stepDescription {
+    font-size: 0.9rem;
+  }
+  
+  .bankCardContainer {
+    padding: 1rem;
+    margin: 1rem auto;
+    max-width: 100%;
+    min-height: auto;
+    height: auto;
+    position: relative;
+  }
+  
+  .bankCardImage {
+    max-width: 100%;
+    max-height: 450px;
+  }
+
   .howToPlayScreen {
     min-height: 100vh;
-    height: auto;
+    height: 100%;
     padding: 0;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
     overflow-y: auto;
     overflow-x: hidden;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
+    margin-top: 0;
   }
   
   .howToPlayScreen .contentContainer {
@@ -3073,17 +3475,18 @@
   }
   
   .howToPlayScreen .screenTitle {
-    margin-top: 1rem !important;
+    margin-top: 0.5rem !important;
     margin-bottom: 1rem;
+    font-size: 1.4rem;
   }
   
   .howToPlayScreen .screenTitle[style*="marginTop"] {
-    margin-top: 1rem !important;
+    margin-top: 0.5rem !important;
   }
   
   .howToPlayScreen .btnPrimary {
     margin-top: 1.5rem;
-    margin-bottom: 0;
+    margin-bottom: 1.5rem;
   }
   
   .howToPlayImages {
@@ -3114,7 +3517,7 @@
 @media (max-width: 480px) {
   .howToPlayScreen {
     min-height: 100vh;
-    height: auto;
+    height: 100%;
     padding: 0;
     overflow-y: auto;
     overflow-x: hidden;
@@ -3131,14 +3534,14 @@
     overflow: visible;
     width: 100%;
     max-width: 100%;
-    height: auto;
-    min-height: auto;
+    height: 100%;
+    min-height: 100vh;
   }
   
   .howToPlayScreen .screenTitle {
     margin-top: 0.5rem !important;
-    margin-bottom: 1rem;
-    font-size: clamp(1.2rem, 5vw, 1.8rem);
+    margin-bottom: 0.75rem;
+    font-size: clamp(1.1rem, 5vw, 1.5rem);
   }
   
   .howToPlayScreen .screenTitle[style*="marginTop"] {
@@ -3147,13 +3550,13 @@
   
   .howToPlayScreen .btnPrimary {
     margin-top: 1.5rem;
-    margin-bottom: 0;
+    margin-bottom: 1.5rem;
     padding: 0.875rem 1.25rem;
     font-size: clamp(0.85rem, 2.5vw, 0.95rem);
   }
   
   .buttonGroup {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
   }
   
   .howToPlayImages {
@@ -3170,6 +3573,119 @@
     margin: 0;
     width: 100%;
     max-width: 100%;
+  }
+  
+  .mainTitle {
+    font-size: 1.5rem;
+    margin: 0.25rem auto 1rem;
+    margin-top: 5rem;
+    padding-bottom: 0.5rem;
+    letter-spacing: 0.3px;
+  }
+  
+  .mainTitle::after {
+    width: 60px;
+    height: 3px;
+  }
+
+  .coreProblemsSection {
+    padding: 1.25rem 0.75rem;
+    margin: 0.5rem auto 1rem;
+    border-radius: 12px;
+  }
+  
+  .coreProblemsTitle {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .coreProblemsGrid {
+    grid-template-columns: 1fr;
+    gap: 0.625rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .problemCard {
+    flex-direction: row;
+    text-align: left;
+    padding: 0.75rem;
+    gap: 0.625rem;
+    align-items: flex-start;
+  }
+  
+  .problemIcon {
+    font-size: 1.1rem;
+    margin-top: 0.125rem;
+  }
+  
+  .problemText {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+  
+  .solutionText {
+    font-size: 0.85rem;
+    padding: 0.75rem;
+  }
+
+  .trainingStepsGrid {
+    grid-template-columns: 1fr;
+    padding: 0 0.75rem;
+    gap: 0.875rem;
+    margin: 0.5rem auto;
+  }
+  
+  .trainingColumn {
+    gap: 0.875rem;
+    min-height: auto;
+    height: auto;
+    padding: 1rem;
+  }
+  
+  .trainingStep {
+    flex-direction: row;
+    gap: 0.875rem;
+    padding: 0.875rem;
+    border-radius: 10px;
+    align-items: flex-start;
+    text-align: left;
+  }
+  
+  .stepNumber {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  
+  .stepContent {
+    text-align: left;
+    flex: 1;
+  }
+  
+  .stepTitle {
+    font-size: 1rem;
+    margin-bottom: 0.375rem;
+  }
+  
+  .stepDescription {
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
+  
+  .bankCardContainer {
+    padding: 0.75rem;
+    margin: 0.75rem auto;
+    max-width: 100%;
+    min-height: auto;
+    height: auto;
+    position: relative;
+  }
+  
+  .bankCardImage {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 12px;
   }
   
   .guideImage {
@@ -3397,19 +3913,25 @@
 @media (max-width: 768px) {
   .gameWrapper {
     height: 100%;
-  
+    min-height: 100vh;
     padding: 0;
   }
 
   .screen {
+    height: 100%;
+    min-height: 100vh;
     flex: 1;
     padding: 1rem;
     align-items: center;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .gameContainer {
     margin-top: 0;
     padding: 1.5rem 1rem;
+    height: auto;
+    overflow: visible;
   }
 
   .gameHeader {
@@ -3422,6 +3944,8 @@
     margin: auto;
     justify-content: center;
     align-items: center;
+    height: auto;
+    overflow: visible;
   }
 
   .levelsGridSummary {
@@ -3537,13 +4061,27 @@
   
   /* Level Selection Screen - Centered on mobile */
   .levelSelectScreen {
+    height: 100%;
     min-height: 100vh;
-    height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
     overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .levelSelectScreen .contentContainer {
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: hidden;
+  }
+  
+  .levelSelectScreen .screenTitle {
+    margin-top: 3rem;
+    margin-bottom: 1rem;
   }
   
   .summaryScreen .contentContainer {
@@ -3575,32 +4113,36 @@
   
   /* Level Selection Screen - No inner scroll on mobile */
   .levelSelectScreen {
-    overflow-y: hidden !important;
-    height: 100vh !important;
-    min-height: 100vh !important;
-    max-height: 100vh !important;
+    height: 100%;
+    min-height: 100vh;
+    max-height: none;
+    overflow-y: auto;
+    overflow-x: hidden;
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 1rem;
   }
   
   .levelSelectScreen .contentContainer {
-    height: 100%;
-    min-height: 100vh;
-    max-height: 100vh;
-    overflow-y: hidden !important;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+    overflow-y: visible;
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     gap: 1.5rem;
     padding: 1.5rem 1rem;
+    padding-bottom: 3rem;
   }
   
   .levelSelectScreen .screenTitle {
     margin: 0;
-    margin-bottom: 0;
+    margin-top: 3rem;
+    margin-bottom: 1rem;
   }
   
   .levelSelectScreen .btn {
@@ -3756,16 +4298,19 @@
 
 @media (max-width: 480px) {
   .gameWrapper {
-    height: 100vh;
+    height: 100%;
+    min-height: 100vh;
     padding: 0;
   }
 
   .screen {
+    height: 100%;
     min-height: 100vh;
-    height: 100vh;
     padding: 1rem 0.5rem;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 
   .gameHeader {
@@ -3774,11 +4319,18 @@
   }
   
   .demoCardSelectScreen {
+    height: 100%;
     min-height: 100vh;
-    height: 100vh;
     padding: 1rem 0.5rem;
     align-items: center;
     justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  
+  .contentContainer {
+    height: auto;
+    overflow: visible;
   }
   
   .demoCardSelectScreen .contentContainer {

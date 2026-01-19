@@ -3270,92 +3270,115 @@ export default function GamePage() {
           <div className={`${styles.screen} ${styles.active} ${styles.howToPlayScreen}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
-              <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">How to Play</h2>
               
-              {/* Commented out instruction cards */}
-              {/* <div className={styles.instructionsGrid}>
-                <div className={styles.instructionCard} data-aos="zoom-in" data-aos-delay="200">
-                  <div className={styles.instructionCardInner}>
-                    <div className={styles.instructionCardFront}>
-                      <div className={styles.instructionNumber}>1</div>
-                      <h3>Choose Your Level</h3>
-                      <p>Select from three difficulty levels: Personal Safety, Workplace Compliance, or Social Media & Privacy.</p>
-                    </div>
-                    <div className={styles.instructionCardBack}>
-                      <p>Each level focuses on different aspects of cybersecurity to help you build comprehensive digital safety skills.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.instructionCard}>
-                  <div className={styles.instructionCardInner}>
-                    <div className={styles.instructionCardFront}>
-                      <div className={styles.instructionNumber}>2</div>
-                      <h3>Answer Scenarios</h3>
-                      <p>You&apos;ll face 30 cybersecurity scenarios. Read each carefully and choose the best response from 4 options.</p>
-                    </div>
-                    <div className={styles.instructionCardBack}>
-                      <p>Each scenario is based on real-world situations you might encounter in your daily digital life.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.instructionCard}>
-                  <div className={styles.instructionCardInner}>
-                    <div className={styles.instructionCardFront}>
-                      <div className={styles.instructionNumber}>3</div>
-                      <h3>Learn from Feedback</h3>
-                      <p>After each answer, you&apos;ll receive immediate feedback explaining why your choice was correct or incorrect.</p>
-                    </div>
-                    <div className={styles.instructionCardBack}>
-                      <p>Use the feedback to understand cybersecurity best practices and improve your knowledge.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.instructionCard}>
-                  <div className={styles.instructionCardInner}>
-                    <div className={styles.instructionCardFront}>
-                      <div className={styles.instructionNumber}>4</div>
-                      <h3>Track Your Score</h3>
-                      <p>Earn 4 points for each correct answer. Maximum score depends on number of questions.</p>
-                    </div>
-                    <div className={styles.instructionCardBack}>
-                      <p>Your score reflects your cybersecurity awareness level and helps you identify areas for improvement.</p>
-                    </div>
-                  </div>
-                </div>
-                <div className={styles.instructionCard}>
-                  <div className={styles.instructionCardInner}>
-                    <div className={styles.instructionCardFront}>
-                      <div className={styles.instructionNumber}>5</div>
-                      <h3>See Your Risk Level</h3>
-                      <p>At the end, discover your cybersecurity risk level: Vulnerable, Cautious, or Confident.</p>
-                    </div>
-                    <div className={styles.instructionCardBack}>
-                      <p>Your risk level helps you understand your current cybersecurity posture and guides your learning journey.</p>
-                    </div>
-                  </div>
-                </div>
-              </div> */}
+              {/* Main Title */}
+              <h1 className={styles.mainTitle} data-aos="zoom-in" data-aos-delay="50">HOW TO PLAY</h1>
               
-              {/* Guide Images Section */}
-              <div className={styles.howToPlayImages} data-aos="fade-up" data-aos-delay="200">
-                <div className={styles.guideImageContainer}>
-                  <img 
-                    src="/images/gameplay.png" 
-                    alt="Guide Image 1" 
-                    className={styles.guideImage}
-                  />
+              {/* Core Problems Section */}
+              <div className={styles.coreProblemsSection} data-aos="fade-up" data-aos-delay="100">
+                <h3 className={styles.coreProblemsTitle}>Core Problems</h3>
+                <div className={styles.coreProblemsGrid}>
+                  <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="150">
+                    {/* <div className={styles.problemIcon}>❌</div> */}
+                    <p className={styles.problemText}>
+                      <strong>&quot;Players 2–6&quot;</strong> vs digital seat = contradiction
+                    </p>
+                  </div>
+                  <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="200">
+                    {/* <div className={styles.problemIcon}>📋</div> */}
+                    <p className={styles.problemText}>
+                      Instructions describe <strong>physical card game</strong>, not Scenario Lab
+                    </p>
+                  </div>
+                  <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="250">
+                    {/* <div className={styles.problemIcon}>🔍</div> */}
+                    <p className={styles.problemText}>
+                      Dense card design → <strong>unreadable</strong> on screens / Quality issue
+                    </p>
+                  </div>
+                  <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="300">
+                    {/* <div className={styles.problemIcon}>🎮</div> */}
+                    <p className={styles.problemText}>
+                      Feels like a <strong>game manual</strong> instead of behavioral training
+                    </p>
+                  </div>
                 </div>
-                <div className={styles.guideImageContainer}>
-                  <img 
-                    src="/images/setup.png" 
-                    alt="Guide Image 2" 
-                    className={styles.guideImage}
-                  />
-                </div>
+                <p className={styles.solutionText} data-aos="zoom-in" data-aos-delay="350">
+                  <strong>For digital:</strong> The experience is <span className={styles.highlight}>solo decision training</span>, not multiplayer scoring.
+                </p>
               </div>
+
+              <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="400">How Training Works</h2>
+              
+              {/* Digital Training Steps and Image - Side by Side Layout */}
+              <div className={styles.trainingStepsGrid} data-aos="fade-up" data-aos-delay="450">
+                
+                {/* Left Column - All 5 Steps */}
+                <div className={styles.trainingColumn}>
+                  <div className={styles.trainingStep} data-aos="fade-right" data-aos-delay="500">
+                    <div className={styles.stepNumber}>1</div>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>See the Scenario</h3>
+                      <p className={styles.stepDescription}>
+                        You&apos;re shown a realistic scam message under pressure.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.trainingStep} data-aos="fade-right" data-aos-delay="520">
+                    <div className={styles.stepNumber}>2</div>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>Choose Your Reaction</h3>
+                      <p className={styles.stepDescription}>
+                        Act as you would in real life (click, reply, pause, ignore).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.trainingStep} data-aos="fade-right" data-aos-delay="540">
+                    <div className={styles.stepNumber}>3</div>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>Reveal the Outcome</h3>
+                      <p className={styles.stepDescription}>
+                        See what would actually happen — risk or safe.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.trainingStep} data-aos="fade-right" data-aos-delay="560">
+                    <div className={styles.stepNumber}>4</div>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>Replay with the Pause</h3>
+                      <p className={styles.stepDescription}>
+                        Train the 5-second reflex using the H.A.C.K. trigger.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={styles.trainingStep} data-aos="fade-right" data-aos-delay="580">
+                    <div className={styles.stepNumber}>5</div>
+                    <div className={styles.stepContent}>
+                      <h3 className={styles.stepTitle}>Build Automatic Judgment</h3>
+                      <p className={styles.stepDescription}>
+                        Repeated exposure wires calm decision-making before damage.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column - Bank Card Image */}
+                <div className={styles.bankCardContainer} data-aos="fade-left" data-aos-delay="500">
+                  <img 
+                    src="/images/scam-bank-front-card.png" 
+                    alt="Example Bank Scam Card" 
+                    className={styles.bankCardImage}
+                  />
+                </div>
+                
+              </div>
+
               <div style={{ marginBottom:100 }}>
               <button 
-              // style={{ marginBottom:100 }}
                 className={`${styles.btn} ${styles.btnPrimary}`}
                 onClick={() => {
                   setHowToPlayScreen(false);
@@ -3504,7 +3527,7 @@ export default function GamePage() {
           <div className={`${styles.screen} ${styles.active} ${styles.levelSelectScreen}`}>
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
-              <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">Choose Your Level</h2>
+              <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="100">Choose Your Scenario Environment</h2>
               <div className={styles.levelsGrid}>
                 {[1, 2, 3].map((level) => {
                   // For demo users, determine availability based on user type and completed levels
@@ -3567,16 +3590,16 @@ export default function GamePage() {
                         <div className={styles.levelIcon}>
                           {level === 1 ? '🛡️' : level === 2 ? '💼' : '🔒'}
                         </div>
-                        <h3>Level {level}</h3>
+                        {/* <h3>Level {level}</h3> */}
                         <h4>
                           {level === 1 ? 'Personal Safety' : 
-                           level === 2 ? 'Workplace Compliance' : 
-                           'Social Media & Privacy'}
+                           level === 2 ? 'Workplace And Financial Authority' : 
+                           'Social & Digital Identity'}
                         </h4>
                         <p>
-                          {level === 1 ? 'Learn the basics of protecting yourself online' :
-                           level === 2 ? 'Master security protocols for professional environments' :
-                           'Navigate privacy settings and social media risks'}
+                          {level === 1 ? 'Practice scams targeting daily life, payments travel and loved ones.' :
+                           level === 2 ? 'Train high-risk professional scenarios like CEO fraud and payment pressure.' :
+                           'Recognize manipulation through messages, platforms impersonation and privacy traps.'}
                         </p>
                       </div>
                       <div className={styles.levelCardBack}>

@@ -400,8 +400,11 @@ export default function Header() {
           '& .MuiDrawer-paper': {
             boxSizing: 'border-box',
             width: 280,
-            fontFamily: 'var(--font-poppins), sans-serif',
+            fontFamily: 'Poppins, sans-serif !important',
             background: '#065270',
+          },
+          '& *': {
+            fontFamily: 'Poppins, sans-serif !important',
           },
         }}
       >
@@ -440,7 +443,7 @@ export default function Header() {
                       primary={item.label}
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           fontWeight: isActive ? 600 : 500,
                           color: 'inherit',
                         },
@@ -470,7 +473,7 @@ export default function Header() {
                       primary="Dashboard" 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           color: 'inherit',
                         },
                       }}
@@ -495,7 +498,7 @@ export default function Header() {
                       primary="Game" 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           color: 'inherit',
                         },
                       }}
@@ -522,7 +525,7 @@ export default function Header() {
                       primary="Logout" 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           color: 'inherit',
                         },
                       }}
@@ -550,7 +553,7 @@ export default function Header() {
                       primary="Login" 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           color: 'inherit',
                         },
                       }}
@@ -575,7 +578,7 @@ export default function Header() {
                       primary="Shop Now" 
                       sx={{
                         '& .MuiTypography-root': {
-                          fontFamily: 'var(--font-poppins), sans-serif !important',
+                          fontFamily: 'Poppins, sans-serif !important',
                           color: 'inherit',
                         },
                       }}
