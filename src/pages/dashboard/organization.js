@@ -1002,9 +1002,12 @@ export default function OrganizationDashboardPage() {
             let packageName = 'Package';
             let packageExpiryDate = null;
 
+            // IMPORTANT: Prioritize customPackageId over packageId to avoid duplicates
+            // Custom packages have both customPackageId AND packageId (basePackageId)
+            // We only want to show the custom package entry, not the base package
             if (tx.customPackageId) {
               // Custom package purchase
-              packageData = tx.customPackageId.basePackageId || tx.customPackageId.basePackageId || {};
+              packageData = tx.customPackageId.basePackageId || {};
               packageName = tx.customPackageId.name ||
                 tx.customPackageId.basePackageId?.name ||
                 'Custom Package';
@@ -1014,11 +1017,14 @@ export default function OrganizationDashboardPage() {
                 tx.customPackageId.basePackageId?.expiryDate ||
                 null;
             } else if (tx.packageId) {
-              // Regular package purchase
+              // Regular package purchase (NOT custom)
               packageData = tx.packageId || {};
               packageName = packageData.name || 'Package';
               // Prioritize transaction's calculated expiry date over package's static expiryDate
               packageExpiryDate = tx.contractPeriod?.endDate || packageData.expiryDate || tx.packageId?.expiryDate || null;
+            } else {
+              // Skip if no packageId or customPackageId
+              return null;
             }
 
             // Extract ALL transaction fields explicitly - ensure we get ALL data from tx
@@ -1096,7 +1102,7 @@ export default function OrganizationDashboardPage() {
 
             console.log('📦 Complete Package Object:', completePackage);
             return completePackage;
-          });
+          }).filter(pkg => pkg !== null); // Remove null entries (transactions without packageId or customPackageId)
 
           // Custom packages are now only shown via transactions (after purchase)
           // They are already included in transactionPackages if they have been purchased
@@ -2253,17 +2259,14 @@ export default function OrganizationDashboardPage() {
   
   // Determine which level to resume from (find the first incomplete level)
   const getResumeLevel = () => {
-    if (!gameProgress) return null;
-    // Check each level (1, 2, 3) to find the first one that hasn't been completed
-    for (let levelNum = 1; levelNum <= 3; levelNum++) {
-      const levelArray = gameProgress[`level${levelNum}`] || [];
-      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
-      // If level has no cards or no stats, it's incomplete
-      if (levelArray.length === 0 || !levelStats.completedAt) {
-        return levelNum;
-      }
+    if (!gameProgress || !gameProgress.totalLevelsPlayed) return null;
+    
+    // If user has played less than 3 levels, resume from the next level
+    if (gameProgress.totalLevelsPlayed < 3) {
+      return gameProgress.totalLevelsPlayed + 1;
     }
-    // If all levels are completed, return null
+    
+    // If all 3 levels are completed, return null
     return null;
   };
   
