@@ -203,9 +203,9 @@
 }
 
 .landingTitle {
-  font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+  font-size: clamp(1.3rem, 3.2vw, 1.8rem);
   font-weight: 700;
-  margin-bottom: 1rem;
+  margin-bottom: 6px;
   color: #0F1F2B;
   line-height: 1.2;
 }
@@ -3438,8 +3438,8 @@
   }
 
   .landingTitle {
-    font-size: clamp(0.95rem, 3vw, 1.3rem);
-    margin-bottom: 0.75rem;
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem);
+    margin-bottom: 0.5rem;
   }
 
   .landingDescription {
@@ -3824,8 +3824,8 @@
   }
 
   .landingTitle {
-    font-size: clamp(0.85rem, 3.5vw, 1.1rem);
-    margin-bottom: 0.5rem;
+    font-size: clamp(1rem, 4vw, 1.3rem);
+    margin-bottom: 0.35rem;
   }
 
   .landingDescription {
