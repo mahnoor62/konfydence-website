@@ -230,6 +230,15 @@
   margin: 2rem auto 0;
 }
 
+.safeSpaceText {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: #4F6272;
+  margin-top: 1.5rem;
+  text-align: center;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
 /* Buttons */
 .btn {
   padding: 0.875rem 2rem;

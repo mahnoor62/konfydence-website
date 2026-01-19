@@ -3154,12 +3154,12 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.logoContainer} data-aos="zoom-in" data-aos-delay="100">
-                <div className={styles.logoPlaceholder}>KONFYDENCE</div>
+                <div className={styles.logoPlaceholder}>KONFYDENCE - 90+ real life scenarios</div>
               </div>
               <div className={styles.landingContent} data-aos="zoom-in" data-aos-delay="200">
-                <h1 className={styles.landingTitle}>Test Your Digital Safety Skills</h1>
+                <h1 className={styles.landingTitle}>Strengthen Your Digital Safety Skills</h1>
                 <p className={styles.landingDescription}>
-                  Navigate through 30 quick scenarios and learn how to stay safe online
+                  Experience the pause. Practice &ldquo;H.A.C.K&rdquo; calmly and confidently.
                 </p>
                 {/* Seats Info Display */}
                 {codeVerified && trialInfo && (() => {
@@ -3247,15 +3247,18 @@ export default function GamePage() {
                       cursor: (codeVerified && seatsAvailable) ? 'pointer' : 'not-allowed',
                     }}
                   >
-                    {resumeLevel ? 'Resume Game' : 'Start Game'}
+                    {resumeLevel ? 'Resume Game' : 'BEGIN TRAINING'}
                   </button>
                   <button 
                     className={`${styles.btn} ${styles.btnSecondary}`}
                     onClick={() => setHowToPlayScreen(true)}
                   >
-                    How to Play
+                    HOW IT WORKS
                   </button>
                 </div>
+                <p className={styles.safeSpaceText} data-aos="fade-up" data-aos-delay="400">
+                  No pressure. Just a safe space to learn.
+                </p>
               </div>
             </div>
           </div>

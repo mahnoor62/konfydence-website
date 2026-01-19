@@ -2259,36 +2259,35 @@ export default function OrganizationDashboardPage() {
                                (activePackages && activePackages.length > 0) ||
                                (userTransactions && userTransactions.length > 0 && userTransactions.some(t => t.status === 'paid'));
 
+  // Determine which level to resume from (find the first incomplete level)
+  const getResumeLevel = () => {
+    // Must have purchased packages to play
+    if (!hasPurchasedPackages || !gameProgress) return null;
+    
+    // Don't resume demo progress
+    if (gameProgress.isDemo === true) return null;
+    
+    // No progress yet - start from level 1
+    if (!gameProgress.totalLevelsPlayed || gameProgress.totalLevelsPlayed === 0) {
+      return null; // Show "Play Game" not "Resume Game"
+    }
+    
+    // Use totalLevelsPlayed to determine next level
+    // If completed 1 level, resume from level 2
+    // If completed 2 levels, resume from level 3
+    // If completed 3 levels, return null (all done)
+    const nextLevel = gameProgress.totalLevelsPlayed + 1;
+    return nextLevel <= 3 ? nextLevel : null;
+  };
+  
+  const resumeLevel = getResumeLevel();
+  
   // Check if user has incomplete game progress (has started but not completed all 3 levels)
-  // AND has purchased a package
-  // Exclude demo progress UNLESS user has paid transactions
   const hasIncompleteProgress = hasPurchasedPackages && 
                                 gameProgress && 
                                 gameProgress.totalLevelsPlayed > 0 && 
                                 gameProgress.totalLevelsPlayed < 3 && 
-                                (gameProgress.isDemo === false || hasPurchasedPackages);
-  
-  // Determine which level to resume from (find the first incomplete level)
-  const getResumeLevel = () => {
-    // Don't resume demo progress UNLESS user has paid transactions
-    if (!hasPurchasedPackages || !gameProgress) return null;
-    if (gameProgress.isDemo === true && !hasPurchasedPackages) return null;
-    
-    // Check each level (1, 2, 3) to find the first one that hasn't been completed
-    for (let levelNum = 1; levelNum <= 3; levelNum++) {
-      const levelArray = gameProgress[`level${levelNum}`] || [];
-      const levelStats = gameProgress[`level${levelNum}Stats`] || {};
-      // If level has no cards or no stats, it's incomplete
-      if (levelArray.length === 0 || !levelStats.completedAt) {
-        return levelNum;
-      }
-    }
-    
-    // If all levels are completed, return null
-    return null;
-  };
-  
-  const resumeLevel = getResumeLevel();
+                                gameProgress.isDemo !== true;
 
   return (
     <>
