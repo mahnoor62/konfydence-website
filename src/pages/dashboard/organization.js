@@ -2647,7 +2647,7 @@ export default function OrganizationDashboardPage() {
                                     tx.customPackageId?.name ||
                                     (typeof tx.packageId === 'object' && tx.packageId?.name) ||
                                     tx.packageName ||
-                                    'Unknown Package';
+                                    (tx.packageType ? tx.packageType.charAt(0).toUpperCase() + tx.packageType.slice(1).replace(/_/g, ' ') : 'Unknown Package');
                                   const txType = tx.type || 'purchase';
                                   const amount = tx.amount || 0;
                                   const currency = tx.currency || 'USD';
