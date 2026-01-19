@@ -3200,7 +3200,8 @@ export default function OrganizationDashboardPage() {
                                       ).toLocaleDateString('en-GB', {
                                         day: 'numeric',
                                         month: 'long',
-                                        year: 'numeric'
+                                        year: 'numeric',
+                                        timeZone: 'UTC'
                                       })}
                                     </Typography>
                                     <Typography variant="caption" color="text.secondary">

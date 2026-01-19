@@ -482,7 +482,12 @@ export default function PaymentSuccessPage() {
                           Expire Date:
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.75rem', sm: '0.85rem' } }}>
-                          {new Date(transaction.contractPeriod.endDate).toLocaleDateString()}
+                          {new Date(transaction.contractPeriod.endDate).toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            timeZone: 'UTC'
+                          })}
                         </Typography>
                       </Box>
                     )}
