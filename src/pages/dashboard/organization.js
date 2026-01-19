@@ -2252,14 +2252,22 @@ export default function OrganizationDashboardPage() {
     return null;
   }
 
-  const { user, organizations: userOrgs, gameProgress } = dashboardData;
+  const { user, organizations: userOrgs, gameProgress, allMemberships, activePackages } = dashboardData;
+
+  // Check if user has any active packages or memberships (purchased)
+  const hasPurchasedPackages = (allMemberships && allMemberships.length > 0) || 
+                               (activePackages && activePackages.length > 0);
 
   // Check if user has incomplete game progress (has started but not completed all 3 levels)
-  const hasIncompleteProgress = gameProgress && gameProgress.totalLevelsPlayed > 0 && gameProgress.totalLevelsPlayed < 3;
+  // AND has purchased a package
+  const hasIncompleteProgress = hasPurchasedPackages && 
+                                gameProgress && 
+                                gameProgress.totalLevelsPlayed > 0 && 
+                                gameProgress.totalLevelsPlayed < 3;
   
   // Determine which level to resume from (find the first incomplete level)
   const getResumeLevel = () => {
-    if (!gameProgress || !gameProgress.totalLevelsPlayed) return null;
+    if (!hasPurchasedPackages || !gameProgress || !gameProgress.totalLevelsPlayed) return null;
     
     // If user has played less than 3 levels, resume from the next level
     if (gameProgress.totalLevelsPlayed < 3) {
