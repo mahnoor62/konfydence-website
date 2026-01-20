@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
+import { toPng, toJpeg } from 'html-to-image';
 import Head from 'next/head';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -907,12 +908,14 @@ export default function GamePage() {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showCopySuccess, setShowCopySuccess] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [capturedImage, setCapturedImage] = useState(null);
   const [completedLevels, setCompletedLevels] = useState([]); // Array to track completed levels with their scores
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
   const [errorModal, setErrorModal] = useState({ open: false, message: '', title: 'Error' }); // Error modal state
-  const [questionTimer, setQuestionTimer] = useState(180); // 3 minutes = 180 seconds
+  const [questionTimer, setQuestionTimer] = useState(120); // 2 minutes = 120 seconds
   const [timerInterval, setTimerInterval] = useState(null); // Store interval ID
+  const resultCardRef = useRef(null); // Ref for screenshot capture
 
   // Auto-submit function when timer expires
   const handleTimerExpire = useCallback(() => {
@@ -958,8 +961,8 @@ export default function GamePage() {
         setTimerInterval(null);
       }
       
-      // Reset timer to 180 seconds
-      setQuestionTimer(180);
+      // Reset timer to 120 seconds
+      setQuestionTimer(120);
       
       // Start countdown timer
       const interval = setInterval(() => {
@@ -2119,6 +2122,170 @@ export default function GamePage() {
     }
   }, [codeVerified, resumeLevel, gameState, selectLevel]);
 
+  // Function to download the captured image
+  const handleDownloadImage = useCallback(() => {
+    if (!capturedImage) return;
+
+    try {
+      const link = document.createElement('a');
+      link.download = 'konfydence-results.png';
+      link.href = capturedImage;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading screenshot:', error);
+      alert('Failed to download screenshot. Please try again.');
+    }
+  }, [capturedImage]);
+
+  // Screenshot capture and open modal
+  const handleShareResults = useCallback(async () => {
+    if (!resultCardRef.current) {
+      console.error('Result card ref not found');
+      return;
+    }
+
+    try {
+      const element = resultCardRef.current;
+      
+      // Remove all AOS attributes from the element and its children
+      const removeAOS = (el) => {
+        if (el.hasAttribute('data-aos')) {
+          el.removeAttribute('data-aos');
+          el.removeAttribute('data-aos-delay');
+        }
+        Array.from(el.children).forEach(child => removeAOS(child));
+      };
+      
+      removeAOS(element);
+      
+      // Wait longer for content to fully render and settle
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Try to capture multiple times if needed
+      let dataUrl = null;
+      let attempts = 0;
+      const maxAttempts = 3;
+
+      while (!dataUrl && attempts < maxAttempts) {
+        try {
+          dataUrl = await toPng(element, {
+            quality: 1.0,
+            pixelRatio: 2,
+            backgroundColor: '#ffffff',
+            cacheBust: true,
+            skipFonts: false,
+            canvasWidth: element.offsetWidth * 2,
+            canvasHeight: element.offsetHeight * 2,
+            filter: (node) => {
+              // Force all elements to have no transform
+              if (node.style) {
+                node.style.transform = 'none';
+                node.style.transformOrigin = 'initial';
+              }
+              return true;
+            },
+            style: {
+              transform: 'none',
+              transformOrigin: 'top left',
+            }
+          });
+        } catch (err) {
+          console.log(`Attempt ${attempts + 1} failed:`, err);
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      if (!dataUrl) {
+        throw new Error('Failed to capture after multiple attempts');
+      }
+
+      // Store the captured image and open modal
+      setCapturedImage(dataUrl);
+      setShowShareModal(true);
+    } catch (error) {
+      console.error('Error capturing screenshot:', error);
+      
+      // Try fallback method with JPEG and simpler options
+      try {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        const dataUrl = await toJpeg(resultCardRef.current, {
+          quality: 0.95,
+          pixelRatio: 2,
+          backgroundColor: '#ffffff',
+          cacheBust: false,
+        });
+        
+        if (dataUrl && dataUrl.length > 1000) {
+          setCapturedImage(dataUrl);
+          setShowShareModal(true);
+        } else {
+          throw new Error('Image data too small');
+        }
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+        alert('Failed to capture screenshot. Please check if the results are fully loaded and try again.');
+      }
+    }
+  }, []);
+
+  // Function to share the captured image
+  const handleShareImage = useCallback(async () => {
+    if (!capturedImage) return;
+
+    try {
+      // Convert data URL to blob
+      const response = await fetch(capturedImage);
+      const blob = await response.blob();
+      const file = new File([blob], 'konfydence-results.png', { type: 'image/png' });
+
+      // Check if Web Share API is available
+      if (navigator.share) {
+        // Check if files can be shared
+        const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+        
+        if (canShareFiles) {
+          // Share with file
+          await navigator.share({
+            title: 'My Konfydence Training Results',
+            text: 'Check out my Konfydence cybersecurity training results!',
+            files: [file],
+          });
+        } else {
+          // Try sharing just text with download
+          await navigator.share({
+            title: 'My Konfydence Training Results',
+            text: 'Check out my Konfydence cybersecurity training results!',
+          });
+          // Also trigger download
+          handleDownloadImage();
+        }
+      } else {
+        // No Web Share API - try clipboard
+        try {
+          // Try to copy image to clipboard
+          const clipboardItem = new ClipboardItem({
+            'image/png': blob
+          });
+          await navigator.clipboard.write([clipboardItem]);
+          alert('Image copied to clipboard! You can now paste it in any app.');
+        } catch (clipboardError) {
+          console.error('Clipboard API failed:', clipboardError);
+          // Final fallback: just download
+          handleDownloadImage();
+          alert('Image downloaded! You can share it from your downloads folder.');
+        }
+      }
+    } catch (error) {
+      console.error('Error sharing screenshot:', error);
+      // If everything fails, download the image
+      handleDownloadImage();
+      alert('Image downloaded! You can share it from your downloads folder.');
+    }
+  }, [capturedImage, handleDownloadImage]);
+
   const handleAnswerClick = useCallback((answerIndex) => {
     if (isCardLocked || !scenarios[currentCardIndex]) return;
     
@@ -2453,7 +2620,7 @@ export default function GamePage() {
       setSelectedAnswer(null);
       setShowFeedback(false);
       setIsCardLocked(false);
-      setQuestionTimer(180); // Reset timer for next question
+      setQuestionTimer(120); // Reset timer for next question
     } else {
       // Game complete
       // Check if this is a demo user
@@ -2757,10 +2924,10 @@ export default function GamePage() {
   useEffect(() => {
     if (gameState === 'summary' && selectedLevel) {
       // Calculate percentage score to determine win/lose
-      const currentPercentageScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+      // const currentPercentageScore = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
       
       // Play sound based on win/lose condition (>= 60% is considered a win)
-      const playSound = () => {
+      /* const playSound = () => {
         try {
           const audio = new Audio();
           
@@ -2787,14 +2954,14 @@ export default function GamePage() {
       // Play sound with a small delay to ensure summary screen is rendered
       const soundTimeout = setTimeout(() => {
         playSound();
-      }, 300);
+      }, 300); */
       
       triggerConfetti();
       
       // Cleanup timeout on unmount or state change
-      return () => {
+      /* return () => {
         clearTimeout(soundTimeout);
-      };
+      }; */
     }
   }, [gameState, selectedLevel, score, maxScore]);
   
@@ -3668,43 +3835,60 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             {currentScenario ? (
               <div className={styles.gameContainer}>
-                <div className={styles.gameHeader}>
+                {/* <div className={styles.gameHeader}>
                   <div className={styles.progressInfo}>
                     <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
                   </div>
                   <div className={styles.timerDisplay} style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '8px',
-                    fontSize: '18px',
+                    gap: '6px',
+                    fontSize: '0.85rem',
                     fontWeight: 'bold',
-                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#000B3D'
+                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
                   }}>
-                    <span>⏱️</span>
+                    <span>Pause:</span>
                     <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
                   </div>
                   <div className={styles.scoreDisplay}>
                     <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
                   </div>
-                </div>
+                </div> */}
                 <div className={styles.gameContent}>
                   <div className={`${styles.questionCard} ${showFeedback ? styles.flipped : ''}`}>
                     <div className={styles.questionCardInner}>
                       <div className={styles.questionCardFront}>
-                        <div className={styles.threatIllustration}>
-                          <div className={styles.bonusBadge}>BONUS</div>
-                          <div className={styles.threatIcon}>
-                            <div className={styles.folderIcon}>📁</div>
-                            <div className={styles.lockIcon}>🔒</div>
+                        {/* Header Row Inside Card */}
+                        <div className={styles.cardHeaderRow}>
+                          <div className={styles.progressInfo}>
+                            <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
                           </div>
-                          <div className={styles.coinsContainer}>
-                            <span className={styles.coin}>$</span>
-                            <span className={styles.coin}>$</span>
-                            <span className={styles.coin}>$</span>
+                          <div className={styles.timerDisplay} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                          }}>
+                            <span>Pause:</span>
+                            <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                          </div>
+                          <div className={styles.scoreDisplay}>
+                            <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
+                          </div>
+                        </div>
+                        
+                        <div className={styles.threatIllustration}>
+                          <div className={styles.threatIcon}>
+                            <img 
+                              src="/images/card-icon.png" 
+                              alt="Card Icon" 
+                              className={styles.cardIcon}
+                            />
                           </div>
                         </div>
                         <div className={styles.threatHeader}>
-                          <span className={styles.threatLabel}>THREAT:</span>
                           <h3 className={styles.threatTitle}>{currentScenario.cardTitle || currentScenario.title || 'Untitled Question'}</h3>
                         </div>
                         <p className={styles.threatDescription}>{currentScenario.description}</p>
@@ -3735,53 +3919,95 @@ export default function GamePage() {
                         </div>
                       </div>
                       <div className={styles.questionCardBack}>
+                        {/* Header Row Inside Card */}
+                        <div className={styles.cardHeaderRow}>
+                          <div className={styles.progressInfo}>
+                            <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
+                          </div>
+                          <div className={styles.timerDisplay} style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 'bold',
+                            color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                          }}>
+                            <span>Pause:</span>
+                            <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                          </div>
+                          <div className={styles.scoreDisplay}>
+                            <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
+                          </div>
+                        </div>
+                        
                         <div className={styles.feedbackContent}>
                           <div className={styles.feedbackIllustration}>
-                            <div className={styles.unlockedPadlock}>🔓</div>
-                            <div className={styles.keyIcon}>🗝️</div>
+                            <img 
+                              src="/images/card-icon.png" 
+                              alt="Card Icon" 
+                              className={styles.cardIconFeedback}
+                            />
                           </div>
                           <div className={styles.answerSection}>
-                            <div className={styles.answerLabel}>YOUR ANSWER:</div>
-                            <div className={styles.answerValue}>
+                            {/* Your Answer */}
+                            <div className={styles.yourAnswerLabel}>YOUR ANSWER: 
                               {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
                                 <>
-                                  {String.fromCharCode(65 + selectedAnswer)} - Score: {currentScenario.answers[selectedAnswer].scoring || 0}
+                                  {String.fromCharCode(65 + selectedAnswer)}
                                 </>
                               ) : (
                                 answerHistory.length > 0 && answerHistory[answerHistory.length - 1]?.selectedAnswerText === 'Time Expired - 0 Score' ? (
-                                  '0 Score'
+                                  'Time Expired'
                                 ) : (
-                                  'No answer selected'
+                                  'None'
                                 )
                               )}
                             </div>
-                            {/* Always show highest scoring answer */}
-                            <div className={styles.correctAnswerSection}>
-                              <div className={styles.correctAnswerLabel}>HIGHEST SCORING ANSWER:</div>
-                              <div className={styles.correctAnswerValue}>
-                                {currentScenario.answers
-                                  .map((ans, idx) => {
-                                    if (ans.isCorrect) {
-                                      const letter = String.fromCharCode(65 + idx);
-                                      const answerScore = ans.scoring || 0;
-                                      return `${letter} - Score: ${answerScore}`;
-                                    }
-                                    return null;
-                                  })
-                                  .filter(Boolean)
-                                  .join(' OR ')}
-                              </div>
+                            {/* Score */}
+                            <div className={styles.yourAnswerScore}>
+                              Score: {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
+                                currentScenario.answers[selectedAnswer].scoring || 0
+                              ) : (
+                                0
+                              )}
+                            </div>
+                            
+                            {/* Safe Actions Title - Show all options with score > 0, highest to lowest */}
+                            <div className={styles.safeActionsTitle}>
+                              SAFE ACTION(S): {(() => {
+                                // Get all answers with score > 0 and sort by score (highest first)
+                                const validAnswers = currentScenario.answers
+                                  .map((ans, idx) => ({ letter: String.fromCharCode(65 + idx), score: ans.scoring || 0 }))
+                                  .filter(item => item.score > 0)
+                                  .sort((a, b) => b.score - a.score);
+                                
+                                return validAnswers.map(item => item.letter).join(', ');
+                              })()}
+                            </div>
+                            
+                            {/* All Options Scoring on One Line */}
+                            <div className={styles.scoringLine}>
+                              (Scoring: {currentScenario.answers.map((ans, idx) => {
+                                const letter = String.fromCharCode(65 + idx);
+                                return `${letter}: ${ans.scoring || 0}`;
+                              }).join(', ')})
                             </div>
                           </div>
                           <div className={styles.rationaleSection}>
-                            <div className={styles.rationaleLabel}>RATIONALE:</div>
+                            <div className={styles.rationaleLabel}>WHY:</div>
                             <p className={styles.rationaleText}>
                               {currentScenario.feedback}
                             </p>
                           </div>
                           <div className={styles.branding}>
-                            <div className={styles.brandLogo}>🛡️</div>
-                            <span className={styles.brandText}>Konfydence – Outsmart Scams</span>
+                            <div className={styles.brandLogo}>
+                              <img 
+                                src="/images/footer-logo.png" 
+                                alt="Konfydence Logo" 
+                                className={styles.footerLogoImage}
+                              />
+                            </div>
+                            <span className={styles.brandText}>Konfydence – Outsmart Scams, Together!</span>
                           </div>
                           <button 
                             className={`${styles.btn} ${styles.btnPrimary}`}
@@ -3815,81 +4041,62 @@ export default function GamePage() {
             <div className={styles.parallaxBg}></div>
             <div className={styles.contentContainer}>
               <div className={styles.summaryContent}>
-                <h2 className={styles.completionTitle} data-aos="zoom-in" data-aos-delay="100" style={{ marginTop: '100px' }}>Cybersecurity Training Complete!</h2>
+                <h2 className={styles.completionTitle} data-aos="zoom-in" data-aos-delay="100" style={{ marginTop: '100px' }}>Training Complete!</h2>
                 <p className={styles.completionMessage} data-aos="zoom-in" data-aos-delay="200">
                   {percentageScore >= 60 ? (
-                    <>Congratulations! You have completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
+                    <>You finish this environment.</>
+                    // <>Congratulations! You have completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
                   ) : (
                     <>Oh no, you lost! You completed {totalQuestions} {totalQuestions === 1 ? 'card' : 'cards'}.</>
                   )}
                 </p>
                 
-                <div className={styles.resultCard} data-aos="zoom-in" data-aos-delay="300">
-                  {/* Win/Defeat Badge */}
-                  {/* {percentageScore >= 60 ? (
-                    <div className={styles.winDefeatBadgeContainer} data-aos="zoom-in" data-aos-delay="320">
-                      <div className={`${styles.winDefeatBadge} ${styles.victoryBadge}`}>
-                        <div className={styles.shield}>
-                          <div className={styles.shieldRim}></div>
-                          <div className={styles.shieldCenter}>
-                            <div className={styles.stars}>
-                              <span className={styles.star}>⭐</span>
-                              <span className={styles.star}>⭐</span>
-                              <span className={styles.star}>⭐</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className={styles.ribbon}>VICTORY</div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className={styles.winDefeatBadgeContainer} data-aos="zoom-in" data-aos-delay="320">
-                      <div className={`${styles.winDefeatBadge} ${styles.defeatBadge}`}>
-                        <div className={styles.shield}>
-                          <div className={styles.shieldRim}></div>
-                          <div className={`${styles.shieldCenter} ${styles.brokenShield}`}>
-                            <div className={styles.crack}></div>
-                            <div className={styles.bloodSplatter}></div>
-                          </div>
-                        </div>
-                        <div className={styles.ribbon}>DEFEAT</div>
-                      </div>
-                    </div>
-                  )}
-                   */}
-                  <div className={styles.riskBadgeContainer} data-aos="zoom-in" data-aos-delay="350">
+                <div className={styles.resultCard} data-aos="zoom-in" data-aos-delay="300" ref={resultCardRef}>
+                  {/* Logo with Text Inside Card - Top Left */}
+                  <div className={styles.cardLogoContainer}>
+                    <img 
+                      src="/images/navbar-logo.png" 
+                      alt="Konfydence Logo" 
+                      className={styles.cardLogo}
+                    />
+                    {/* <span className={styles.cardLogoText}>Konfydence</span> */}
+                  </div>
+                  
+                  {/* Badge with Score Inside */}
+                  <div className={styles.badgeWithScoreContainer} data-aos="zoom-in" data-aos-delay="350">
                     <div className={styles.riskBadgeCard}>
                       <div className={styles.riskBadgeInner}>
                         <div 
                           className={`${styles.riskBadge} ${styles.riskBadgeFront}`}
                           style={{ backgroundColor: '#FFD700' }}
                         >
-                          <span className={styles.riskLabel}>Risk Level</span>
                           <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
+                          {/* <span className={styles.riskLabel}>Risk Level</span> */}
+                         
+                          <div className={styles.badgeScore}>Konfydence Score: {score}/{maxScore}</div>
+                           <div className={styles.badgePercentage}>{percentageScore}%</div>
                         </div>
                         <div 
                           className={`${styles.riskBadge} ${styles.riskBadgeBack}`}
                           style={{ backgroundColor: '#FFD700' }}
                         >
                           <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
-                          <span className={styles.riskLabel}>Risk Level</span>
+                          {/* <span className={styles.riskLabel}>Risk Level</span> */}
+                        
+                          <div className={styles.badgeScore}>Konfydence Score: {score}/{maxScore}</div>
+                            <div className={styles.badgePercentage}>{percentageScore}%</div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={styles.percentageScore} data-aos="zoom-in" data-aos-delay="400">{percentageScore}%</div>
-                  <div className={styles.scoreDisplay} data-aos="zoom-in" data-aos-delay="450">
-                    <span className={styles.levelScoreLabel}>Level {selectedLevel || 1} Total Score</span>
-                    <span className={styles.scoreText}>Score: <strong>{score}</strong> / {maxScore}</span>
                   </div>
                   <p className={styles.scoreMessage} data-aos="zoom-in" data-aos-delay="500">
                     {percentageScore >= 80 ? 'Excellent work! Keep it up!' : 
                      percentageScore >= 60 ? 'Good work! Keep it up!' : 
                      'Good effort! Consider reviewing to improve your understanding.'}
                   </p>
-                  <p className={styles.scoreDetails} data-aos="zoom-in" data-aos-delay="550">
+                  {/* <p className={styles.scoreDetails} data-aos="zoom-in" data-aos-delay="550">
                     You answered {correctAnswers} out of {totalQuestions} questions correctly
-                  </p>
+                  </p> */}
                   <div className={styles.progressBar} data-aos="zoom-in" data-aos-delay="600">
                     <div 
                       className={styles.progressFill}
@@ -3901,18 +4108,18 @@ export default function GamePage() {
                   
                   <div className={styles.performanceSummary} data-aos="zoom-in" data-aos-delay="700">
                     <div className={styles.performanceTitle} data-aos="zoom-in" data-aos-delay="750">
-                      <span className={styles.performanceIcon}>📈</span>
-                      Performance Summary
+                      {/* <span className={styles.performanceIcon}>📈</span> */}
+                      {/* Performance Summary */}
                     </div>
                     <div className={styles.summaryBoxes}>
                       <div className={styles.summaryBoxCard} data-aos="zoom-in" data-aos-delay="800">
                         <div className={styles.summaryBoxInner}>
                           <div className={`${styles.summaryBox} ${styles.box1} ${styles.summaryBoxFront}`}>
                             <div className={styles.boxNumber}>{selectedLevel || 1}</div>
-                            <div className={styles.boxLabel}>Level Completed</div>
+                            <div className={styles.boxLabel}>Environment Completed</div>
                           </div>
                           <div className={`${styles.summaryBox} ${styles.box1} ${styles.summaryBoxBack}`}>
-                            <div className={styles.boxLabel}>Level {selectedLevel || 1} Completed</div>
+                            <div className={styles.boxLabel}>Environment Completed</div>
                             <div className={styles.boxNumber}>{selectedLevel || 1}</div>
                           </div>
                         </div>
@@ -3947,13 +4154,13 @@ export default function GamePage() {
                       <div className={styles.allLevelsSummary} data-aos="zoom-in" data-aos-delay="1100">
                         <div className={styles.allLevelsTitle}>
                           <span className={styles.performanceIcon}>🏆</span>
-                          All Levels Completed!
+                          All Environments Completed!
                         </div>
                         <div className={styles.levelsGridSummary}>
                           {completedLevels.sort((a, b) => a.level - b.level).map((levelData, index) => (
                             <div key={levelData.level} className={styles.levelSummaryCard} data-aos="zoom-in" data-aos-delay={1200 + (index * 100)}>
                               <div className={styles.levelSummaryHeader}>
-                                <span className={styles.levelSummaryNumber}>Level {levelData.level}</span>
+                                <span className={styles.levelSummaryNumber}>Environment {levelData.level}</span>
                               </div>
                               <div className={styles.levelSummaryScore}>
                                 <span className={styles.levelSummaryScoreValue}>{levelData.score}</span>
@@ -4008,7 +4215,7 @@ export default function GamePage() {
                             onClick={nextLevel}
                           >
                             {/* <span className={styles.btnIcon}>➡️</span> */}
-                            Next Level
+                            Other Environment
                           </button>
                         );
                       }
@@ -4024,6 +4231,17 @@ export default function GamePage() {
                       Play Again
                     </button>
                     
+                    {/* Your Dashboard button - Always show */}
+                    <button 
+                      className={`${styles.btn} ${styles.btnPrimary}`}
+                      onClick={() => router.push('/dashboard')}
+                    >
+                      Your Dashboard
+                    </button>
+                  </div>
+                  
+                  {/* Second Row of Buttons */}
+                  <div className={styles.actionButtonsSecondRow} data-aos="zoom-in" data-aos-delay="1250">
                     {/* Join Membership button - Show for trial users with seats used or all levels completed */}
                     {(() => {
                       const codeType = sessionStorage.getItem('codeType');
@@ -4050,9 +4268,8 @@ export default function GamePage() {
                     {/* Share Results button */}
                     <button 
                       className={`${styles.btn} ${styles.btnSecondary}`}
-                      onClick={() => setShowShareModal(true)}
+                      onClick={handleShareResults}
                     >
-                      {/* <span className={styles.btnIcon}>👁️</span> */}
                       Share Results
                     </button>
                     
@@ -4109,6 +4326,18 @@ export default function GamePage() {
                       </div>
                     );
                   })()}
+                  
+                  {/* Website Link - Bottom with spacing */}
+                  <div className={styles.websiteLinkWrapper}>
+                    <a 
+                      href="https://konfydence.com/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className={styles.websiteLink}
+                    >
+                      www.konfydence.com
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -4122,64 +4351,35 @@ export default function GamePage() {
               <span className={styles.modalClose} onClick={() => setShowShareModal(false)}>&times;</span>
               <h2>Share Your Results</h2>
               <div className={styles.shareContent}>
-                <textarea 
-                  className={styles.shareText}
-                  readOnly
-                  value={
-                    completedLevels.length === 3
-                      ? `I just completed all levels of the Konfydence cybersecurity training game! 🎉
-
-${completedLevels.sort((a, b) => a.level - b.level).map(levelData => 
-  `Level ${levelData.level}: Score ${levelData.score}/${levelData.maxScore} (${levelData.correctAnswers}/${levelData.totalQuestions} Correct - ${Math.round((levelData.correctAnswers / levelData.totalQuestions) * 100)}%)`
-).join('\n')}
-
-Overall Risk Level: ${riskLevel?.level || 'Vulnerable'}
-
-#Konfydence #CybersecurityTraining`
-                      : `I just completed Level ${selectedLevel || 1} of the Konfydence cybersecurity training game! 🎉
-
-Score: ${score}/${maxScore}
-Correct Answers: ${correctAnswers}/${totalQuestions} (${percentageScore}%)
-Risk Level: ${riskLevel?.level || 'Vulnerable'}
-
-#Konfydence #CybersecurityTraining`
-                  }
-                />
-                {showCopySuccess && (
-                  <div className={styles.copySuccessMessage}>
-                    <span className={styles.successIcon}>✓</span>
-                    Results copied to clipboard!
-                  </div>
+                {capturedImage && (
+                  <img 
+                    src={capturedImage} 
+                    alt="Results Screenshot" 
+                    style={{ 
+                      maxWidth: '100%', 
+                      height: 'auto',
+                      borderRadius: '12px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      marginBottom: '1.5rem'
+                    }}
+                  />
                 )}
-                <button 
-                  className={`${styles.btn} ${styles.btnPrimary}`}
-                  onClick={() => {
-                    const shareText = completedLevels.length === 3
-                      ? `I just completed all levels of the Konfydence cybersecurity training game! 🎉
-
-${completedLevels.sort((a, b) => a.level - b.level).map(levelData => 
-  `Level ${levelData.level}: Score ${levelData.score}/${levelData.maxScore} (${levelData.correctAnswers}/${levelData.totalQuestions} Correct - ${Math.round((levelData.correctAnswers / levelData.totalQuestions) * 100)}%)`
-).join('\n')}
-
-Overall Risk Level: ${riskLevel?.level || 'Vulnerable'}
-
-#Konfydence #CybersecurityTraining`
-                      : `I just completed Level ${selectedLevel || 1} of the Konfydence cybersecurity training game! 🎉
-
-Score: ${score}/${maxScore}
-Correct Answers: ${correctAnswers}/${totalQuestions} (${percentageScore}%)
-Risk Level: ${riskLevel?.level || 'Vulnerable'}
-
-#Konfydence #CybersecurityTraining`;
-                    navigator.clipboard.writeText(shareText);
-                    setShowCopySuccess(true);
-                    setTimeout(() => {
-                      setShowCopySuccess(false);
-                    }, 3000);
-                  }}
-                >
-                  Copy to Clipboard
-                </button>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button 
+                    className={`${styles.btn} ${styles.btnPrimary}`}
+                    onClick={handleShareImage}
+                    style={{ flex: '1', minWidth: '150px' }}
+                  >
+                    Share Results
+                  </button>
+                  <button 
+                    className={`${styles.btn} ${styles.btnSecondary}`}
+                    onClick={handleDownloadImage}
+                    style={{ flex: '1', minWidth: '150px' }}
+                  >
+                    Download Image
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -4192,21 +4392,26 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
               <span className={styles.modalClose} onClick={() => setShowInviteModal(false)}>&times;</span>
               <h2>Invite a Friend & Earn Rewards</h2>
               <div className={styles.shareContent}>
-                <Typography variant="body1" sx={{ mb: 2, color: 'text.secondary' }}>
-                  Share your referral link with friends and earn rewards when they join Konfydence!
+                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', whiteSpace: 'pre-line', fontSize: '0.875rem' }}>
+                  {`Join Konfydence — Scam Defense Training That Actually Works
+
+I'm using Konfydence to train smarter digital decisions under pressure.
+Not awareness tips — real-life scam scenarios that build the pause habit.
+
+Try it here:`}
                 </Typography>
                 <TextField
                   fullWidth
                   label="Your Referral Link"
-                  value={typeof window !== 'undefined' && user ? `${window.location.origin}/register?ref=${user.id || user._id}` : (typeof window !== 'undefined' ? `${window.location.origin}/register` : '')}
+                  value={typeof window !== 'undefined' && user ? `${window.location.origin}/register?ref=${user.referralCode}` : (typeof window !== 'undefined' ? `${window.location.origin}/register` : '')}
                   readOnly
-                  sx={{ mb: 2 }}
+                  // sx={{ mb: 2 }}
                   InputProps={{
                     endAdornment: (
                       <Button
                         onClick={() => {
                           if (typeof window !== 'undefined') {
-                            const referralLink = user ? `${window.location.origin}/register?ref=${user.id || user._id}` : `${window.location.origin}/register`;
+                            const referralLink = user ? `${window.location.origin}/register?ref=${user.referralCode}` : `${window.location.origin}/register`;
                             navigator.clipboard.writeText(referralLink);
                             setShowCopySuccess(true);
                             setTimeout(() => setShowCopySuccess(false), 3000);
@@ -4221,11 +4426,14 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
                   }}
                 />
                 {showCopySuccess && (
-                  <Alert severity="success" sx={{ mb: 2 }}>
+                  <Alert severity="success" >
                     Referral link copied to clipboard!
                   </Alert>
                 )}
-                <Box sx={{ 
+                <Typography variant="body2" sx={{ mt: 2, mb: 2, color: 'text.secondary', fontSize: '0.875rem' }}>
+                  It&apos;s eye-opening, practical, and genuinely useful for protecting yourself and your family online.
+                </Typography>
+                {/* <Box sx={{ 
                   p: 2, 
                   backgroundColor: '#F5F8FB', 
                   borderRadius: 2,
@@ -4246,14 +4454,14 @@ Risk Level: ${riskLevel?.level || 'Vulnerable'}
                   <Typography variant="body2" component="div">
                     • Rewards are credited to your account automatically
                   </Typography>
-                </Box>
+                </Box> */}
                 <Button
                   fullWidth
                   variant="contained"
                   onClick={() => {
                     if (typeof window !== 'undefined') {
-                      const referralLink = user ? `${window.location.origin}/register?ref=${user.id || user._id}` : `${window.location.origin}/register`;
-                      const shareText = `Join Konfydence - Interactive Cybersecurity Training! 🛡️\n\nUse my referral link: ${referralLink}\n\nLearn to outsmart scams with fun, game-based training!`;
+                      const referralLink = user ? `${window.location.origin}/register?ref=${user.referralCode}` : `${window.location.origin}/register`;
+                      const shareText = `Join Konfydence — Scam Defense Training That Actually Works\n\nI'm using Konfydence to train smarter digital decisions under pressure.\nNot awareness tips — real-life scam scenarios that build the pause habit.\n\nTry it here: ${referralLink}\n\nIt's eye-opening, practical, and genuinely useful for protecting yourself and your family online.`;
                       if (navigator.share) {
                         navigator.share({
                           title: 'Join Konfydence',

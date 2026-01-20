@@ -4300,6 +4300,42 @@ export default function OrganizationDashboardPage() {
                           {new Date(user.createdAt).toLocaleDateString()}
                         </Typography>
                       </Box>
+                      {user.referralCode && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Your Referral Link
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.85rem',
+                                wordBreak: 'break-all',
+                                flex: 1,
+                                color: '#0B7897'
+                              }}
+                            >
+                              {typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.referralCode}` : ''}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                const referralLink = `${window.location.origin}/register?ref=${user.referralCode}`;
+                                navigator.clipboard.writeText(referralLink);
+                                setSnackbar({
+                                  open: true,
+                                  message: 'Referral link copied!',
+                                  severity: 'success'
+                                });
+                              }}
+                              sx={{ color: '#0B7897' }}
+                            >
+                              <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      )}
                       {/* Password display commented out
                       <Box>
                         <Typography variant="caption" color="text.secondary">
@@ -4398,7 +4434,7 @@ export default function OrganizationDashboardPage() {
               })}
               required
             />
-            <TextField
+            {/* <TextField
               fullWidth
               label="Contact Phone"
               value={orgForm.primaryContact.phone}
@@ -4415,7 +4451,7 @@ export default function OrganizationDashboardPage() {
                 ...orgForm,
                 primaryContact: { ...orgForm.primaryContact, jobTitle: e.target.value }
               })}
-            />
+            /> */}
           </Stack>
         </DialogContent>
         <DialogActions>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import {
   Container,
@@ -15,6 +15,7 @@ import {
   InputAdornment,
   Autocomplete,
 } from '@mui/material';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { useRouter } from 'next/router';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -64,6 +65,40 @@ export default function ContactPage() {
   const [loadingCountries, setLoadingCountries] = useState(false);
   const [loadingStates, setLoadingStates] = useState(false);
   const [loadingCities, setLoadingCities] = useState(false);
+  const [isDemoRequest, setIsDemoRequest] = useState(false);
+  const [topicDropdownOpen, setTopicDropdownOpen] = useState(false);
+  const topicDropdownRef = useRef(null);
+
+  // Define topic categories
+  const demoTopics = ['demo-schools', 'demo-businesses'];
+  const regularTopics = ['scam-survival-kit', 'education-youth-pack', 'CoMaSi', 'other'];
+
+  // Topic display names
+  const topicLabels = {
+    'scam-survival-kit': 'Scam Survival Kit (Families)',
+    'education-youth-pack': 'Education / Youth Pack',
+    'CoMaSi': 'CoMaSi (Companies & Compliance)',
+    'demo-schools': 'Demo for Schools',
+    'demo-businesses': 'Demo for Businesses',
+    'other': 'Other',
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (topicDropdownRef.current && !topicDropdownRef.current.contains(event.target)) {
+        setTopicDropdownOpen(false);
+      }
+    };
+
+    if (topicDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [topicDropdownOpen]);
 
   // Fetch countries on component mount using npm package
   useEffect(() => {
@@ -161,20 +196,42 @@ export default function ContactPage() {
   }, [formData.state, formData.country, countries, states]);
 
   useEffect(() => {
-    if (router.isReady) {
+    if (router.isReady && router.query.topic) {
       const topic = router.query.topic;
-      if (topic) {
-        // Map old topic values to new ones
-        const topicMap = {
-          'b2b_demo': 'CoMaSi',
-          'b2e_demo': 'education-youth-pack',
-          'b2e': 'education-youth-pack',
-        };
-        const mappedTopic = topicMap[topic] || topic;
-        setFormData((prev) => ({ ...prev, topic: mappedTopic }));
+      
+      // Map old topic values to new ones
+      const topicMap = {
+        'b2b_demo': 'CoMaSi',
+        'b2e_demo': 'education-youth-pack',
+        'b2e': 'education-youth-pack',
+        'demo for buisness': 'demo-businesses',
+        'demo for business': 'demo-businesses',
+        'demo-for-businesses': 'demo-businesses',
+        'demo-for-schools': 'demo-schools',
+      };
+      const mappedTopic = topicMap[topic] || topic;
+      
+      // Check if it's a demo request
+      const isDemo = demoTopics.includes(mappedTopic) || 
+                     topic.toLowerCase().includes('demo');
+      setIsDemoRequest(isDemo);
+      
+      // Set the topic value
+      let finalTopic = 'other';
+      if (isDemo) {
+        // If it's a demo request, use the mapped topic if it's valid, otherwise use first demo topic
+        finalTopic = demoTopics.includes(mappedTopic) ? mappedTopic : demoTopics[0];
+      } else {
+        // For regular topics
+        finalTopic = regularTopics.includes(mappedTopic) ? mappedTopic : 'other';
       }
+      
+      setFormData((prev) => ({ 
+        ...prev, 
+        topic: finalTopic
+      }));
     }
-  }, [router.isReady, router.query]);
+  }, [router.isReady, router.query.topic]);
 
   // Check if current topic requires address fields
   const requiresAddressFields = ['demo-families', 'demo-schools', 'demo-businesses'].includes(formData.topic);
@@ -649,105 +706,207 @@ export default function ContactPage() {
                       />
                     </Grid>
                     <Grid item xs={12}>
-                      <TextField
-                        fullWidth
-                        select
-                        label="Topic"
-                        name="topic"
-                        required
-                        value={formData.topic}
-                        onChange={handleChange}
-                        SelectProps={{
-                          MenuProps: {
-                            PaperProps: {
-                              sx: {
-                                maxHeight: 224,
-                                width: 'auto',
-                                '& .MuiMenuItem-root': {
-                                  fontFamily: '"Poppins", sans-serif !important',
-                                },
+                      <Box sx={{ position: 'relative' }} ref={topicDropdownRef}>
+                        <TextField
+                          fullWidth
+                          label="Topic"
+                          name="topic"
+                          required
+                          value={topicLabels[formData.topic] || 'Select a topic'}
+                          onClick={() => setTopicDropdownOpen(!topicDropdownOpen)}
+                          InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                              <ArrowDropDownIcon 
+                                sx={{ 
+                                  transform: topicDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', 
+                                  transition: 'transform 0.2s',
+                                  cursor: 'pointer'
+                                }} 
+                              />
+                            ),
+                          }}
+                          sx={{
+                            cursor: 'pointer',
+                            '& .MuiInputBase-input': {
+                              cursor: 'pointer',
+                            },
+                          }}
+                        />
+                        
+                        {/* Custom Dropdown Menu - Navbar Style */}
+                        {topicDropdownOpen && (
+                          <Box
+                            sx={{
+                              position: 'absolute',
+                              top: '100%',
+                              left: 0,
+                              right: 0,
+                              marginTop: '4px',
+                              backgroundColor: 'white',
+                              borderRadius: '8px',
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                              zIndex: 9999,
+                              overflow: 'hidden',
+                              animation: 'fadeIn 0.2s ease',
+                              '@keyframes fadeIn': {
+                                from: { opacity: 0, transform: 'translateY(-10px)' },
+                                to: { opacity: 1, transform: 'translateY(0)' },
                               },
-                            },
-                            anchorOrigin: {
-                              vertical: 'bottom',
-                              horizontal: 'left',
-                            },
-                            transformOrigin: {
-                              vertical: 'top',
-                              horizontal: 'left',
-                            },
-                            disableScrollLock: true,
-                            disablePortal: false,
-                            keepMounted: false,
-                          },
-                        }}
-                        sx={{
-                          '& .MuiSelect-select': {
-                            fontFamily: '"Poppins", sans-serif',
-                          },
-                        }}
-                      >
-                        <MenuItem 
-                          value="scam-survival-kit"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Scam Survival Kit (Families)
-                        </MenuItem>
-                        <MenuItem 
-                          value="education-youth-pack"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Education / Youth Pack
-                        </MenuItem>
-                        <MenuItem 
-                          value="CoMaSi"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          CoMaSi (Companies & Compliance)
-                        </MenuItem>
-                        {/* <MenuItem 
-                          value="demo-families"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Demo for families
-                        </MenuItem> */}
-                        <MenuItem 
-                          value="demo-schools"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Demo for schools & Universities
-                        </MenuItem>
-                        <MenuItem 
-                          value="demo-businesses"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Demo for businesses
-                        </MenuItem>
-                        {/* <MenuItem 
-                          value="nis2-audit"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          NIS2 / Audit Readiness
-                        </MenuItem> */}
-                        {/* <MenuItem 
-                          value="partnerships"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Partnerships / Ambassadors
-                        </MenuItem> */}
-                        {/* <MenuItem 
-                          value="media-press"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Media / Press
-                        </MenuItem> */}
-                        <MenuItem 
-                          value="other"
-                          sx={{ fontFamily: '"Poppins", sans-serif !important' }}
-                        >
-                          Other
-                        </MenuItem>
-                      </TextField>
+                            }}
+                          >
+                            {/* Regular topics - shown when NOT a demo request */}
+                            {!isDemoRequest && (
+                              <>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'scam-survival-kit' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'scam-survival-kit' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Scam Survival Kit (Families)
+                                </Box>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'education-youth-pack' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'education-youth-pack' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Education / Youth Pack
+                                </Box>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'CoMaSi' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'CoMaSi' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  CoMaSi (Companies & Compliance)
+                                </Box>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'other' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'other' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Other
+                                </Box>
+                              </>
+                            )}
+
+                            {/* Demo topics - shown ONLY when it's a demo request */}
+                            {isDemoRequest && (
+                              <>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'demo-schools' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'demo-schools' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Demo for schools & Universities
+                                </Box>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'demo-businesses' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'demo-businesses' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Demo for businesses
+                                </Box>
+                              </>
+                            )}
+                          </Box>
+                        )}
+                      </Box>
                     </Grid>
                     <Grid item xs={12}>
                       <TextField

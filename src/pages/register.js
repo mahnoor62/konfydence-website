@@ -225,7 +225,8 @@ export default function RegisterPage() {
             name: formData.name,
             email: formData.email,
             password: formData.password,
-            organizationCode: formData.organizationCode.toUpperCase()
+            organizationCode: formData.organizationCode.toUpperCase(),
+            referralCode: referralCode || undefined
           }),
         });
 

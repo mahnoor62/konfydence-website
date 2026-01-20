@@ -353,7 +353,7 @@ export default function ProductsPageContent() {
               
               <Button
                 size="large"
-                href="/contact"
+                href="/contact?topic=demo-for-businesses"
                 component={NextLink}
                 sx={{
                   backgroundColor: '#FFFFFF',
@@ -1241,7 +1241,7 @@ export default function ProductsPageContent() {
                 
                 <Button
                   size="large"
-                  href="/contact"
+                  href="/contact?topic=demo-for-businesses"
                   component={NextLink}
                   sx={{
                     backgroundColor: '#FFFFFF',

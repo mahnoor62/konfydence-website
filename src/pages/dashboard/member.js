@@ -34,6 +34,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  IconButton,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
@@ -41,6 +42,7 @@ import BusinessIcon from '@mui/icons-material/Business';
 import SchoolIcon from '@mui/icons-material/School';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditIcon from '@mui/icons-material/Edit';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingState from '@/components/LoadingState';
@@ -1022,6 +1024,42 @@ export default function MemberDashboardPage() {
                           {new Date(user.createdAt).toLocaleDateString()}
                         </Typography>
                       </Box>
+                      {user.referralCode && (
+                        <Box>
+                          <Typography variant="caption" color="text.secondary">
+                            Your Referral Link
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                            <Typography 
+                              variant="body2" 
+                              sx={{ 
+                                fontWeight: 500, 
+                                fontSize: '0.85rem',
+                                wordBreak: 'break-all',
+                                flex: 1,
+                                color: '#0B7897'
+                              }}
+                            >
+                              {typeof window !== 'undefined' ? `${window.location.origin}/register?ref=${user.referralCode}` : ''}
+                            </Typography>
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                const referralLink = `${window.location.origin}/register?ref=${user.referralCode}`;
+                                navigator.clipboard.writeText(referralLink);
+                                setSnackbar({
+                                  open: true,
+                                  message: 'Referral link copied!',
+                                  severity: 'success'
+                                });
+                              }}
+                              sx={{ color: '#0B7897' }}
+                            >
+                              <ContentCopyIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      )}
                     </Stack>
                   </CardContent>
                 </Card>

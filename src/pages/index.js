@@ -584,7 +584,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       >
                         <Button
                           component={Link}
-                          href="/contact"
+                          href="/contact?topic=demo-for-businesses"
                           variant="contained"
                           size="large"
                           // endIcon={
@@ -834,7 +834,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   >
                         <Button
                           component={Link}
-                          href="/contact?topic=comasi"
+                          href="/contact?topic=demo-for-businesses"
                           variant="contained"
                           size="large"
                           // endIcon={
