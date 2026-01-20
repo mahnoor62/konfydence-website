@@ -2146,8 +2146,17 @@ export default function GamePage() {
       return;
     }
 
+    // Store original display values for restoration
+    const element = resultCardRef.current;
+    const excludedElements = element.querySelectorAll('[data-exclude-screenshot="true"]');
+    const originalDisplayValues = [];
+
     try {
-      const element = resultCardRef.current;
+      // Hide elements with data-exclude-screenshot attribute
+      excludedElements.forEach((el, index) => {
+        originalDisplayValues[index] = el.style.display;
+        el.style.display = 'none';
+      });
       
       // Remove all AOS attributes from the element and its children
       const removeAOS = (el) => {
@@ -2227,6 +2236,11 @@ export default function GamePage() {
       } catch (fallbackError) {
         console.error('Fallback also failed:', fallbackError);
         alert('Failed to capture screenshot. Please check if the results are fully loaded and try again.');
+      } finally {
+        // Restore the display of excluded elements
+        excludedElements.forEach((el, index) => {
+          el.style.display = originalDisplayValues[index] || '';
+        });
       }
     }
   }, []);
@@ -4179,7 +4193,7 @@ export default function GamePage() {
                     )}
                   </div>
                   
-                  <div className={styles.actionButtons} data-aos="zoom-in" data-aos-delay="1200">
+                  <div className={styles.actionButtons} data-aos="zoom-in" data-aos-delay="1200" data-exclude-screenshot="true">
                     {/* Next Level button - show only if level < 3 and seats available, and NOT B2C demo user */}
                     {(() => {
                       const codeType = sessionStorage.getItem('codeType');
@@ -4241,7 +4255,7 @@ export default function GamePage() {
                   </div>
                   
                   {/* Second Row of Buttons */}
-                  <div className={styles.actionButtonsSecondRow} data-aos="zoom-in" data-aos-delay="1250">
+                  <div className={styles.actionButtonsSecondRow} data-aos="zoom-in" data-aos-delay="1250" data-exclude-screenshot="true">
                     {/* Join Membership button - Show for trial users with seats used or all levels completed */}
                     {(() => {
                       const codeType = sessionStorage.getItem('codeType');
