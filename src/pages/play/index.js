@@ -909,6 +909,17 @@ export default function GamePage() {
   const [showCopySuccess, setShowCopySuccess] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [capturedImage, setCapturedImage] = useState(null);
+
+  // Ensure buttons are visible when modal closes
+  useEffect(() => {
+    if (!showShareModal && resultCardRef.current) {
+      // Restore visibility of all excluded elements
+      const excludedElements = resultCardRef.current.querySelectorAll('[data-exclude-screenshot="true"]');
+      excludedElements.forEach((el) => {
+        el.style.removeProperty('display');
+      });
+    }
+  }, [showShareModal]);
   const [completedLevels, setCompletedLevels] = useState([]); // Array to track completed levels with their scores
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
@@ -2154,7 +2165,8 @@ export default function GamePage() {
     try {
       // Hide elements with data-exclude-screenshot attribute
       excludedElements.forEach((el, index) => {
-        originalDisplayValues[index] = el.style.display;
+        // Store original display value (use computed style as fallback)
+        originalDisplayValues[index] = el.style.display || window.getComputedStyle(el).display;
         el.style.display = 'none';
       });
       
@@ -2169,8 +2181,8 @@ export default function GamePage() {
       
       removeAOS(element);
       
-      // Wait longer for content to fully render and settle
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for DOM to update after hiding elements
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       // Try to capture multiple times if needed
       let dataUrl = null;
@@ -2188,6 +2200,10 @@ export default function GamePage() {
             canvasWidth: element.offsetWidth * 2,
             canvasHeight: element.offsetHeight * 2,
             filter: (node) => {
+              // Exclude elements with data-exclude-screenshot attribute
+              if (node.getAttribute && node.getAttribute('data-exclude-screenshot') === 'true') {
+                return false;
+              }
               // Force all elements to have no transform
               if (node.style) {
                 node.style.transform = 'none';
@@ -2239,7 +2255,9 @@ export default function GamePage() {
       } finally {
         // Restore the display of excluded elements
         excludedElements.forEach((el, index) => {
-          el.style.display = originalDisplayValues[index] || '';
+          const originalValue = originalDisplayValues[index];
+          // Always remove inline style to use CSS default (buttons should be visible)
+          el.style.removeProperty('display');
         });
       }
     }
