@@ -204,43 +204,53 @@ export default function SKKPage() {
           <Grid container spacing={4} alignItems="stretch">
             {/* Left Column - Text + Key Benefits */}
             <Grid item xs={12} md={6} data-aos="fade-right" sx={{ display: 'flex', flexDirection: 'column' }}>
-              <Box sx={{ mb: 4 }}>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    fontWeight: 700,
-                    mb: 1,
-                    color: 'white',
-                    lineHeight: 1.1,
-                  }}
-                >
-                  Anyone can fall for a scam. Smart people train first.
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 400,
-                    color: 'white',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
-                </Typography>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
-                    fontWeight: 400,
-                    color: 'white',
-                    lineHeight: 1.6,
-                  }}
-                >
-                  Konfydence turns that vulnerability into your greatest strength.
-                </Typography>
-              </Box>
+              <Box 
+                sx={{ 
+                  border: '2px solid rgba(255, 255, 255, 0.4)',
+                  borderRadius: 3,
+                  p: 3,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                }}
+              >
+                <Box sx={{ mb: 4 }}>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 700,
+                      mb: 1,
+                      color: 'white',
+                      lineHeight: 1.1,
+                    }}
+                  >
+                    Anyone can fall for a scam. Smart people train first.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontWeight: 400,
+                      color: 'white',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
+                  </Typography>
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: { xs: '1rem', md: '1.125rem' },
+                      fontWeight: 400,
+                      color: 'white',
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    Konfydence turns that vulnerability into your greatest strength.
+                  </Typography>
+                </Box>
 
-              {/* Key Benefits - Smaller in Left Column */}
-              <Box sx={{ flex: 1 }}>
+                {/* Key Benefits - Smaller in Left Column */}
+                <Box sx={{ flex: 1 }}>
                 <Typography
                   variant="h6"
                   sx={{
@@ -319,6 +329,7 @@ export default function SKKPage() {
                     </Typography>
                   </Box>
                 </Stack>
+              </Box>
               </Box>
             </Grid>
             
