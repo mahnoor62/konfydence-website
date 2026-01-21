@@ -201,49 +201,156 @@ export default function SKKPage() {
         }}
       >
         <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={6} data-aos="fade-right">
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 700,
-                  mb: 1,
-                  color: 'white',
-                  lineHeight: 1.1,
-                }}
-              >
-                Anyone can fall for a scam. Smart people train first.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontWeight: 400,
-                  // mb: 2,
-                  color: 'white',
-                  lineHeight: 1.6,
-                }}
-              >
-                Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  fontSize: { xs: '1rem', md: '1.125rem' },
-                  fontWeight: 400,
-                  // mb: 1,
-                  color: 'white',
-                  lineHeight: 1.6,
-                }}
-              >
-                Konfydence turns that vulnerability into your greatest strength.
-              </Typography>
-              
-              {/* CTA Section */}
+          <Grid container spacing={4} alignItems="stretch">
+            {/* Left Column - Text + Key Benefits */}
+            <Grid item xs={12} md={6} data-aos="fade-right" sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Box sx={{ mb: 4 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    mb: 1,
+                    color: 'white',
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Anyone can fall for a scam. Smart people train first.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontWeight: 400,
+                    color: 'white',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    fontWeight: 400,
+                    color: 'white',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  Konfydence turns that vulnerability into your greatest strength.
+                </Typography>
+              </Box>
+
+              {/* Key Benefits - Smaller in Left Column */}
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: { xs: '1.25rem', md: '1.5rem' },
+                    fontWeight: 700,
+                    mb: 3,
+                    color: 'white',
+                  }}
+                  data-aos="fade-up"
+                >
+                  Key Benefits
+                </Typography>
+                <Stack spacing={2}>
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start',
+                      py: 1,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 24, color: '#FFD700', mr: 1.5, mt: 0.3, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ color: 'white', lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+                      90 scenario-based cards (80 real-world scams + 10 Wild Cards)
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start',
+                      py: 1,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 24, color: '#FFD700', mr: 1.5, mt: 0.3, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ color: 'white', lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+                      Point-based, skill-building gameplay
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start',
+                      py: 1,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 24, color: '#FFD700', mr: 1.5, mt: 0.3, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ color: 'white', lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+                      Quick, simple rules, no technical knowledge
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start',
+                      py: 1,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 24, color: '#FFD700', mr: 1.5, mt: 0.3, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ color: 'white', lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+                      Learn together, without risk or shame
+                    </Typography>
+                  </Box>
+                  
+                  <Box 
+                    sx={{ 
+                      display: 'flex', 
+                      alignItems: 'flex-start',
+                      py: 1,
+                    }}
+                  >
+                    <CheckCircleIcon sx={{ fontSize: 24, color: '#FFD700', mr: 1.5, mt: 0.3, flexShrink: 0 }} />
+                    <Typography variant="body2" sx={{ color: 'white', lineHeight: 1.6, fontSize: { xs: '0.85rem', md: '0.9rem' }, fontWeight: 500 }}>
+                      Designed in Germany & socially responsible
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+            </Grid>
+            
+            {/* Right Column - Image + CTA Form */}
+            <Grid item xs={12} md={6} data-aos="fade-left" sx={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Product Image */}
               <Box
                 sx={{
-                  mb: 4,
+                  width: '100%',
+                  height: { xs: '300px', md: '350px' },
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  mb: 3,
                 }}
               >
+                <Box
+                  component="img"
+                  src="/images/scam-survival-kit.png"
+                  alt="Konfydence Scam Survival Kit"
+                  sx={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    borderRadius: 4,
+                    overflow: 'hidden',
+                  }}
+                />
+              </Box>
+
+              {/* CTA Section */}
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography
                   variant="h6"
                   sx={{
@@ -251,6 +358,7 @@ export default function SKKPage() {
                     fontWeight: 600,
                     mb: 2,
                     color: 'white',
+                    textAlign: 'center',
                   }}
                 >
                   Claim Your Early Bird Discount
@@ -269,7 +377,6 @@ export default function SKKPage() {
                       error={!!emailError}
                       helperText={emailError}
                       sx={{
-                        flex: { xs: '1 1 auto', md: '1 1 0' },
                         borderRadius: 2,
                         backgroundColor: 'rgba(255, 255, 255, 0.95)',
                         '& .MuiOutlinedInput-root': {
@@ -287,16 +394,14 @@ export default function SKKPage() {
                       type="submit"
                       variant="contained"
                       disabled={loading}
+                      fullWidth
                       sx={{
-                        flex: { xs: '1 1 auto', md: '0 0 auto' },
-                        minWidth: { xs: '100%', md: '200px' },
                         backgroundColor: '#FF725E',
                         color: 'white',
                         py: 1.5,
                         px: { xs: 2, md: 4 },
                         fontWeight: 600,
                         fontSize: '1.1rem',
-                        whiteSpace: 'nowrap',
                         '&:hover': {
                           backgroundColor: '#e65a4a',
                         },
@@ -317,7 +422,7 @@ export default function SKKPage() {
                     opacity: 0.9,
                   }}
                 >
-                Designed by a finance & compliance expert with 16+ years of experience
+                  Designed by a finance & compliance expert with 16+ years of experience
                 </Typography>
                 <Typography
                   variant="body2"
@@ -331,180 +436,6 @@ export default function SKKPage() {
                   No spam. Early access + behind-the-scenes updates.
                 </Typography>
               </Box>
-            </Grid>
-            
-            {/* Right side image */}
-            <Grid item xs={12} md={6} data-aos="fade-left">
-              <Box
-                sx={{
-                  width: '100%',
-                  height: { xs: '400px', md: '500px' },
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-              >
-                <Box
-                  component="img"
-                  src="/images/scam-survival-kit.png"
-                  alt="Konfydence Scam Survival Kit"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    borderRadius: 4,
-                    overflow: 'hidden',
-                  }}
-                />
-              </Box>
-            </Grid>
-
-            {/* Key Benefits Row */}
-            <Grid item xs={12} sx={{ mt: 6 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontSize: { xs: '1.75rem', md: '2.25rem' },
-                  fontWeight: 700,
-                  mb: 4,
-                  textAlign: 'center',
-                  color: 'white',
-                }}
-                data-aos="fade-up"
-              >
-                Key Benefits
-              </Typography>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="100">
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      height: '100%', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: 3,
-                      p: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                      },
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
-                      90 scenario-based cards (80 real-world scams + 10 Wild Cards)
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="200">
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      height: '100%', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: 3,
-                      p: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                      },
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
-                      Point-based, skill-building gameplay
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="300">
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      height: '100%', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: 3,
-                      p: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                      },
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
-                      Quick, simple rules, no technical knowledge
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="400">
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      height: '100%', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: 3,
-                      p: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                      },
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
-                      Learn together, without risk or shame
-                    </Typography>
-                  </Box>
-                </Grid>
-                
-                <Grid item xs={12} sm={6} md={4} data-aos="fade-up" data-aos-delay="500">
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'flex-start', 
-                      height: '100%', 
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      border: '2px solid rgba(255, 255, 255, 0.3)',
-                      borderRadius: 3,
-                      p: 3,
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        backgroundColor: 'rgba(255, 255, 255, 0.25)',
-                        transform: 'translateY(-5px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)',
-                      },
-                    }}
-                  >
-                    <CheckCircleIcon sx={{ fontSize: 32, color: '#FFD700', mr: 2, mt: 0.5, flexShrink: 0 }} />
-                    <Typography variant="body1" sx={{ color: 'white', lineHeight: 1.7, fontSize: { xs: '0.95rem', md: '1rem' }, fontWeight: 500 }}>
-                      Designed in Germany & socially responsible
-                    </Typography>
-                  </Box>
-                </Grid>
-              </Grid>
             </Grid>
           </Grid>
         </Container>
