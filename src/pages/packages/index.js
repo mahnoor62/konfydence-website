@@ -936,9 +936,9 @@ export default function PackagesPage() {
               if (userRole !== 'b2b_user' && userRole !== 'b2b_member' && userRole !== 'admin') {
                 productMismatch = true;
                 if (userRole === 'b2e_user' || userRole === 'b2e_member') {
-                  productMessage = 'You are a B2E user. You can only purchase B2E products.';
+                  productMessage = 'You are a B2E (School) user. You cannot buy B2B (Business) products. Please select B2E products only.';
                 } else if (userRole === 'b2c_user') {
-                  productMessage = 'You are a B2C user. You can only purchase B2C products.';
+                  productMessage = 'You are a B2C (Individual) user. You cannot buy B2B (Business) products. Please select B2C products only.';
                 }
               }
             } else if (productTargetAudience === 'schools') {
@@ -946,9 +946,9 @@ export default function PackagesPage() {
               if (userRole !== 'b2e_user' && userRole !== 'b2e_member' && userRole !== 'admin') {
                 productMismatch = true;
                 if (userRole === 'b2b_user' || userRole === 'b2b_member') {
-                  productMessage = 'You are a B2B user. You can only purchase B2B products.';
+                  productMessage = 'You are a B2B (Business) user. You cannot buy B2E (School) products. Please select B2B products only.';
                 } else if (userRole === 'b2c_user') {
-                  productMessage = 'You are a B2C user. You can only purchase B2C products.';
+                  productMessage = 'You are a B2C (Individual) user. You cannot buy B2E (School) products. Please select B2C products only.';
                 }
               }
             } else if (productTargetAudience === 'private-users') {
@@ -956,17 +956,18 @@ export default function PackagesPage() {
               if (userRole !== 'b2c_user' && userRole !== 'admin') {
                 productMismatch = true;
                 if (userRole === 'b2b_user' || userRole === 'b2b_member') {
-                  productMessage = 'You are a B2B user. You can only purchase B2B products.';
+                  productMessage = 'You are a B2B (Business) user. You cannot buy B2C (Individual) products. Please select B2B products only.';
                 } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
-                  productMessage = 'You are a B2E user. You can only purchase B2E products.';
+                  productMessage = 'You are a B2E (School) user. You cannot buy B2C (Individual) products. Please select B2E products only.';
                 }
               }
             }
 
             if (productMismatch) {
+              console.log('Product Mismatch Error:', productMessage); // Debug log
               setSnackbar({
                 open: true,
-                message: productMessage,
+                message: productMessage || 'Account type mismatch. Please select the correct product type.',
                 severity: 'error'
               });
               setProcessingPurchase(null);
@@ -978,19 +979,64 @@ export default function PackagesPage() {
           // If URL type matches, we trust the user chose the right packages
           if (!urlTypeMatchesRole && pkg.targetAudiences && Array.isArray(pkg.targetAudiences)) {
             let packageMatchesProduct = false;
+            let packageErrorMessage = '';
             
             if (productTargetAudience === 'businesses') {
               packageMatchesProduct = pkg.targetAudiences.includes('B2B');
+              if (!packageMatchesProduct) {
+                if (userRole === 'b2c_user') {
+                  packageErrorMessage = 'You are a B2C (Individual) user. You can only purchase B2C products.';
+                } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+                  packageErrorMessage = 'You are a B2E (School) user. You can only purchase B2E products.';
+                } else {
+                  packageErrorMessage = 'You can only purchase packages that match your account type.';
+                }
+              }
             } else if (productTargetAudience === 'schools') {
               packageMatchesProduct = pkg.targetAudiences.includes('B2E');
+              if (!packageMatchesProduct) {
+                if (userRole === 'b2c_user') {
+                  packageErrorMessage = 'You are a B2C (Individual) user. You can only purchase B2C products.';
+                } else if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+                  packageErrorMessage = 'You are a B2B (Business) user. You can only purchase B2B products.';
+                } else {
+                  packageErrorMessage = 'You can only purchase packages that match your account type.';
+                }
+              }
             } else if (productTargetAudience === 'private-users') {
               packageMatchesProduct = pkg.targetAudiences.includes('B2C');
+              if (!packageMatchesProduct) {
+                if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+                  packageErrorMessage = 'You are a B2B (Business) user. You can only purchase B2B products.';
+                } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+                  packageErrorMessage = 'You are a B2E (School) user. You can only purchase B2E products.';
+                } else {
+                  packageErrorMessage = 'You can only purchase packages that match your account type.';
+                }
+              }
+            }
+
+            // Ensure message is always set if there's a mismatch
+            if (!packageMatchesProduct && !packageErrorMessage) {
+              // Fallback message based on user role
+              if (userRole === 'b2c_user') {
+                packageErrorMessage = 'You are a B2C (Individual) user. You can only purchase B2C products.';
+              } else if (userRole === 'b2b_user' || userRole === 'b2b_member') {
+                packageErrorMessage = 'You are a B2B (Business) user. You can only purchase B2B products.';
+              } else if (userRole === 'b2e_user' || userRole === 'b2e_member') {
+                packageErrorMessage = 'You are a B2E (School) user. You can only purchase B2E products.';
+              } else {
+                packageErrorMessage = 'You can only purchase packages that match your account type.';
+              }
             }
 
             if (!packageMatchesProduct) {
+              console.log('Package Mismatch - User Role:', userRole);
+              console.log('Package Mismatch - Product Target:', productTargetAudience);
+              console.log('Package Mismatch Error:', packageErrorMessage);
               setSnackbar({
                 open: true,
-                message: 'This package does not match the product type. Please select a compatible package.',
+                message: packageErrorMessage,
                 severity: 'error'
               });
               setProcessingPurchase(null);
@@ -2430,16 +2476,39 @@ export default function PackagesPage() {
       {/* Success/Error Snackbar */}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={6000}
+        autoHideDuration={8000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ 
+          maxWidth: { xs: '90%', sm: '700px' },
+          width: 'auto',
+          top: '80px !important'
+        }}
       >
         <Alert 
           onClose={() => setSnackbar({ ...snackbar, open: false })} 
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            minWidth: '300px',
+            fontSize: '1rem',
+            alignItems: 'flex-start',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+            '& .MuiAlert-message': {
+              width: '100%',
+              wordBreak: 'break-word',
+              padding: '8px 0',
+              lineHeight: 1.6,
+              color: '#fff',
+              fontWeight: 500
+            },
+            '& .MuiAlert-icon': {
+              paddingTop: '10px'
+            }
+          }}
         >
-          {snackbar.message}
+          {snackbar.message || 'An error occurred'}
         </Alert>
       </Snackbar>
 
