@@ -962,10 +962,43 @@ export default function GamePage() {
     }, 500);
   }, [isCardLocked, scenarios, currentCardIndex]);
 
+  // Helper function to check if card is informational (all answers are "no answer")
+  const isInformationalCard = useCallback((scenario) => {
+    if (!scenario || !scenario.answers || scenario.answers.length === 0) return false;
+    return scenario.answers.every(answer => 
+      answer.text && answer.text.toLowerCase().trim() === 'no answer'
+    );
+  }, []);
+
+  // Handler for informational card "Answer" button
+  const handleInformationalCardAnswer = useCallback(() => {
+    if (isCardLocked) return;
+    
+    // Clear timer when answer button is clicked
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      setTimerInterval(null);
+    }
+    
+    setIsCardLocked(true);
+    
+    // Show feedback immediately (no answer recorded, no score change)
+    setTimeout(() => {
+      setShowFeedback(true);
+    }, 300);
+  }, [isCardLocked, timerInterval]);
+
   // Start timer when question appears (gameState is 'game' and currentCardIndex changes)
   useEffect(() => {
     // Only start timer when in game state and question is available
     if (gameState === 'game' && scenarios.length > 0 && scenarios[currentCardIndex] && !isCardLocked) {
+      const currentScenario = scenarios[currentCardIndex];
+      
+      // Don't start timer for informational cards
+      if (isInformationalCard(currentScenario)) {
+        return;
+      }
+      
       // Clear any existing timer
       if (timerInterval) {
         clearInterval(timerInterval);
@@ -996,7 +1029,7 @@ export default function GamePage() {
         clearInterval(interval);
       };
     }
-  }, [gameState, currentCardIndex, scenarios.length, isCardLocked, handleTimerExpire]);
+  }, [gameState, currentCardIndex, scenarios.length, isCardLocked, handleTimerExpire, isInformationalCard]);
 
   // Mark component as mounted (client-side only)
   // Check for resume query parameter
@@ -3890,25 +3923,29 @@ export default function GamePage() {
                   <div className={`${styles.questionCard} ${showFeedback ? styles.flipped : ''}`}>
                     <div className={styles.questionCardInner}>
                       <div className={styles.questionCardFront}>
-                        {/* Header Row Inside Card */}
+                        {/* Header Row Inside Card - Hide score for informational cards */}
                         <div className={styles.cardHeaderRow}>
                           <div className={styles.progressInfo}>
                             <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
                           </div>
-                          <div className={styles.timerDisplay} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold',
-                            color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
-                          }}>
-                            <span>Pause:</span>
-                            <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
-                          </div>
-                          <div className={styles.scoreDisplay}>
-                            <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
-                          </div>
+                          {!isInformationalCard(currentScenario) && (
+                            <>
+                              <div className={styles.timerDisplay} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                              }}>
+                                <span>Pause:</span>
+                                <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                              </div>
+                              <div className={styles.scoreDisplay}>
+                                <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                         
                         <div className={styles.threatIllustration}>
@@ -3924,52 +3961,76 @@ export default function GamePage() {
                           <h3 className={styles.threatTitle}>{currentScenario.cardTitle || currentScenario.title || 'Untitled Question'}</h3>
                         </div>
                         <p className={styles.threatDescription}>{currentScenario.description}</p>
-                        <div className={styles.answersContainer}>
-                          {currentScenario.answers && currentScenario.answers.length > 0 ? (
-                            currentScenario.answers.map((answer, index) => {
-                              const letter = String.fromCharCode(65 + index); // A, B, C, D
-                              const isSelected = isCardLocked && selectedAnswer === index;
-                              const isCorrectAnswer = answer.isCorrect;
-                              return (
-                                <button
-                                  key={answer.id || index}
-                                  className={`${styles.answerOption} ${
-                                    isSelected && isCorrectAnswer ? styles.correctHighlight : ''
-                                  } ${isSelected && !isCorrectAnswer ? styles.incorrectHighlight : ''}
-                                  ${isCardLocked ? styles.disabled : ''}`}
-                                  onClick={() => handleAnswerClick(index)}
-                                  disabled={isCardLocked}
-                                >
-                                  <span className={styles.answerLetter}>{letter}</span>
-                                  <span className={styles.answerText}>{answer.text}</span>
-                                </button>
-                              );
-                            })
-                          ) : (
-                            <p>No answers available for this question.</p>
-                          )}
-                        </div>
+                        
+                        {/* Show Answer button for informational cards, otherwise show options */}
+                        {isInformationalCard(currentScenario) ? (
+                          <div className={styles.answersContainer} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
+                            <button 
+                              className={`${styles.btn} ${styles.btnPrimary}`}
+                              onClick={handleInformationalCardAnswer}
+                              disabled={isCardLocked}
+                              style={{ 
+                                minWidth: '150px',
+                                padding: '12px 30px',
+                                fontSize: '1rem',
+                                fontWeight: 'bold'
+                              }}
+                            >
+                              Answer
+                            </button>
+                          </div>
+                        ) : (
+                          <div className={styles.answersContainer}>
+                            {currentScenario.answers && currentScenario.answers.length > 0 ? (
+                              currentScenario.answers.map((answer, index) => {
+                                const letter = String.fromCharCode(65 + index); // A, B, C, D
+                                const isSelected = isCardLocked && selectedAnswer === index;
+                                const isCorrectAnswer = answer.isCorrect;
+                                return (
+                                  <button
+                                    key={answer.id || index}
+                                    className={`${styles.answerOption} ${
+                                      isSelected && isCorrectAnswer ? styles.correctHighlight : ''
+                                    } ${isSelected && !isCorrectAnswer ? styles.incorrectHighlight : ''}
+                                    ${isCardLocked ? styles.disabled : ''}`}
+                                    onClick={() => handleAnswerClick(index)}
+                                    disabled={isCardLocked}
+                                  >
+                                    <span className={styles.answerLetter}>{letter}</span>
+                                    <span className={styles.answerText}>{answer.text}</span>
+                                  </button>
+                                );
+                              })
+                            ) : (
+                              <p>No answers available for this question.</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className={styles.questionCardBack}>
-                        {/* Header Row Inside Card */}
+                        {/* Header Row Inside Card - Hide score for informational cards */}
                         <div className={styles.cardHeaderRow}>
                           <div className={styles.progressInfo}>
                             <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
                           </div>
-                          <div className={styles.timerDisplay} style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            fontSize: '0.75rem',
-                            fontWeight: 'bold',
-                            color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
-                          }}>
-                            <span>Pause:</span>
-                            <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
-                          </div>
-                          <div className={styles.scoreDisplay}>
-                            <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
-                          </div>
+                          {!isInformationalCard(currentScenario) && (
+                            <>
+                              <div className={styles.timerDisplay} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '0.75rem',
+                                fontWeight: 'bold',
+                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                              }}>
+                                <span>Pause:</span>
+                                <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                              </div>
+                              <div className={styles.scoreDisplay}>
+                                <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
+                              </div>
+                            </>
+                          )}
                         </div>
                         
                         <div className={styles.feedbackContent}>
@@ -3980,51 +4041,56 @@ export default function GamePage() {
                               className={styles.cardIconFeedback}
                             />
                           </div>
-                          <div className={styles.answerSection}>
-                            {/* Your Answer */}
-                            <div className={styles.yourAnswerLabel}>YOUR ANSWER: 
-                              {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
-                                <>
-                                  {String.fromCharCode(65 + selectedAnswer)}
-                                </>
-                              ) : (
-                                answerHistory.length > 0 && answerHistory[answerHistory.length - 1]?.selectedAnswerText === 'Time Expired - 0 Score' ? (
-                                  'Time Expired'
+                          
+                          {/* Hide answer section for informational cards */}
+                          {!isInformationalCard(currentScenario) && (
+                            <div className={styles.answerSection}>
+                              {/* Your Answer */}
+                              <div className={styles.yourAnswerLabel}>YOUR ANSWER: 
+                                {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
+                                  <>
+                                    {String.fromCharCode(65 + selectedAnswer)}
+                                  </>
                                 ) : (
-                                  'None'
-                                )
-                              )}
+                                  answerHistory.length > 0 && answerHistory[answerHistory.length - 1]?.selectedAnswerText === 'Time Expired - 0 Score' ? (
+                                    'Time Expired'
+                                  ) : (
+                                    'None'
+                                  )
+                                )}
+                              </div>
+                              {/* Score */}
+                              <div className={styles.yourAnswerScore}>
+                                Score: {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
+                                  currentScenario.answers[selectedAnswer].scoring || 0
+                                ) : (
+                                  0
+                                )}
+                              </div>
+                              
+                              {/* Safe Actions Title - Show all options with score > 0, highest to lowest */}
+                              <div className={styles.safeActionsTitle}>
+                                SAFE ACTION(S): {(() => {
+                                  // Get all answers with score > 0 and sort by score (highest first)
+                                  const validAnswers = currentScenario.answers
+                                    .map((ans, idx) => ({ letter: String.fromCharCode(65 + idx), score: ans.scoring || 0 }))
+                                    .filter(item => item.score > 0)
+                                    .sort((a, b) => b.score - a.score);
+                                  
+                                  return validAnswers.map(item => item.letter).join(', ');
+                                })()}
+                              </div>
+                              
+                              {/* All Options Scoring on One Line */}
+                              <div className={styles.scoringLine}>
+                                (Scoring: {currentScenario.answers.map((ans, idx) => {
+                                  const letter = String.fromCharCode(65 + idx);
+                                  return `${letter}: ${ans.scoring || 0}`;
+                                }).join(', ')})
+                              </div>
                             </div>
-                            {/* Score */}
-                            <div className={styles.yourAnswerScore}>
-                              Score: {selectedAnswer !== null && currentScenario.answers && currentScenario.answers[selectedAnswer] ? (
-                                currentScenario.answers[selectedAnswer].scoring || 0
-                              ) : (
-                                0
-                              )}
-                            </div>
-                            
-                            {/* Safe Actions Title - Show all options with score > 0, highest to lowest */}
-                            <div className={styles.safeActionsTitle}>
-                              SAFE ACTION(S): {(() => {
-                                // Get all answers with score > 0 and sort by score (highest first)
-                                const validAnswers = currentScenario.answers
-                                  .map((ans, idx) => ({ letter: String.fromCharCode(65 + idx), score: ans.scoring || 0 }))
-                                  .filter(item => item.score > 0)
-                                  .sort((a, b) => b.score - a.score);
-                                
-                                return validAnswers.map(item => item.letter).join(', ');
-                              })()}
-                            </div>
-                            
-                            {/* All Options Scoring on One Line */}
-                            <div className={styles.scoringLine}>
-                              (Scoring: {currentScenario.answers.map((ans, idx) => {
-                                const letter = String.fromCharCode(65 + idx);
-                                return `${letter}: ${ans.scoring || 0}`;
-                              }).join(', ')})
-                            </div>
-                          </div>
+                          )}
+                          
                           <div className={styles.rationaleSection}>
                             <div className={styles.rationaleLabel}>WHY:</div>
                             <p className={styles.rationaleText}>

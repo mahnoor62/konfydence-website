@@ -1000,41 +1000,34 @@ Get the full kit for just $49.
                       backgroundColor: '#000B3F',
                       borderRadius: 3,
                       overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
+                      cursor: 'pointer',
+                    }}
+                    onClick={(e) => {
+                      const video = e.currentTarget.querySelector('video');
+                      if (video) {
+                        if (video.paused) {
+                          video.play();
+                        } else {
+                          video.pause();
+                        }
+                      }
                     }}
                   >
-                    <Box
-                      sx={{
+                    <video
+                      controls
+                      style={{
                         position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        color: 'white',
-                        textAlign: 'center',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
                       }}
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      <Typography
-                        variant="h6"
-                        sx={{
-                          // color: '#FF5252',
-                          fontWeight: 700,
-                          mb: 2,
-                        }}
-                      >
-                        Video Placeholder
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'rgba(255, 255, 255, 0.8)',
-                          fontStyle: 'italic',
-                        }}
-                      >
-                        Short video from Tichi coming soon
-                      </Typography>
-                    </Box>
+                      <source src="/video/video.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
                   </Box>
                 </Grid>
 
