@@ -927,6 +927,28 @@ export default function GamePage() {
   const [questionTimer, setQuestionTimer] = useState(120); // 2 minutes = 120 seconds
   const [timerInterval, setTimerInterval] = useState(null); // Store interval ID
   const resultCardRef = useRef(null); // Ref for screenshot capture
+  
+  // Bonus cards state for Level 3
+  const [showBonusCards, setShowBonusCards] = useState(false);
+  const [currentBonusCardIndex, setCurrentBonusCardIndex] = useState(0);
+  const [isBonusCardFlipped, setIsBonusCardFlipped] = useState(false);
+  
+  const bonusCards = [
+    { front: '/images/qr-card.png', back: '/images/qr-back-card.png' },
+    { front: '/images/setup-card.png', back: '/images/setup-back-card.png' }
+  ];
+  
+  // Auto-flip bonus cards after 3 seconds
+  useEffect(() => {
+    if (!showBonusCards || isBonusCardFlipped) return;
+    
+    // Auto-flip to back after 3 seconds
+    const flipTimer = setTimeout(() => {
+      setIsBonusCardFlipped(true);
+    }, 3000);
+    
+    return () => clearTimeout(flipTimer);
+  }, [showBonusCards, currentBonusCardIndex, isBonusCardFlipped]);
 
   // Auto-submit function when timer expires
   const handleTimerExpire = useCallback(() => {
@@ -2673,6 +2695,126 @@ export default function GamePage() {
     }
   }, [user, trialInfo, API_URL]);
 
+  const proceedToSummary = useCallback(async () => {
+    // Check if this is a demo user
+    const codeType = sessionStorage.getItem('codeType');
+    let isDemoUser = false;
+    if (codeType === 'trial') {
+      const trialDataStr = sessionStorage.getItem('trialData');
+      if (trialDataStr) {
+        try {
+          const trialData = JSON.parse(trialDataStr);
+          isDemoUser = !!(trialData.targetAudience);
+        } catch (e) {
+          console.error('Error parsing trialData:', e);
+        }
+      }
+    }
+    
+    // Save progress for all users (including demo users)
+    // Demo users MUST save progress so backend can verify all levels are completed
+    if (selectedLevel && answerHistory.length > 0) {
+      try {
+        console.log(`💾 Saving progress for level ${selectedLevel} with ${answerHistory.length} answers`);
+        
+        // Verify productId before saving
+        const storedProductId = sessionStorage.getItem('productId');
+        if (!storedProductId) {
+          console.warn('⚠️ productId missing, attempting to restore...');
+          // Try to restore from trialInfo
+          if (trialInfo?.productId) {
+            const productId = typeof trialInfo.productId === 'object' 
+              ? (trialInfo.productId._id || trialInfo.productId.id || trialInfo.productId)
+              : trialInfo.productId;
+            if (productId) {
+              sessionStorage.setItem('productId', productId.toString());
+              console.log(`✅ Restored productId: ${productId}`);
+            }
+          }
+        }
+        
+        await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
+        console.log(`✅ Progress saved successfully for level ${selectedLevel}`);
+        
+        // For demo users, check if all required levels are completed AFTER saving progress
+        // Backend will verify using GameProgress records
+        if (isDemoUser) {
+          // Get target audience
+          let targetAudience = 'B2C';
+          const trialDataStr = sessionStorage.getItem('trialData');
+          if (trialDataStr) {
+            try {
+              const trialData = JSON.parse(trialDataStr);
+              targetAudience = trialData.targetAudience || 'B2C';
+            } catch (e) {
+              console.error('Error parsing trialData:', e);
+            }
+          }
+          
+          // Check if this was the last required level
+          // B2C: Level 1 is the last required
+          // B2B/B2E: Level 3 is the last required
+          let shouldIncrementSeat = false;
+          
+          if (targetAudience === 'B2C' && selectedLevel === 1) {
+            // B2C: Level 1 completed
+            shouldIncrementSeat = true;
+          } else if ((targetAudience === 'B2B' || targetAudience === 'B2E') && selectedLevel === 3) {
+            // B2B/B2E: Level 3 completed - backend will verify all 3 levels are in GameProgress
+            shouldIncrementSeat = true;
+          }
+          
+          if (shouldIncrementSeat) {
+            try {
+              const token = localStorage.getItem('token');
+              const code = sessionStorage.getItem('code');
+              if (token && code) {
+                // Add a small delay to ensure GameProgress is saved in database
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                console.log(`🎮 Demo user (${targetAudience}) completed level ${selectedLevel} - calling increment API...`);
+                // Call API to increment seat - backend will verify all required levels are completed
+                // Backend will prevent duplicate increments if user has already completed
+                try {
+                  await axios.post(
+                    `${API_URL}/free-trial/increment-seat-on-completion`,
+                    { code },
+                    {
+                      headers: {
+                        Authorization: `Bearer ${token}`,
+                      },
+                    }
+                  );
+                  console.log('✅ Seat incremented for demo user');
+                } catch (incrementError) {
+                  // If error is "already completed", that's expected for "Play Again" scenario
+                  if (incrementError.response?.data?.alreadyPlayed || incrementError.response?.data?.seatsFinished) {
+                    console.log(`ℹ️ Demo user (${targetAudience}) has already completed - seat not incremented (this is expected for "Play Again")`);
+                  } else {
+                    console.error('Error incrementing seat for demo user:', incrementError);
+                    console.error('Error details:', incrementError.response?.data || incrementError.message);
+                  }
+                  // Don't block showing summary - user can still see results
+                }
+              }
+            } catch (error) {
+              console.error('Error in seat increment flow:', error);
+              // Don't block showing summary
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`❌ Error saving progress for level ${selectedLevel}:`, error);
+        console.error('Error details:', error.response?.data || error.message);
+        // Don't block showing summary if save fails, but log the error
+        // The backup save in useEffect will try again
+      }
+    } else {
+      console.warn(`⚠️ Cannot save progress: selectedLevel=${selectedLevel}, answerHistory.length=${answerHistory?.length || 0}`);
+    }
+    setGameState('summary');
+  }, [selectedLevel, score, answerHistory, scenarios, saveGameProgress, API_URL, trialInfo]);
+
   const nextCard = useCallback(async () => {
     // Clear timer when moving to next card
     if (timerInterval) {
@@ -2687,126 +2829,46 @@ export default function GamePage() {
       setIsCardLocked(false);
       setQuestionTimer(120); // Reset timer for next question
     } else {
-      // Game complete
-      // Check if this is a demo user
-      const codeType = sessionStorage.getItem('codeType');
-      let isDemoUser = false;
-      if (codeType === 'trial') {
-        const trialDataStr = sessionStorage.getItem('trialData');
-        if (trialDataStr) {
-          try {
-            const trialData = JSON.parse(trialDataStr);
-            isDemoUser = !!(trialData.targetAudience);
-          } catch (e) {
-            console.error('Error parsing trialData:', e);
-          }
-        }
+      // Game complete - check if Level 3 to show bonus cards
+      if (selectedLevel === 3 && !showBonusCards) {
+        // Show bonus cards for Level 3 in same card space
+        // Reset feedback state first, then show bonus cards after brief delay
+        setShowFeedback(false);
+        
+        // Small delay to ensure clean transition (prevents flash of back card)
+        setTimeout(() => {
+          setShowBonusCards(true);
+          setCurrentBonusCardIndex(0);
+          setIsBonusCardFlipped(false); // Start with front card
+        }, 100); // 100ms delay for smooth transition
+        
+        return; // Exit here, bonus cards will handle progression to summary
       }
       
-      // Save progress for all users (including demo users)
-      // Demo users MUST save progress so backend can verify all levels are completed
-      if (selectedLevel && answerHistory.length > 0) {
-        try {
-          console.log(`💾 Saving progress for level ${selectedLevel} with ${answerHistory.length} answers`);
-          
-          // Verify productId before saving
-          const storedProductId = sessionStorage.getItem('productId');
-          if (!storedProductId) {
-            console.warn('⚠️ productId missing, attempting to restore...');
-            // Try to restore from trialInfo
-            if (trialInfo?.productId) {
-              const productId = typeof trialInfo.productId === 'object' 
-                ? (trialInfo.productId._id || trialInfo.productId.id || trialInfo.productId)
-                : trialInfo.productId;
-              if (productId) {
-                sessionStorage.setItem('productId', productId.toString());
-                console.log(`✅ Restored productId: ${productId}`);
-              }
-            }
+      // If bonus cards are showing, advance through them
+      if (showBonusCards) {
+        // Only advance if card is flipped (back is showing)
+        if (isBonusCardFlipped) {
+          // Move to next bonus card or finish
+          if (currentBonusCardIndex < bonusCards.length - 1) {
+            setCurrentBonusCardIndex(prev => prev + 1);
+            setIsBonusCardFlipped(false); // Reset flip for next card
+            return;
+          } else {
+            // All bonus cards shown, proceed to summary
+            setShowBonusCards(false);
+            await proceedToSummary();
+            return;
           }
-          
-          await saveGameProgress(selectedLevel, score, answerHistory, scenarios);
-          console.log(`✅ Progress saved successfully for level ${selectedLevel}`);
-          
-          // For demo users, check if all required levels are completed AFTER saving progress
-          // Backend will verify using GameProgress records
-          if (isDemoUser) {
-            // Get target audience
-            let targetAudience = 'B2C';
-            const trialDataStr = sessionStorage.getItem('trialData');
-            if (trialDataStr) {
-              try {
-                const trialData = JSON.parse(trialDataStr);
-                targetAudience = trialData.targetAudience || 'B2C';
-              } catch (e) {
-                console.error('Error parsing trialData:', e);
-              }
-            }
-            
-            // Check if this was the last required level
-            // B2C: Level 1 is the last required
-            // B2B/B2E: Level 3 is the last required
-            let shouldIncrementSeat = false;
-            
-            if (targetAudience === 'B2C' && selectedLevel === 1) {
-              // B2C: Level 1 completed
-              shouldIncrementSeat = true;
-            } else if ((targetAudience === 'B2B' || targetAudience === 'B2E') && selectedLevel === 3) {
-              // B2B/B2E: Level 3 completed - backend will verify all 3 levels are in GameProgress
-              shouldIncrementSeat = true;
-            }
-            
-            if (shouldIncrementSeat) {
-              try {
-                const token = localStorage.getItem('token');
-                const code = sessionStorage.getItem('code');
-                if (token && code) {
-                  // Add a small delay to ensure GameProgress is saved in database
-                  await new Promise(resolve => setTimeout(resolve, 500));
-                  
-                  console.log(`🎮 Demo user (${targetAudience}) completed level ${selectedLevel} - calling increment API...`);
-                  // Call API to increment seat - backend will verify all required levels are completed
-                  // Backend will prevent duplicate increments if user has already completed
-                  try {
-                    await axios.post(
-                      `${API_URL}/free-trial/increment-seat-on-completion`,
-                      { code },
-                      {
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                        },
-                      }
-                    );
-                    console.log('✅ Seat incremented for demo user');
-                  } catch (incrementError) {
-                    // If error is "already completed", that's expected for "Play Again" scenario
-                    if (incrementError.response?.data?.alreadyPlayed || incrementError.response?.data?.seatsFinished) {
-                      console.log(`ℹ️ Demo user (${targetAudience}) has already completed - seat not incremented (this is expected for "Play Again")`);
-                    } else {
-                      console.error('Error incrementing seat for demo user:', incrementError);
-                      console.error('Error details:', incrementError.response?.data || incrementError.message);
-                    }
-                    // Don't block showing summary - user can still see results
-                  }
-                }
-              } catch (error) {
-                console.error('Error in seat increment flow:', error);
-                // Don't block showing summary
-              }
-            }
-          }
-        } catch (error) {
-          console.error(`❌ Error saving progress for level ${selectedLevel}:`, error);
-          console.error('Error details:', error.response?.data || error.message);
-          // Don't block showing summary if save fails, but log the error
-          // The backup save in useEffect will try again
         }
-      } else {
-        console.warn(`⚠️ Cannot save progress: selectedLevel=${selectedLevel}, answerHistory.length=${answerHistory?.length || 0}`);
+        // If front is showing, don't do anything (wait for auto-flip)
+        return;
       }
-      setGameState('summary');
+      
+      // Game complete - proceed to summary
+      await proceedToSummary();
     }
-  }, [currentCardIndex, scenarios.length, selectedLevel, score, answerHistory, scenarios, saveGameProgress]);
+  }, [currentCardIndex, scenarios.length, selectedLevel, showBonusCards, isBonusCardFlipped, currentBonusCardIndex, bonusCards.length, proceedToSummary, timerInterval]);
 
   const playAgain = useCallback(() => {
     setGameState('levelSelect');
@@ -3898,8 +3960,72 @@ export default function GamePage() {
         {gameState === 'game' && codeVerified && (
           <div className={`${styles.screen} ${styles.active}`}>
             <div className={styles.parallaxBg}></div>
-            {currentScenario ? (
-              <div className={styles.gameContainer}>
+            {showBonusCards ? (
+              <div className={styles.gameContainer} key="bonus-cards">
+                <div className={styles.gameContent}>
+                  <div className={`${styles.questionCard} ${isBonusCardFlipped ? styles.flipped : ''}`} key={`bonus-${currentBonusCardIndex}`}>
+                    <div className={styles.questionCardInner}>
+                      {/* Front Bonus Card */}
+                      <div className={styles.questionCardFront} style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '15px',
+                        overflow: 'hidden',
+                        background: '#000B3F'
+                      }}>
+                        <img 
+                          src={bonusCards[currentBonusCardIndex].front}
+                          alt="Bonus Card Front"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Back Bonus Card */}
+                      <div className={styles.questionCardBack} style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '15px',
+                        overflow: 'hidden',
+                        background: '#000B3F'
+                      }}>
+                        <img 
+                          src={bonusCards[currentBonusCardIndex].back}
+                          alt="Bonus Card Back"
+                          style={{
+                            width: '100%',
+                            height: 'calc(100% - 55px)',
+                            objectFit: 'contain',
+                            marginBottom: '8px'
+                          }}
+                        />
+                        <div style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
+                          <button 
+                            className={`${styles.btn} ${styles.btnPrimary}`}
+                            onClick={nextCard}
+                            style={{
+                              minWidth: '120px',
+                              padding: '8px 24px',
+                              fontSize: '0.9rem',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {currentBonusCardIndex === bonusCards.length - 1 ? 'View Results' : 'Next'}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : currentScenario ? (
+              <div className={styles.gameContainer} key="regular-cards">
                 {/* <div className={styles.gameHeader}>
                   <div className={styles.progressInfo}>
                     <span>Card {currentCardIndex + 1} / {scenarios.length}</span>
@@ -3910,7 +4036,7 @@ export default function GamePage() {
                     gap: '6px',
                     fontSize: '0.85rem',
                     fontWeight: 'bold',
-                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                   }}>
                     <span>Pause:</span>
                     <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
@@ -3936,7 +4062,7 @@ export default function GamePage() {
                                 gap: '6px',
                                 fontSize: '0.75rem',
                                 fontWeight: 'bold',
-                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                               }}>
                                 <span>Pause:</span>
                                 <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
@@ -4021,7 +4147,7 @@ export default function GamePage() {
                                 gap: '6px',
                                 fontSize: '0.75rem',
                                 fontWeight: 'bold',
-                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#FFFFFF'
+                                color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                               }}>
                                 <span>Pause:</span>
                                 <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
@@ -4111,7 +4237,7 @@ export default function GamePage() {
                             className={`${styles.btn} ${styles.btnPrimary}`}
                             onClick={nextCard}
                           >
-                            {currentCardIndex < scenarios.length - 1 ? 'Next' : 'View Results'}
+                            {currentCardIndex < scenarios.length - 1 ? 'Next' : (selectedLevel === 3 ? 'Next' : 'View Results')}
                           </button>
                         </div>
                       </div>

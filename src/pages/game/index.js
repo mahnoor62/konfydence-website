@@ -3632,7 +3632,7 @@ export default function GamePage() {
                     gap: '8px',
                     fontSize: '18px',
                     fontWeight: 'bold',
-                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#ff8800' : '#000B3D'
+                    color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#000B3D'
                   }}>
                     <span>⏱️</span>
                     <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
