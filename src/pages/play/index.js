@@ -2057,6 +2057,15 @@ export default function GamePage() {
       if (response.data && response.data.questions && response.data.questions.length > 0) {
         const questions = response.data.questions;
         
+        // Log received card order from API
+        console.log('🎮 Frontend - Cards received from API (in order):', 
+          questions.map((q, idx) => ({ 
+            index: idx + 1, 
+            cardTitle: q.cardTitle,
+            cardId: q.cardId 
+          }))
+        );
+        
         // Transform questions to game format
         const formattedScenarios = questions.map((q, idx) => {
           // Ensure answers array exists and has items
@@ -2100,6 +2109,12 @@ export default function GamePage() {
         }
         
         console.log(`Loaded ${formattedScenarios.length} scenarios`);
+        console.log('✅ Frontend - Scenarios set (final game order):', 
+          formattedScenarios.map((s, idx) => ({ 
+            index: idx + 1, 
+            title: s.cardTitle || s.title 
+          }))
+        );
         setScenarios(formattedScenarios);
         setGameState('game');
         setCurrentCardIndex(0);
