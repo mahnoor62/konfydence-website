@@ -12,6 +12,7 @@ import {
   CardContent,
   TextField,
   Alert,
+  Snackbar,
   Stack,
   Paper,
 } from '@mui/material';
@@ -537,7 +538,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get physical product
                         const physicalProduct = getProductBySlug('physical') || getProductBySlug('tactical');
                         if (!physicalProduct?._id) {
-                          alert('Product not found. Please try again.');
+                          setSnackbar({
+                            open: true,
+                            message: 'Product not found. Please try again.',
+                            severity: 'error'
+                          });
                           setProcessingPurchase(null);
                           return;
                         }
@@ -576,7 +581,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         }
                       } catch (error) {
                         console.error('Error creating checkout session:', error);
-                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setSnackbar({
+                          open: true,
+                          message: error.response?.data?.error || 'Failed to initiate purchase. Please try again.',
+                          severity: 'error'
+                        });
                         setProcessingPurchase(null);
                       }
                     }}
@@ -694,7 +703,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get digital product
                         const digitalProduct = getProductBySlug('digital') || getProductBySlug('extension');
                         if (!digitalProduct?._id) {
-                          alert('Product not found. Please try again.');
+                          setSnackbar({
+                            open: true,
+                            message: 'Product not found. Please try again.',
+                            severity: 'error'
+                          });
                           setProcessingPurchase(null);
                           return;
                         }
@@ -733,7 +746,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         }
                       } catch (error) {
                         console.error('Error creating checkout session:', error);
-                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setSnackbar({
+                          open: true,
+                          message: error.response?.data?.error || 'Failed to initiate purchase. Please try again.',
+                          severity: 'error'
+                        });
                         setProcessingPurchase(null);
                       }
                     }}
@@ -869,7 +886,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get bundle product
                         const bundleProduct = getProductBySlug('bundle') || getProductBySlug('full');
                         if (!bundleProduct?._id) {
-                          alert('Product not found. Please try again.');
+                          setSnackbar({
+                            open: true,
+                            message: 'Product not found. Please try again.',
+                            severity: 'error'
+                          });
                           setProcessingPurchase(null);
                           return;
                         }
@@ -908,7 +929,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         }
                       } catch (error) {
                         console.error('Error creating checkout session:', error);
-                        alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                        setSnackbar({
+                          open: true,
+                          message: error.response?.data?.error || 'Failed to initiate purchase. Please try again.',
+                          severity: 'error'
+                        });
                         setProcessingPurchase(null);
                       }
                     }}
@@ -1161,6 +1186,37 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
           </Box>
         </Container>
       </Box> */}
+
+      {/* Toast Notification */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={8000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ 
+          maxWidth: { xs: '90%', sm: '700px' },
+          width: 'auto',
+          top: '80px !important',
+          zIndex: 99999
+        }}
+      >
+        <Alert 
+          onClose={() => setSnackbar({ ...snackbar, open: false })} 
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            minWidth: '300px',
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& .MuiAlert-message': {
+              width: '100%',
+              wordBreak: 'break-word'
+            }
+          }}
+        >
+          {snackbar.message || 'An error occurred'}
+        </Alert>
+      </Snackbar>
 
       <Footer />
     </>

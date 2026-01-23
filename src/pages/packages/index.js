@@ -356,6 +356,14 @@ export default function PackagesPage() {
         }
 
         setRoleMismatch({ show: mismatch, message });
+        // Show toast notification instead of banner
+        if (mismatch && message) {
+          setSnackbar({
+            open: true,
+            message: message,
+            severity: 'error'
+          });
+        }
       } else {
         // User not logged in, no mismatch check needed
         setRoleMismatch({ show: false, message: '' });
@@ -1269,8 +1277,8 @@ export default function PackagesPage() {
             </Box>
           )}
 
-          {/* Role Mismatch Banner */}
-          {roleMismatch.show && (
+          {/* Role Mismatch Banner - DISABLED (Now using toast notification) */}
+          {/* {roleMismatch.show && (
             <Alert 
               severity="error" 
               sx={{ 
@@ -1285,7 +1293,7 @@ export default function PackagesPage() {
             >
               {roleMismatch.message}
             </Alert>
-          )}
+          )} */}
 
           {/* Section Heading based on type */}
           {!loading && packages.length > 0 && type && (
@@ -2482,7 +2490,8 @@ export default function PackagesPage() {
         sx={{ 
           maxWidth: { xs: '90%', sm: '700px' },
           width: 'auto',
-          top: '80px !important'
+          top: '80px !important',
+          zIndex: 99999
         }}
       >
         <Alert 

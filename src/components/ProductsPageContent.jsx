@@ -1,6 +1,6 @@
 'use client';
 
-import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Select, MenuItem, FormControl, InputLabel, Alert } from '@mui/material';
+import { Container, Typography, Grid, Box, Chip, Button, Link, Stack, Tabs, Tab, Dialog, DialogTitle, DialogContent, DialogActions, IconButton, TextField, Select, MenuItem, FormControl, InputLabel, Alert, Snackbar } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
@@ -596,7 +596,11 @@ export default function ProductsPageContent() {
                                   
                                   try {
                                     if (!physicalProduct?._id) {
-                                      alert('Product not found. Please try again.');
+                                      setRequestSnackbar({
+                                        open: true,
+                                        message: 'Product not found. Please try again.',
+                                        severity: 'error'
+                                      });
                                       setProcessingPurchase(false);
                                       return;
                                     }
@@ -628,12 +632,20 @@ export default function ProductsPageContent() {
                                     if (checkoutResponse.data.url) {
                                       window.location.href = checkoutResponse.data.url;
                                     } else {
-                                      alert('Failed to create checkout session');
+                                      setRequestSnackbar({
+                                        open: true,
+                                        message: 'Failed to create checkout session',
+                                        severity: 'error'
+                                      });
                                       setProcessingPurchase(false);
                                     }
                                   } catch (error) {
                                     console.error('Error purchasing physical product:', error);
-                                    alert(error.response?.data?.error || 'Failed to start checkout process');
+                                    setRequestSnackbar({
+                                      open: true,
+                                      message: error.response?.data?.error || 'Failed to start checkout process',
+                                      severity: 'error'
+                                    });
                                     setProcessingPurchase(false);
                                   }
                                 }}
@@ -1914,7 +1926,11 @@ export default function ProductsPageContent() {
 
                               try {
                                 if (!product?._id) {
-                                  alert('Product not found. Please try again.');
+                                  setRequestSnackbar({
+                                    open: true,
+                                    message: 'Product not found. Please try again.',
+                                    severity: 'error'
+                                  });
                                   setProcessingPurchase(false);
                                   return;
                                 }
@@ -1938,10 +1954,10 @@ export default function ProductsPageContent() {
                                 
                                 if (isDigitalProduct) {
                                   packageType = 'digital';
-                                  maxSeats = 1;
+                                  maxSeats = 5;
                                 } else if (isBundleProduct) {
                                   packageType = 'digital_physical';
-                                  maxSeats = 1;
+                                  maxSeats = 5;
                                 } else if (isPhysicalProduct) {
                                   packageType = 'physical';
                                   maxSeats = 0;
@@ -1972,7 +1988,11 @@ export default function ProductsPageContent() {
                                 }
                               } catch (error) {
                                 console.error('Error creating checkout session:', error);
-                                alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                                setRequestSnackbar({
+                                  open: true,
+                                  message: error.response?.data?.error || 'Failed to initiate purchase. Please try again.',
+                                  severity: 'error'
+                                });
                                 setProcessingPurchase(false);
                               }
                             }}
@@ -2173,7 +2193,11 @@ export default function ProductsPageContent() {
 
                               try {
                                 if (!product?._id) {
-                                  alert('Product not found. Please try again.');
+                                  setRequestSnackbar({
+                                    open: true,
+                                    message: 'Product not found. Please try again.',
+                                    severity: 'error'
+                                  });
                                   setProcessingPurchase(false);
                                   return;
                                 }
@@ -2197,10 +2221,10 @@ export default function ProductsPageContent() {
                                 
                                 if (isDigitalProduct) {
                                   packageType = 'digital';
-                                  maxSeats = 1;
+                                  maxSeats = 5;
                                 } else if (isBundleProduct) {
                                   packageType = 'digital_physical';
-                                  maxSeats = 1;
+                                  maxSeats = 5;
                                 } else if (isPhysicalProduct) {
                                   packageType = 'physical';
                                   maxSeats = 0;
@@ -2231,7 +2255,11 @@ export default function ProductsPageContent() {
                                 }
                               } catch (error) {
                                 console.error('Error creating checkout session:', error);
-                                alert(error.response?.data?.error || 'Failed to initiate purchase. Please try again.');
+                                setRequestSnackbar({
+                                  open: true,
+                                  message: error.response?.data?.error || 'Failed to initiate purchase. Please try again.',
+                                  severity: 'error'
+                                });
                                 setProcessingPurchase(false);
                               }
                             }}
@@ -2509,20 +2537,35 @@ export default function ProductsPageContent() {
       </Dialog>
 
       {/* Request Snackbar */}
-      {requestSnackbar.open && (
-        <Alert
+      <Snackbar
+        open={requestSnackbar.open}
+        autoHideDuration={8000}
+        onClose={() => setRequestSnackbar({ ...requestSnackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ 
+          maxWidth: { xs: '90%', sm: '700px' },
+          width: 'auto',
+          top: '80px !important',
+          zIndex: 99999
+        }}
+      >
+        <Alert 
+          onClose={() => setRequestSnackbar({ ...requestSnackbar, open: false })} 
           severity={requestSnackbar.severity}
-          onClose={() => setRequestSnackbar({ ...requestSnackbar, open: false })}
-          sx={{
-            position: 'fixed',
-            bottom: 20,
-            right: 20,
-            zIndex: 9999,
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            minWidth: '300px',
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            '& .MuiAlert-message': {
+              width: '100%',
+              wordBreak: 'break-word'
+            }
           }}
         >
           {requestSnackbar.message}
         </Alert>
-      )}
+      </Snackbar>
     </>
   );
 }

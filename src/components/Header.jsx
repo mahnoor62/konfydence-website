@@ -179,7 +179,15 @@ export default function Header() {
                   const safePath = pathname || '';
                   const normalizedPath = safePath.toLowerCase();
                   const normalizedHref = item.href.toLowerCase();
-                  const isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
+                  
+                  // Check if current path is active
+                  let isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
+                  
+                  // Special case: /packages should activate Products nav item
+                  if (item.label === 'Products' && normalizedPath.startsWith('/packages')) {
+                    isActive = true;
+                  }
+                  
                   return (
                     <Button
                       key={item.href}
@@ -230,16 +238,19 @@ export default function Header() {
                         onClick={toggleDropdown}
                         endIcon={<ArrowDropDownIcon sx={{ transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />}
                         sx={{
-                          borderColor: 'rgba(255,255,255,0.85)',
-                          color: 'white',
+                          borderColor: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? 'transparent' : 'rgba(255,255,255,0.85)',
+                          backgroundColor: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? 'rgba(255,255,255,0.9)' : 'transparent',
+                          color: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? '#0E4D68' : 'white',
                           textTransform: 'none',
                           fontWeight: 600,
                           fontFamily: 'var(--font-poppins), sans-serif',
                           px: 2.5,
+                          borderRadius: 999,
+                          transition: 'all 0.2s ease',
                           '&:hover': {
-                            borderColor: 'white',
-                            backgroundColor: 'rgba(255,255,255,0.1)',
-                            color: 'white',
+                            borderColor: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? 'transparent' : 'white',
+                            backgroundColor: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.1)',
+                            color: pathname?.startsWith('/dashboard') || pathname?.startsWith('/play') ? '#0E4D68' : 'white',
                           },
                         }}
                       >
@@ -414,7 +425,15 @@ export default function Header() {
               const safePath = pathname || '';
               const normalizedPath = safePath.toLowerCase();
               const normalizedHref = item.href.toLowerCase();
-              const isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
+              
+              // Check if current path is active
+              let isActive = normalizedPath === normalizedHref || (normalizedHref !== '/' && normalizedPath.startsWith(normalizedHref));
+              
+              // Special case: /packages should activate Products nav item
+              if (item.label === 'Products' && normalizedPath.startsWith('/packages')) {
+                isActive = true;
+              }
+              
               return (
                 <ListItem key={item.href} disablePadding>
                   <ListItemButton
@@ -459,10 +478,19 @@ export default function Header() {
                   <ListItemButton 
                     component={Link} 
                     href={getDashboardRoute()}
+                    selected={pathname?.startsWith('/dashboard')}
                     sx={{
                       color: 'white',
                       borderRadius: 2,
                       mb: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        color: '#0E4D68',
+                        fontWeight: 600,
+                      },
+                      '&.Mui-selected:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                      },
                       '&:hover': {
                         backgroundColor: 'rgba(255,255,255,0.2)',
                         color: 'white',
@@ -474,6 +502,7 @@ export default function Header() {
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'Poppins, sans-serif !important',
+                          fontWeight: pathname?.startsWith('/dashboard') ? 600 : 500,
                           color: 'inherit',
                         },
                       }}
@@ -484,10 +513,19 @@ export default function Header() {
                   <ListItemButton 
                     component={Link} 
                     href="/play"
+                    selected={pathname?.startsWith('/play')}
                     sx={{
                       color: 'white',
                       borderRadius: 2,
                       mb: 0.5,
+                      '&.Mui-selected': {
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        color: '#0E4D68',
+                        fontWeight: 600,
+                      },
+                      '&.Mui-selected:hover': {
+                        backgroundColor: 'rgba(255,255,255,0.95)',
+                      },
                       '&:hover': {
                         backgroundColor: 'rgba(255,255,255,0.2)',
                         color: 'white',
@@ -499,6 +537,7 @@ export default function Header() {
                       sx={{
                         '& .MuiTypography-root': {
                           fontFamily: 'Poppins, sans-serif !important',
+                          fontWeight: pathname?.startsWith('/play') ? 600 : 500,
                           color: 'inherit',
                         },
                       }}
