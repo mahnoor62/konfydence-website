@@ -1273,7 +1273,7 @@ export default function CoMaSyPage() {
                 color: 'text.secondary',
               }}
             >
-          One short demo.No account.No commitment.
+          One short demo. No account. No commitment.
             </Typography>
             
             {/* Success/Error Message */}
