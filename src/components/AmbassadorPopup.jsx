@@ -19,7 +19,7 @@ export default function AmbassadorPopup({ open, onClose }) {
 
   const handleContactUs = () => {
     onClose();
-    router.push('/contact?topic=partnerships');
+    router.push('/contact?topic=ambassador-program');
   };
 
   return (

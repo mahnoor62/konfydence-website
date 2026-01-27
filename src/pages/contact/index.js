@@ -71,13 +71,14 @@ export default function ContactPage() {
 
   // Define topic categories
   const demoTopics = ['demo-schools', 'demo-businesses'];
-  const regularTopics = ['scam-survival-kit', 'education-youth-pack', 'CoMaSi', 'other'];
+  const regularTopics = ['scam-survival-kit', 'education-youth-pack', 'CoMaSi', 'ambassador-program', 'other'];
 
   // Topic display names
   const topicLabels = {
     'scam-survival-kit': 'Scam Survival Kit (Families)',
     'education-youth-pack': 'Education / Youth Pack',
     'CoMaSi': 'CoMaSi (Companies & Compliance)',
+    'ambassador-program': 'Ambassador Program',
     'demo-schools': 'Demo for Schools',
     'demo-businesses': 'Demo for Businesses',
     'other': 'Other',
@@ -488,18 +489,36 @@ export default function ContactPage() {
         url: `${API_URL}/contact`,
         error: error.response?.data || error.message,
         status: error.response?.status,
+        fullError: error.response?.data,
       });
       
       // Get the actual error message from API response
       let errorMessage = 'Error submitting form. Please try again.';
       
       if (error.response?.data) {
-        // Check for validation errors array
+        // Check for validation errors array (express-validator format)
         if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          // Extract field-specific error messages
           const validationErrors = error.response.data.errors
-            .map(err => err.msg || err.message || err)
-            .join(', ');
-          errorMessage = validationErrors || errorMessage;
+            .map(err => {
+              // Handle express-validator error format: { msg, param, value, location }
+              if (typeof err === 'object') {
+                const fieldName = err.param || err.field || '';
+                const message = err.msg || err.message || 'Invalid value';
+                // Make error message more user-friendly
+                if (fieldName) {
+                  return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)}: ${message}`;
+                }
+                return message;
+              }
+              return err;
+            })
+            .filter(Boolean) // Remove any empty strings
+            .join('. ');
+          
+          if (validationErrors) {
+            errorMessage = validationErrors;
+          }
         }
         // Check for single error message
         else if (error.response.data.error) {
@@ -826,6 +845,29 @@ export default function ContactPage() {
                                   }}
                                 >
                                   CoMaSi (Companies & Compliance)
+                                </Box>
+                                <Box
+                                  component="div"
+                                  onClick={() => {
+                                    handleChange({ target: { name: 'topic', value: 'ambassador-program' } });
+                                    setTopicDropdownOpen(false);
+                                  }}
+                                  sx={{
+                                    display: 'block',
+                                    padding: '12px 16px',
+                                    color: '#063C5E',
+                                    fontSize: '0.95rem',
+                                    fontFamily: 'var(--font-poppins), sans-serif',
+                                    fontWeight: 500,
+                                    cursor: 'pointer',
+                                    transition: 'background-color 0.2s',
+                                    backgroundColor: formData.topic === 'ambassador-program' ? 'rgba(6, 60, 94, 0.08)' : 'transparent',
+                                    '&:hover': {
+                                      backgroundColor: 'rgba(6, 60, 94, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Ambassador Program
                                 </Box>
                                 <Box
                                   component="div"
