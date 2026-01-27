@@ -19,7 +19,7 @@ const API_URL = `${API_BASE_URL}/api`;
 
 export default function VerifyEmailPage() {
   const router = useRouter();
-  const { token } = router.query;
+  const { token, redirect } = router.query;
   const [status, setStatus] = useState('verifying'); // verifying, success, error
   const [message, setMessage] = useState('');
 
@@ -39,9 +39,17 @@ export default function VerifyEmailPage() {
       setStatus('success');
       setMessage(response.data.message || 'Email verified successfully!');
       
-      // Redirect to login after 3 seconds
+      // Always redirect to login page after verification
+      // Preserve redirect URL in localStorage for login page to use
       setTimeout(() => {
-        router.push('/login');
+        const redirectUrl = redirect || localStorage.getItem('registrationRedirect');
+        if (redirectUrl) {
+          // Preserve redirect URL in localStorage for login page
+          localStorage.setItem('registrationRedirect', redirectUrl);
+          router.push(`/login?redirect=${encodeURIComponent(redirectUrl)}`);
+        } else {
+          router.push('/login');
+        }
       }, 3000);
     } catch (error) {
       setStatus('error');

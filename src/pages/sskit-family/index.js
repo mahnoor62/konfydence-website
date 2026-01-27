@@ -550,7 +550,7 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get auth token
                         const token = localStorage.getItem('token');
                         if (!token) {
-                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          router.push(`/register?tab=individual&redirect=${encodeURIComponent('/sskit-family')}`);
                           setProcessingPurchase(null);
                           return;
                         }
@@ -715,7 +715,7 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get auth token
                         const token = localStorage.getItem('token');
                         if (!token) {
-                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          router.push(`/register?tab=individual&redirect=${encodeURIComponent('/sskit-family')}`);
                           setProcessingPurchase(null);
                           return;
                         }
@@ -898,7 +898,7 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                         // Get auth token
                         const token = localStorage.getItem('token');
                         if (!token) {
-                          router.push(`/login?redirect=${encodeURIComponent('/sskit-family')}`);
+                          router.push(`/register?tab=individual&redirect=${encodeURIComponent('/sskit-family')}`);
                           setProcessingPurchase(null);
                           return;
                         }

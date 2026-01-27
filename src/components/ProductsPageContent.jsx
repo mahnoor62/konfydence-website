@@ -587,7 +587,7 @@ export default function ProductsPageContent() {
                                 variant="contained"
                                 onClick={async () => {
                                   if (!user) {
-                                    router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                    router.push(`/register?tab=individual&redirect=${encodeURIComponent(router.asPath)}`);
                                     return;
                                   }
                                   
@@ -608,7 +608,7 @@ export default function ProductsPageContent() {
                                     // Get auth token
                                     const token = localStorage.getItem('token');
                                     if (!token) {
-                                      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                      router.push(`/register?tab=individual&redirect=${encodeURIComponent(router.asPath)}`);
                                       setProcessingPurchase(false);
                                       return;
                                     }
@@ -910,7 +910,11 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                onClick={() => setSchoolsDemoModalOpen(true)}
+                                onClick={() => {
+                                  // Always open modal first - don't check for login
+                                  // User will be redirected to login/register only when they select a product
+                                  setSchoolsDemoModalOpen(true);
+                                }}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -972,8 +976,13 @@ export default function ProductsPageContent() {
                               </Box>
                               <Button
                                 variant="contained"
-                                href="/contact"
-                                component={NextLink}
+                                onClick={() => {
+                                  if (!user) {
+                                    router.push(`/register?tab=b2b&redirect=${encodeURIComponent(router.asPath)}`);
+                                    return;
+                                  }
+                                  router.push('/contact');
+                                }}
                                 sx={{
                                   backgroundColor: '#0B7897',
                                   color: 'white',
@@ -1005,7 +1014,7 @@ export default function ProductsPageContent() {
                                 variant="contained"
                                 onClick={() => {
                                   if (!user) {
-                                    router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                    router.push(`/register?tab=b2b&redirect=${encodeURIComponent(router.asPath)}`);
                                     return;
                                   }
                                   setCustomPackageRequestDialogOpen(true);
@@ -1938,7 +1947,10 @@ export default function ProductsPageContent() {
                                 // Get auth token
                                 const token = localStorage.getItem('token');
                                 if (!token) {
-                                  router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                  // Map activeTab to tab parameter: 0=individual, 1=b2e, 2=b2b
+                                  const tabMap = { 0: 'individual', 1: 'b2e', 2: 'b2b' };
+                                  const tabParam = tabMap[activeTab] || 'b2e';
+                                  router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
                                   setProcessingPurchase(false);
                                   return;
                                 }
@@ -2020,9 +2032,10 @@ export default function ProductsPageContent() {
                           <Button
                             variant={isCenterCard ? "outlined" : "contained"}
                             fullWidth
+                            component={NextLink}
+                            href={`/packages?type=B2E&productId=${product._id}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/packages?type=B2E&productId=${product._id}`);
                               setSchoolsDemoModalOpen(false);
                             }}
                             sx={{
@@ -2205,7 +2218,10 @@ export default function ProductsPageContent() {
                                 // Get auth token
                                 const token = localStorage.getItem('token');
                                 if (!token) {
-                                  router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+                                  // Map activeTab to tab parameter: 0=individual, 1=b2e, 2=b2b
+                                  const tabMap = { 0: 'individual', 1: 'b2e', 2: 'b2b' };
+                                  const tabParam = tabMap[activeTab] || 'b2b';
+                                  router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
                                   setProcessingPurchase(false);
                                   return;
                                 }
@@ -2287,9 +2303,10 @@ export default function ProductsPageContent() {
                           <Button
                             variant={isCenterCard ? "outlined" : "contained"}
                             fullWidth
+                            component={NextLink}
+                            href={`/packages?type=B2B&productId=${product._id}`}
                             onClick={(e) => {
                               e.stopPropagation();
-                              router.push(`/packages?type=B2B&productId=${product._id}`); // B2B for businesses
                               setBusinessesDemoModalOpen(false);
                             }}
                             sx={{

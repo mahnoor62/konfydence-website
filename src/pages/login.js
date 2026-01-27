@@ -33,38 +33,46 @@ export default function LoginPage() {
   const [errorCode, setErrorCode] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { redirect } = router.query;
+  const { redirect, tab } = router.query;
 
   useEffect(() => {
     if (!authLoading && user) {
-      // Get correct dashboard route based on user role
-      const getDashboardRoute = () => {
-        if (!user) return '/dashboard';
-        
-        const userRole = user.role;
-        const hasOrganizationId = user.organizationId;
-        const hasSchoolId = user.schoolId;
-        const isMember = hasOrganizationId || hasSchoolId;
-        
-        // Check if user is a member/student
-        if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
-          return '/dashboard/member';
-        }
-        
-        // Check if user is admin
-        if (userRole === 'b2b_user') {
-          return '/dashboard/organization';
-        }
-        
-        if (userRole === 'b2e_user') {
-          return '/dashboard/institute';
-        }
-        
-        // Default dashboard for regular users
-        return '/dashboard';
-      };
+      // Check for redirect in URL or localStorage (from registration flow)
+      const redirectUrl = redirect || localStorage.getItem('registrationRedirect');
       
-      router.push(redirect || getDashboardRoute());
+      if (redirectUrl) {
+        localStorage.removeItem('registrationRedirect'); // Clear after use
+        router.push(redirectUrl);
+      } else {
+        // Get correct dashboard route based on user role
+        const getDashboardRoute = () => {
+          if (!user) return '/dashboard';
+          
+          const userRole = user.role;
+          const hasOrganizationId = user.organizationId;
+          const hasSchoolId = user.schoolId;
+          const isMember = hasOrganizationId || hasSchoolId;
+          
+          // Check if user is a member/student
+          if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
+            return '/dashboard/member';
+          }
+          
+          // Check if user is admin
+          if (userRole === 'b2b_user') {
+            return '/dashboard/organization';
+          }
+          
+          if (userRole === 'b2e_user') {
+            return '/dashboard/institute';
+          }
+          
+          // Default dashboard for regular users
+          return '/dashboard';
+        };
+        
+        router.push(getDashboardRoute());
+      }
     }
   }, [user, authLoading, redirect, router]);
 
@@ -89,21 +97,29 @@ export default function LoginPage() {
       const hasSchoolId = userData?.schoolId;
       const isMember = hasOrganizationId || hasSchoolId;
       
-      let redirectPath = redirect || '/dashboard';
+      // Check for redirect in URL or localStorage (from registration flow)
+      const redirectUrl = redirect || localStorage.getItem('registrationRedirect');
       
-      // Route based on role and membership
-      if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
-        // User is a member/student - route to member dashboard
-        redirectPath = '/dashboard/member';
-      } else if (userRole === 'b2b_user') {
-        // User is organization admin
-        redirectPath = '/dashboard/organization';
-      } else if (userRole === 'b2e_user') {
-        // User is institute admin
-        redirectPath = '/dashboard/institute';
-      } else if (userRole === 'b2c_user') {
-        // Regular user
-        redirectPath = '/dashboard';
+      let redirectPath = redirectUrl || '/dashboard';
+      
+      // Route based on role and membership (only if no redirect URL exists)
+      if (!redirectUrl) {
+        if (isMember && (userRole === 'b2b_member' || userRole === 'b2e_member')) {
+          // User is a member/student - route to member dashboard
+          redirectPath = '/dashboard/member';
+        } else if (userRole === 'b2b_user') {
+          // User is organization admin
+          redirectPath = '/dashboard/organization';
+        } else if (userRole === 'b2e_user') {
+          // User is institute admin
+          redirectPath = '/dashboard/institute';
+        } else if (userRole === 'b2c_user') {
+          // Regular user
+          redirectPath = '/dashboard';
+        }
+      } else {
+        // Clear redirect from localStorage after use
+        localStorage.removeItem('registrationRedirect');
       }
       
       router.push(redirectPath);
@@ -255,7 +271,12 @@ export default function LoginPage() {
                 <Typography variant="body2" color="text.secondary">
                   Don&apos;t have an account?{' '}
                   <MuiLink
-                    href={`/register${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ''}`}
+                    href={(() => {
+                      const params = [];
+                      if (redirect) params.push(`redirect=${encodeURIComponent(redirect)}`);
+                      if (tab) params.push(`tab=${tab}`);
+                      return `/register${params.length > 0 ? `?${params.join('&')}` : ''}`;
+                    })()}
                     sx={{ color: '#0B7897', fontWeight: 600, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } }}
                   >
                     Register here

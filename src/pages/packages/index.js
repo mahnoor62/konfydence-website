@@ -550,7 +550,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'individual';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -561,7 +564,10 @@ export default function PackagesPage() {
       // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+        const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+        const tabParam = tabMap[type] || 'individual';
+        router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 
@@ -612,7 +618,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'individual';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -649,7 +658,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'b2b';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -660,7 +672,10 @@ export default function PackagesPage() {
       // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+        const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+        const tabParam = tabMap[type] || 'b2b';
+        router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 
@@ -711,7 +726,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'b2b';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -759,7 +777,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'b2b';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -770,7 +791,10 @@ export default function PackagesPage() {
       // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+        const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+        const tabParam = tabMap[type] || 'b2b';
+        router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 
@@ -878,7 +902,10 @@ export default function PackagesPage() {
   const handleRequestCustomPackage = () => {
     // Check if user is logged in
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'b2b';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
     setSelectedPackage(null);
@@ -907,7 +934,10 @@ export default function PackagesPage() {
     }
 
     if (!user) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+      // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[type] || 'individual';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
@@ -1062,7 +1092,10 @@ export default function PackagesPage() {
       // Get auth token
       const token = localStorage.getItem('token');
       if (!token) {
-        router.push(`/login?redirect=${encodeURIComponent(router.asPath)}`);
+        // Map type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+        const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+        const tabParam = tabMap[type] || 'individual';
+        router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
         return;
       }
 

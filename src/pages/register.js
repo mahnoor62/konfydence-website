@@ -87,11 +87,57 @@ export default function RegisterPage() {
   const [memberContext, setMemberContext] = useState('unknown'); // organization | school | unknown
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { redirect, ref: referralCode } = router.query;
+
+  const { redirect, ref: referralCode, tab } = router.query;
+
+  // Store redirect in localStorage when it exists (for use after email verification)
+  useEffect(() => {
+    if (redirect) {
+      localStorage.setItem('registrationRedirect', redirect);
+    }
+  }, [redirect]);
+
+  // Set registration type based on tab parameter from URL
+  useEffect(() => {
+    if (tab) {
+      // Map tab parameter to registrationType
+      const tabMap = {
+        'individual': 'individual',
+        'b2c': 'individual',
+        'b2b': 'b2b',
+        'b2e': 'b2e',
+        'member_org': 'member_org',
+        'member_institute': 'member_institute'
+      };
+      const mappedType = tabMap[tab] || 'individual';
+      setRegistrationType(mappedType);
+      // Update formData based on registration type
+      setFormData(prev => ({
+        ...prev,
+        userType: mappedType === 'b2b' ? 'b2b' : (mappedType === 'b2e' ? 'b2e' : 'b2c'),
+        organizationType: mappedType === 'b2b' ? 'company' : (mappedType === 'b2e' ? 'school' : 'company'),
+      }));
+      // Set default member context
+      if (mappedType === 'member_org') {
+        setMemberContext('organization');
+      } else if (mappedType === 'member_institute') {
+        setMemberContext('school');
+      } else {
+        setMemberContext('unknown');
+      }
+    }
+  }, [tab]);
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push(redirect || '/dashboard');
+      // If user is already logged in, redirect to original page (product page) if redirect exists
+      const redirectUrl = redirect || localStorage.getItem('registrationRedirect');
+      if (redirectUrl) {
+        localStorage.removeItem('registrationRedirect'); // Clear after use
+        router.push(redirectUrl);
+      } else {
+        router.push('/dashboard');
+      }
     }
   }, [user, authLoading, redirect, router]);
 
@@ -293,8 +339,17 @@ export default function RegisterPage() {
         // Show verification message instead of redirecting
         setError(''); // Clear any errors
         setEmailError(''); // Clear email error
-        // Clear form data
-        setFormData({ name: '', email: '', password: '', confirmPassword: '' });
+        // Clear form data including organization fields
+        setFormData({ 
+          name: '', 
+          email: '', 
+          password: '', 
+          confirmPassword: '',
+          organizationName: '',
+          organizationType: formData.userType === 'b2b' ? 'company' : (formData.userType === 'b2e' ? 'school' : 'company'),
+          customOrganizationType: '',
+          organizationCode: ''
+        });
         setPasswordStrength({ strength: 0, label: '', color: '#e0e0e0', requirements: {} });
         
         // Always show success message to check email
@@ -307,7 +362,20 @@ export default function RegisterPage() {
         });
         // Don't redirect, show success message on same page
       } else {
-        router.push(redirect || '/dashboard');
+        // After successful registration, redirect to login page with redirect parameter
+        const redirectUrl = redirect || localStorage.getItem('registrationRedirect');
+        if (redirectUrl) {
+          // Preserve redirect in localStorage for login page
+          localStorage.setItem('registrationRedirect', redirectUrl);
+          // Get tab parameter if exists
+          const tabParam = tab || '';
+          const loginUrl = tabParam 
+            ? `/login?redirect=${encodeURIComponent(redirectUrl)}&tab=${tabParam}`
+            : `/login?redirect=${encodeURIComponent(redirectUrl)}`;
+          router.push(loginUrl);
+        } else {
+          router.push('/login');
+        }
       }
     } else {
       // Display human-readable error message
@@ -376,58 +444,60 @@ export default function RegisterPage() {
 
             
 
-              {/* Registration Type Tabs */}
-              <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs
-                  value={registrationType}
-                  onChange={(e, newValue) => {
-                    setRegistrationType(newValue);
-                    setFormData({ 
-                      name: '', 
-                      email: '', 
-                      password: '', 
-                      confirmPassword: '',
-                      userType: newValue === 'b2b' ? 'b2b' : (newValue === 'b2e' ? 'b2e' : 'b2c'),
-                      organizationName: '',
-                      organizationType: newValue === 'b2b' ? 'company' : (newValue === 'b2e' ? 'school' : 'company'),
-                      customOrganizationType: '',
-                      organizationCode: ''
-                    });
-                    // Set default member context based on tab
-                    if (newValue === 'member_org') {
-                      setMemberContext('organization');
-                    } else if (newValue === 'member_institute') {
-                      setMemberContext('school');
-                    } else {
-                      setMemberContext('unknown');
-                    }
-                    setError('');
-                  }}
-                  variant="scrollable"
-                  scrollButtons="auto"
-                  allowScrollButtonsMobile
-                  sx={{
-                    '& .MuiTab-root': {
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      fontSize: '0.95rem',
-                      minWidth: 'auto',
-                      padding: '12px 16px',
-                    },
-                    '& .MuiTabs-scrollButtons': {
-                      '&.Mui-disabled': {
-                        opacity: 0.3,
+              {/* Registration Type Tabs - Hide if tab parameter is present */}
+              {!tab && (
+                <Box sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>
+                  <Tabs
+                    value={registrationType}
+                    onChange={(e, newValue) => {
+                      setRegistrationType(newValue);
+                      setFormData({ 
+                        name: '', 
+                        email: '', 
+                        password: '', 
+                        confirmPassword: '',
+                        userType: newValue === 'b2b' ? 'b2b' : (newValue === 'b2e' ? 'b2e' : 'b2c'),
+                        organizationName: '',
+                        organizationType: newValue === 'b2b' ? 'company' : (newValue === 'b2e' ? 'school' : 'company'),
+                        customOrganizationType: '',
+                        organizationCode: ''
+                      });
+                      // Set default member context based on tab
+                      if (newValue === 'member_org') {
+                        setMemberContext('organization');
+                      } else if (newValue === 'member_institute') {
+                        setMemberContext('school');
+                      } else {
+                        setMemberContext('unknown');
+                      }
+                      setError('');
+                    }}
+                    variant="scrollable"
+                    scrollButtons="auto"
+                    allowScrollButtonsMobile
+                    sx={{
+                      '& .MuiTab-root': {
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        fontSize: '0.95rem',
+                        minWidth: 'auto',
+                        padding: '12px 16px',
                       },
-                    },
-                  }}
-                >
-                  <Tab label="Individual B2C" value="individual" />
-                  <Tab label="Business B2B" value="b2b" />
-                  <Tab label="Institute B2E" value="b2e" />
-                  <Tab label="Member of Organization" value="member_org" />
-                  <Tab label="Member of Institute" value="member_institute" />
-                </Tabs>
-              </Box>
+                      '& .MuiTabs-scrollButtons': {
+                        '&.Mui-disabled': {
+                          opacity: 0.3,
+                        },
+                      },
+                    }}
+                  >
+                    <Tab label="Individual B2C" value="individual" />
+                    <Tab label="Business B2B" value="b2b" />
+                    <Tab label="Institute B2E" value="b2e" />
+                    <Tab label="Member of Organization" value="member_org" />
+                    <Tab label="Member of Institute" value="member_institute" />
+                  </Tabs>
+                </Box>
+              )}
 
               {/* Member Registration Form */}
               {(registrationType === 'member_org' || registrationType === 'member_institute') && (
@@ -467,13 +537,13 @@ export default function RegisterPage() {
                     )}
                     <TextField
                       fullWidth
-                      label="Name"
+                      label="Full Name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                       autoComplete="name"
                       error={formData.name && formData.name.trim().length < 2}
-                      helperText={formData.name && formData.name.trim().length < 2 ? 'Name must be at least 2 characters' : ''}
+                      helperText={formData.name && formData.name.trim().length < 2 ? 'Full name must be at least 2 characters' : ''}
                     />
                     <TextField
                       fullWidth
@@ -587,13 +657,13 @@ export default function RegisterPage() {
                   <Stack spacing={3}>
                     <TextField
                       fullWidth
-                      label="Name"
+                      label="Full Name"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
                       autoComplete="name"
                       error={formData.name && formData.name.trim().length < 2}
-                      helperText={formData.name && formData.name.trim().length < 2 ? 'Name must be at least 2 characters' : ''}
+                      helperText={formData.name && formData.name.trim().length < 2 ? 'Full name must be at least 2 characters' : ''}
                     />
                     <TextField
                       fullWidth
@@ -808,13 +878,13 @@ export default function RegisterPage() {
                     <Stack spacing={3}>
                       <TextField
                         fullWidth
-                        label="Name"
+                        label="Full Name"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
                         autoComplete="name"
                         error={formData.name && formData.name.trim().length < 2}
-                        helperText={formData.name && formData.name.trim().length < 2 ? 'Name must be at least 2 characters' : ''}
+                        helperText={formData.name && formData.name.trim().length < 2 ? 'Full name must be at least 2 characters' : ''}
                       />
                       <TextField
                         fullWidth
@@ -1027,13 +1097,13 @@ export default function RegisterPage() {
                 <Stack spacing={3}>
                   <TextField
                     fullWidth
-                    label="Name"
+                    label="Full Name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
                     autoComplete="name"
                     error={formData.name && formData.name.trim().length < 2}
-                    helperText={formData.name && formData.name.trim().length < 2 ? 'Name must be at least 2 characters' : ''}
+                    helperText={formData.name && formData.name.trim().length < 2 ? 'Full name must be at least 2 characters' : ''}
                   />
                   <TextField
                     fullWidth

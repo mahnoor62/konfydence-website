@@ -129,9 +129,13 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
 
   const handleCustomPricingClick = (e) => {
     e.stopPropagation();
-    // Check if user is logged in, if not redirect to login
+    // Check if user is logged in, if not redirect to register with appropriate tab
     if (!authUser) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}&action=custom_package`);
+      const productType = getProductType();
+      // Map product type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[productType] || 'individual';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
     // Pre-fill form with user data if available
@@ -150,9 +154,13 @@ export default function ProductCard({ product, delay = 0, hidePrice = false, but
   const handleCustomPackageSubmit = async (e) => {
     e.preventDefault();
     
-    // Check if user is logged in
+    // Check if user is logged in, if not redirect to register with appropriate tab
     if (!authUser) {
-      router.push(`/login?redirect=${encodeURIComponent(router.asPath)}&action=custom_package`);
+      const productType = getProductType();
+      // Map product type to tab parameter: B2C=individual, B2B=b2b, B2E=b2e
+      const tabMap = { 'B2C': 'individual', 'B2B': 'b2b', 'B2E': 'b2e' };
+      const tabParam = tabMap[productType] || 'individual';
+      router.push(`/register?tab=${tabParam}&redirect=${encodeURIComponent(router.asPath)}`);
       return;
     }
 
