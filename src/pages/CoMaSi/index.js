@@ -1262,7 +1262,7 @@ export default function CoMaSyPage() {
                 color: '#063C5E',
               }}
             >
-              See Scenario Lab in Action
+              See CoMasi in Action
             </Typography>
             <Typography
               variant="h6"
