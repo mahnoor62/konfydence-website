@@ -849,7 +849,7 @@ export default function CoMaSyPage() {
                         lineHeight: 1.7,
                       }}
                     >
-                     We don't police people. we train the nervous system to stay calm under pressure.
+                     We don&apos;t police people. we train the nervous system to stay calm under pressure.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -1553,8 +1553,6 @@ export default function CoMaSyPage() {
                         onChange={handleChange}
                         label="Department"
                         MenuProps={{
-                          disablePortal: false,
-                          container: typeof window !== 'undefined' ? document.body : undefined,
                           PaperProps: {
                             style: {
                               maxHeight: 300,
@@ -1572,7 +1570,6 @@ export default function CoMaSyPage() {
                             vertical: 'top',
                             horizontal: 'left',
                           },
-                          disableScrollLock: true,
                         }}
                       >
                         <MenuItem value="Corp">Corp</MenuItem>
