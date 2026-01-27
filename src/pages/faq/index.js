@@ -786,7 +786,7 @@ export default function FAQPage() {
             </Button>
             <Button
               component={Link}
-              href="/comasi#demo-form"
+              href="/scenario-lab#demo-form"
               variant="contained"
               sx={{
                 backgroundColor: '#0B7897',

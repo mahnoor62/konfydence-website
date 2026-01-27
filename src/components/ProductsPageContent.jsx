@@ -1541,7 +1541,7 @@ export default function ProductsPageContent() {
                 
                 <Button
                   size="large"
-                  href="/comasi#demo-form"
+                  href="/scenario-lab#demo-form"
                   component={NextLink}
                   sx={{
                     backgroundColor: '#0B7897',

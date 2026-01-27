@@ -1165,7 +1165,7 @@ export default function SKKPage() {
                   Design aligned to NIS2 and ISO 27001 human factor security awareness training requirements.
                 </Typography>
                 <Button
-                href="/comasi#demo-form"
+                href="/scenario-lab#demo-form"
                   variant="outlined"
                   sx={{
                     borderColor: '#0B7897',

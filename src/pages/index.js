@@ -1102,10 +1102,11 @@ Get the full kit for just $49.
                       <Typography
                         variant="body1"
                         sx={{
-                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                          mb:2,
+                          // fontSize: { xs: '1.1rem', md: '1.2rem' },
                           color: 'text.primary',
                           // mb:1,
-                          mb: { xs: 3, md: 3.5 },
+                          // mb: { xs: 3, md: 3.5 },
                           lineHeight: { xs: 1.8, md: 2},
                         }}
                       >
@@ -1114,10 +1115,11 @@ Get the full kit for just $49.
                       <Typography
                         variant="body1"
                         sx={{
-                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                          mb:2,
+                          // fontSize: { xs: '1.1rem', md: '1.2rem' },
                           color: 'text.primary',
-// mb:1,
-                          mb: { xs: 3, md: 3.5 },
+// mb:1,mb:2,
+                          // mb: { xs: 3, md: 3.5 },
                           lineHeight: { xs: 1.8, md: 2 },
                         }}
                       >
@@ -1126,10 +1128,11 @@ Get the full kit for just $49.
                       <Typography
                         variant="body1"
                         sx={{
-                          fontSize: { xs: '1.1rem', md: '1.2rem' },
+                            mb:2,
+                          // fontSize: { xs: '1.1rem', md: '1.2rem' },
                           color: 'text.primary',
                           // mb:1,
-                          mb: { xs: 3, md: 3.5 },
+                          // mb: { xs: 3, md: 3.5 },
                           lineHeight: { xs: 1.8, md: 2 },
                         }}
                       >
@@ -1145,13 +1148,13 @@ Get the full kit for just $49.
                           Family Tech Contract 
                         </Link>
                       </Typography>
-                    </Box>
-                    <Typography
+                      <Typography
                       variant="body1"
                       sx={{
-                        fontSize: { xs: '1.1rem', md: '1.2rem' },
+                      
+                        // fontSize: { xs: '1.1rem', md: '1.2rem' },
                         color: 'text.primary',
-                        lineHeight: { xs: 1.8, md: 2 },
+                        // lineHeight: { xs: 1.8, md: 2 },
                       }}
                     >
                       <strong>Stop the Limbic Hijack:</strong> Our framework trains your brain to outsmart the biological triggers scammers use to bypass your logic.{' '}
@@ -1168,6 +1171,8 @@ Get the full kit for just $49.
                         Read the Science: Why Human Hardware Fails Before Software 
                       </Link>
                     </Typography>
+                    </Box>
+                    
                   </Box>
                 </Box>
               </Grid>
@@ -1193,7 +1198,7 @@ Get the full kit for just $49.
                       //   mb: { xs: 1.5, md: 1.5 },
                       //   lineHeight: { xs: 1.6, md: 1.8 },
                       sx={{
-                      fontSize: { xs: '1.1rem', md: '1.2rem' },
+                      // fontSize: { xs: '1.1rem', md: '1.2rem' },
                       color: 'text.primary',
                       mb:1,
                       // mb: { xs: 3, md: 3.5 },
@@ -1205,9 +1210,9 @@ Get the full kit for just $49.
                     <Typography
                       variant="body1"
                       sx={{
-                        fontSize: { xs: '0.9rem', md: '0.95rem' },
+                        // fontSize: { xs: '0.9rem', md: '0.95rem' },
                         color: 'text.primary',
-                        lineHeight: { xs: 1.6, md: 1.8 },
+                        // lineHeight: { xs: 1.6, md: 1.8 },
                       }}
                     >
                       No long lectures. Just quick, real-life practice that sticks.
@@ -1248,7 +1253,7 @@ Get the full kit for just $49.
                     <Typography
                       variant="body2"
                       sx={{
-                        fontSize: { xs: '0.875rem', md: '1rem' },
+                        // fontSize: { xs: '0.875rem', md: '1rem' },
                         color: 'text.secondary',
                         fontStyle: 'italic',
                         textAlign: 'center',
@@ -1343,7 +1348,7 @@ Get the full kit for just $49.
                   </Stack>
                   <Button
                     component={Link}
-                    href="/comasi#demo-form"
+                    href="/scenario-lab#demo-form"
                     variant="contained"
                     size="large"
                     sx={{

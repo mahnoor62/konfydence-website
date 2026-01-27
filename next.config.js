@@ -26,23 +26,33 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: '/CoMaSi',
-        destination: '/comasi',
-        permanent: true,
-      },
-      {
-        source: '/CoMaSi/:path*',
-        destination: '/comasi/:path*',
-        permanent: true,
-      },
-      {
         source: '/comasy',
-        destination: '/comasi',
+        destination: '/scenario-lab',
         permanent: true,
       },
       {
         source: '/comasy/:path*',
-        destination: '/comasi/:path*',
+        destination: '/scenario-lab/:path*',
+        permanent: true,
+      },
+      {
+        source: '/comasi',
+        destination: '/scenario-lab',
+        permanent: true,
+      },
+      {
+        source: '/comasi/:path*',
+        destination: '/scenario-lab/:path*',
+        permanent: true,
+      },
+      {
+        source: '/CoMaSi',
+        destination: '/scenario-lab',
+        permanent: true,
+      },
+      {
+        source: '/CoMaSi/:path*',
+        destination: '/scenario-lab/:path*',
         permanent: true,
       },
     ];
@@ -50,6 +60,14 @@ const nextConfig = {
 
   async rewrites() {
     return [
+      {
+        source: '/scenario-lab',
+        destination: '/CoMaSi',
+      },
+      {
+        source: '/scenario-lab/:path*',
+        destination: '/CoMaSi/:path*',
+      },
       {
         source: '/comasi',
         destination: '/CoMaSi',

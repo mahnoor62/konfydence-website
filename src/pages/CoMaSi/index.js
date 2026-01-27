@@ -18,6 +18,11 @@ import {
   IconButton,
   Autocomplete,
   InputAdornment,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormHelperText,
 } from '@mui/material';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
@@ -259,41 +264,42 @@ export default function CoMaSyPage() {
       isValid = false;
     }
 
-    // Address fields validation
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-      isValid = false;
-    }
+    // Address fields validation - DISABLED (fields are hidden)
+    // if (!formData.address.trim()) {
+    //   newErrors.address = 'Address is required';
+    //   isValid = false;
+    // }
 
-    if (!formData.country.trim()) {
-      newErrors.country = 'Country is required';
-      isValid = false;
-    }
+    // if (!formData.country.trim()) {
+    //   newErrors.country = 'Country is required';
+    //   isValid = false;
+    // }
 
-    if (!formData.state.trim()) {
-      newErrors.state = 'State is required';
-      isValid = false;
-    }
+    // if (!formData.state.trim()) {
+    //   newErrors.state = 'State is required';
+    //   isValid = false;
+    // }
 
-    if (!formData.city.trim()) {
-      newErrors.city = 'City is required';
-      isValid = false;
-    }
+    // if (!formData.city.trim()) {
+    //   newErrors.city = 'City is required';
+    //   isValid = false;
+    // }
 
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
-      isValid = false;
-    }
+    // if (!formData.phone.trim()) {
+    //   newErrors.phone = 'Phone number is required';
+    //   isValid = false;
+    // }
 
     if (!formData.department.trim()) {
       newErrors.department = 'Department is required';
       isValid = false;
     }
 
-    if (!formData.position.trim()) {
-      newErrors.position = 'Position is required';
-      isValid = false;
-    }
+    // Position field validation - DISABLED (field is hidden)
+    // if (!formData.position.trim()) {
+    //   newErrors.position = 'Position is required';
+    //   isValid = false;
+    // }
 
     setErrors(newErrors);
     return isValid;
@@ -387,7 +393,7 @@ export default function CoMaSyPage() {
   return (
     <>
       <Head>
-        <title>Konfydence Comasy</title>
+        <title>Konfydence Scenario Lab</title>
       </Head>
       <Header />
       <Box component="main" sx={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
@@ -408,42 +414,40 @@ export default function CoMaSyPage() {
                 <Typography
                   variant="h3"
                   sx={{
-                        // fontSize: { xs: '2rem', md: '2rem' },
-                    // fontSize: { xs: '2.5rem', md: '3.5rem', lg: '4rem' },
                     fontWeight: 700,
                     mb: 2,
                     lineHeight: 1.2,
                     color: 'white',
                   }}
                 >
-                  Compliance Made Simple (CoMaSi)
+                  From family tables to corporate firewalls
                 </Typography>
                 <Typography
                   variant="h6"
                   sx={{
-                    // fontSize: { xs: '1.25rem', md: '1.5rem' },
                     fontWeight: 600,
                     mb: 2,
                     opacity: 0.95,
                     color: 'white',
                   }}
                 >
-                  Go Beyond Check-Box Training. Build Habits That Stop Scams Under Real Pressure.
+                  We train calm decisions under pressure than scale that habit into your security culture and NIS2 compliance.
                 </Typography>
                 <Typography
                   variant="body1"
                   sx={{
-                    fontSize: { xs: '1rem', md: '1.125rem' },
+                    // fontSize: { xs: '1rem', md: '1.125rem' },
                     mb: 4,
                     opacity: 0.9,
+                    ml:2,
                     lineHeight: 1.8,
                     color: 'white',
                     fontWeight: 700,
                   }}
                 >
-                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}></Typography> NIS2-ready{' '}
-                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> No-blame simulations{' '}
-                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> Measurable behaviour change
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> NIS2 ready behavioral training{' '} <br />
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> No blame social simulations{' '} <br />
+                  <Typography component="span" sx={{ fontWeight: 700, color: 'white' }}>•</Typography> Measurable habit change across the human layer
                 </Typography>
                 <Button
                   component="a"
@@ -470,77 +474,43 @@ export default function CoMaSyPage() {
                 </Button>
               </Grid>
               <Grid item xs={12} md={6}>
+                {/* White Box Container - No Border Radius */}
                 <Box
                   sx={{
-                    borderRadius: 3,
-                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: { xs: 'auto', md: 400 },
+                    p: 3,
                     boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
                     position: 'relative',
-                    animation: 'floatCard 4s ease-in-out infinite',
-                    transformOrigin: 'center',
                     filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                    '@keyframes floatCard': {
-                      '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                      '50%': {
-                        transform: 'translateY(-15px) rotate(-1deg)',
-                        filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                      },
-                      '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                    },
                   }}
                 >
-                  <Swiper
-                    modules={[Autoplay, Pagination, Navigation]}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    autoplay={{
-                      delay: 4000,
-                      disableOnInteraction: false,
-                    }}
-                    pagination={{ clickable: true }}
-                    navigation
-                    style={{
-                      '--swiper-pagination-color': '#FFFFFF',
-                      '--swiper-navigation-color': '#FFFFFF',
+                  {/* Image Container with Border Radius */}
+                  <Box
+                    sx={{
+                      width:'100%',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      // maxWidth: '90%',
+                      maxHeight: '100%',
                     }}
                   >
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/dashboard.png"
-                        alt="CoMaSi Platform Dashboard"
-                        sx={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/dashboard2.png"
-                        alt="CoMaSi Dashboard 2"
-                        sx={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                        }}
-                      />
-                    </SwiperSlide>
-                    <SwiperSlide>
-                      <Box
-                        component="img"
-                        src="/images/dashboard3.png"
-                        alt="CoMaSi Dashboard 3"
-                        sx={{
-                          width: '100%',
-                          height: 'auto',
-                          display: 'block',
-                        }}
-                      />
-                    </SwiperSlide>
-                  </Swiper>
+                    <Box
+                      component="img"
+                      src="/images/hurry.jpeg"
+                      alt="H.A.C.K. - Intelligence isn't your defense. Habits are."
+                      sx={{
+                        width: '100%',
+                        height: '100%',
+              
+                        objectFit: 'contain',
+                        display: 'block',
+                      }}
+                    />
+                  </Box>
                 </Box>
               </Grid>
             </Grid>
@@ -548,248 +518,204 @@ export default function CoMaSyPage() {
         </Box>
 
         {/* Why Most Training Fails Section */}
-        <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#ffffff' }} data-aos="zoom-in" data-aos-duration="800">
-          <Container maxWidth="lg">
-            <Typography
-              variant="h3"
+        <Box
+  sx={{ py: { xs: 8, md: 12 }, backgroundColor: "#ffffff" }}
+  data-aos="zoom-in"
+  data-aos-duration="800"
+>
+  <Container maxWidth="lg">
+    <Typography
+      variant="h3"
+      sx={{
+        fontWeight: 600,
+        mb: 4,
+        textAlign: "center",
+        color: "#0B7897",
+        letterSpacing: 1,
+      }}
+    >
+      Why Yearly Videos and Quizzes Don&apos;t Stop Breaches
+    </Typography>
+
+    <Grid container spacing={6} sx={{ alignItems: "stretch" }}>
+      {/* ================= LEFT COLUMN ================= */}
+      <Grid
+        item
+        xs={12}
+        md={6}
+        sx={{ display: "flex", flexDirection: "column" }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 600,
+            mb: 2,
+            color: "#063C5E",
+            textAlign: "center",
+          }}
+        >
+          Why Reflexes Beat Awarness.
+        </Typography>
+
+        {/* LEFT CONTENT FRAME (height reference) */}
+        <Box
+          sx={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            border: "2px solid #063C5E",
+            borderRadius: 2,
+            p: 3,
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{ mb: 1, lineHeight: 1.6, color: "#000" }}
+          >
+            Employees pass the test—then click anyway months later.
+          </Typography>
+
+          <Typography variant="body2" sx={{ mb: 2, color: "#000" }}>
+            Scammers train urgency.
+            <br />
+            We train the pause.
+          </Typography>
+
+          <Typography variant="body2" sx={{ mb: 2, color: "#000" }}>
+            Traditional training assumes calm.
+            <br />
+            Breaches happen under stress.
+          </Typography>
+
+          {/* LEFT IMAGE */}
+          <Box
+            sx={{
+              flex: "0 1 auto",
+              minHeight: 0,
+              maxHeight: { xs: 300, md: 400 },
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              cursor: "pointer",
+              overflow: "hidden",
+              mb: 2,
+              "&:hover img": { opacity: 0.9 },
+            }}
+            onClick={() => {
+              setSelectedImage("/images/breches.jpeg");
+              setImageModalOpen(true);
+            }}
+          >
+            <Box
+              component="img"
+              src="/images/breches.jpeg"
+              alt="Breaches illustration"
               sx={{
-                // fontSize: { xs: '1.5rem', md: '1.75rem' },
-                fontWeight: 600,
-                mb: 4,
-                textAlign: 'center',
-                color: '#0B7897',
-                // textTransform: 'uppercase',
-                letterSpacing: 1,
+                width: "100%",
+                height: "auto",
+                maxHeight: { xs: 300, md: 400 },
+                objectFit: "contain",
+                display: "block",
               }}
-            >
-Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
-            <Grid container spacing={6} sx={{ alignItems: 'stretch' }}>
-              <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 600,
-                    mb: 2,
-                    color: '#063C5E',
-                    lineHeight: 1.2,
-                    // ml:2,
-                    textAlign: 'center',
-                    // fontSize: { xs: '0.9rem', md: '0.95rem' },
-                  }}
-                >
-                  Common scenario in most organisations
-                </Typography>
-                <Box
-                  sx={{
-                    border: '2px solid #063C5E',
-                    borderRadius: 2,
-                    p: 3,
-                    flex: '1 1 auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    minHeight: 0,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: '0.85rem', md: '0.875rem' },
-                      mb: 2,
-                      lineHeight: 1.6,
-                      color: '#000000',
-                    }}
-                  >
-                    Employees pass the test—then click anyway months later.
-                    <br />
-                    <br />
-                    Why? Real scams strike during stress. They bypass logic and trigger a{' '}
-                    <Link
-                      href="/pdfs/the-limbic-hijack.pdf"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        color: '#0B7897',
-                        textDecoration: 'underline',
-                        fontWeight: 600,
-                      }}
-                    >
-                      limbic hijack
-                    </Link>
-                    —urgency, authority, and emotion overwhelm training that lives only in memory.
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 600,
-                      mb: 1,
-                      color: '#000000',
-                      fontSize: { xs: '0.9rem', md: '0.95rem' },
-                    }}
-                  >
-                    CoMaSi trains behavior, not recall.
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: '0.875rem', md: '0.9rem' },
-                      mb: 1,
-                      lineHeight: 1.6,
-                      color: '#000000',
-                    }}
-                  >
-                    Our simulations are learning moments—not disciplinary events. CoMaSi reinforces a no-blame culture that improves reporting and resilience.
-                  </Typography>
-                  
-                  {/* How Scammers Trigger Us Section */}
-                  <Typography
-                    variant="body1"
-                    sx={{
-                      fontWeight: 600,
-                      mb: 1,
-                      color: '#000000',
-                      fontSize: { xs: '0.9rem', md: '0.95rem' },
-                    }}
-                  >
-                    How Scammers Trigger Us to Act - The HACK
-                  </Typography>
-                  
-                  {/* H.A.C.K. Quick Reference */}
-                  <Box
-                    sx={{
-                      border: '2px solid #E9F4FF',
-                      borderRadius: 2,
-                      p: 2,
-                      mb: 0,
-                    }}
-                  >
-                    <Typography
-                      variant="body1"
-                      sx={{
-                        fontWeight: 700,
-                        mb: 1.5,
-                        color: '#000000',
-                        fontSize: { xs: '0.9rem', md: '0.95rem' },
-                      }}
-                    >
-                      H.A.C.K. Quick Reference
-                    </Typography>
-                    <Stack spacing={1.5}>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
-                          H – Hurry
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                          Urgency and time pressure tactics
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
-                          A – Authority
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                          Fake credentials and position of power
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
-                          C – Comfort
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                          Familiarity and false trust signals
-                        </Typography>
-                      </Box>
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 700, color: '#0B7897', mb: 0.25, fontSize: { xs: '0.875rem', md: '0.9rem' } }}>
-                          K – Kill-Switch
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: '#000000', fontSize: { xs: '0.8rem', md: '0.85rem' } }}>
-                          Panic or excitement that bypasses logic
-                        </Typography>
-                      </Box>
-                    </Stack>
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: { xs: '0.8rem', md: '0.85rem' },
-                      lineHeight: 1.5,
-                      color: '#000000',
-                      fontStyle: 'italic',
-                      mt: 1.5,
-                    }}
-                  >
-                    The Konfydence Paradox: Scammers want you to act fast and bypass logic. Konfydence trains you to &quot;act faster&quot; by pausing first.
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={12} md={6} sx={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    mb: 1.5,
-                    color: '#063C5E',
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                  }}
-                >
-                  Train to &quot;act faster&quot; by pausing first - The 5 Seconds Pause
-                </Typography>
-                <Box
-                  sx={{
-                    width: '100%',
-                    flex: '1 1 auto',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s ease',
-                    minHeight: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&:hover': {
-                      transform: 'scale(1.02)',
-                      '& img': {
-                        opacity: 0.9,
-                      },
-                    },
-                  }}
-                  onClick={() => {
-                    setSelectedImage('/images/comasi.png');
-                    setImageModalOpen(true);
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src="/images/comasi.png"
-                    alt="Five seconds is all it takes. No real request breaks if you wait."
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'contain',
-                      display: 'block',
-                    }}
-                  />
-                </Box>
-              </Grid>
-            </Grid>
-          </Container>
+            />
+          </Box>
+
+          <Typography
+            variant="body2"
+            sx={{ color: "#000" }}
+          >
+            The Konfydence Paradox: Scammers want you to act fast and bypass
+            logic. Konfydence trains you to &quot;act faster&quot; by pausing
+            first.
+          </Typography>
         </Box>
+      </Grid>
+
+      {/* ================= RIGHT COLUMN ================= */}
+      <Grid
+        item
+        xs={12}
+        md={6}
+        sx={{ display: "flex", flexDirection: "column", minHeight: 0 }}
+      >
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 600,
+            mb: 1,
+            color: "#063C5E",
+            textAlign: "center",
+            // fontSize: { xs: "0.85rem", md: "0.95rem" },
+            lineHeight: 1.2,
+          }}
+        >
+          Train to &quot;act faster&quot; by pausing first – The 5 Seconds Pause
+        </Typography>
+
+        {/* RIGHT HEIGHT MATCHER (NO BORDER) */}
+        <Box
+          sx={{
+            flex: "1 1 auto",
+            minHeight: 0,
+            display: "flex",
+            alignItems: "stretch",
+          }}
+        >
+          {/* INNER CONTENT FITS LEFT HEIGHT */}
+          <Box
+            sx={{
+              width: "100%",
+              flex: "0 1 auto",
+              height:'100%',
+              // minHeight: 0,
+              // maxHeight: { xs: 300, md: 400 },
+              // display: "flex",
+              // alignItems: "center",
+              // justifyContent: "center",
+              cursor: "pointer",
+              backgroundColor: "transparent",
+              overflow: "hidden",
+              "&:hover img": { opacity: 0.9 },
+            }}
+            onClick={() => {
+              setSelectedImage("/images/comasi.png");
+              setImageModalOpen(true);
+            }}
+          >
+            <Box
+              component="img"
+              src="/images/comasi.png"
+              alt="5 Second Defense"
+              sx={{
+                width: "100%",
+                height: "100%",
+                // maxHeight: { xs: 300, md: 400 },
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          </Box>
+        </Box>
+      </Grid>
+    </Grid>
+  </Container>
+</Box>
 
         {/* Key Benefits Section */}
         <Box sx={{ py: { xs: 8, md: 12 }, backgroundColor: '#F6F8FA' }} data-aos="zoom-in" data-aos-duration="800">
           <Container maxWidth="lg">
             <Typography
-              variant="h2"
+              variant="h3"
               sx={{
-                fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
+                // fontSize: { xs: '2rem', md: '2.5rem', lg: '3rem' },
                 fontWeight: 700,
                 mb: 6,
                 textAlign: 'center',
                 color: '#063C5E',
               }}
             >
-              Why Teams Love CoMaSi
+             The Behavioral System Behind Compliance
             </Typography>
             <Grid container spacing={4}>
               <Grid item xs={12} md={4}>
@@ -818,10 +744,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   >
                     <Box
                       component="img"
-                      src="/images/dashboard.png"
+                      src="/images/beh1.jpeg"
                       alt="Engaging Simulations"
                       onClick={() => {
-                        setSelectedImage('/images/dashboard.png');
+                        setSelectedImage('/images/beh1.jpeg');
                         setImageModalOpen(true);
                       }}
                       sx={{
@@ -886,10 +812,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   >
                     <Box
                       component="img"
-                      src="/images/dashboard2.png"
+                      src="/images/beh2.jpeg"
                       alt="Proven Behavior Change"
                       onClick={() => {
-                        setSelectedImage('/images/dashboard2.png');
+                        setSelectedImage('/images/beh2.jpeg');
                         setImageModalOpen(true);
                       }}
                       sx={{
@@ -954,10 +880,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                   >
                     <Box
                       component="img"
-                      src="/images/dashboard3.png"
+                      src="/images/beh3.jpeg"
                       alt="Auditor-Ready Reports"
                       onClick={() => {
-                        setSelectedImage('/images/dashboard3.png');
+                        setSelectedImage('/images/beh3.jpeg');
                         setImageModalOpen(true);
                       }}
                       sx={{
@@ -1336,7 +1262,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 color: '#063C5E',
               }}
             >
-              See CoMaSi in Action – Free Demo Available
+              See Scenario Lab in Action
             </Typography>
             <Typography
               variant="h6"
@@ -1347,7 +1273,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 color: 'text.secondary',
               }}
             >
-             Explore Complete CoMasi scenerios with your team.
+          One short demo.No account.No commitment.
             </Typography>
             
             {/* Success/Error Message */}
@@ -1377,6 +1303,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 borderRadius: 3,
                 boxShadow: '0 8px 30px rgba(0,0,0,0.1)',
                 position: 'relative',
+                overflow: 'visible',
                 '&::before': {
                   content: '"||"',
                   position: 'absolute',
@@ -1390,8 +1317,8 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                 },
               }}
             >
-              <Box component="form" onSubmit={handleSubmit}>
-                <Grid container spacing={3}>
+              <Box component="form" onSubmit={handleSubmit} sx={{ overflow: 'visible' }}>
+                <Grid container spacing={3} sx={{ overflow: 'visible' }}>
                   <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
@@ -1449,7 +1376,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       helperText={errors.email}
                     />
                   </Grid>
-                  <Grid item xs={12} sm={12}>
+                  <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Team Size"
@@ -1459,8 +1386,8 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                     />
                   </Grid>
                   
-                  {/* Address Information Section */}
-                  <Grid item xs={12}>
+                  {/* Address Information Section - HIDDEN */}
+                  {/* <Grid item xs={12}>
                     <Box sx={{ mt: 2, mb: 2 }}>
                       <Typography
                         variant="h6"
@@ -1615,22 +1542,53 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       }}
                       placeholder={selectedCountryData?.callingCodes?.[0] ? 'Enter phone number' : 'Enter phone number'}
                     />
-                  </Grid>
+                  </Grid> */}
                   
                   <Grid item xs={12} sm={6}>
-                    <TextField
-                      fullWidth
-                      label="Department"
-                      name="department"
-                      required
-                      value={formData.department}
-                      onChange={handleChange}
-                      error={!!errors.department}
-                      helperText={errors.department}
-                    />
+                    <FormControl fullWidth required error={!!errors.department}>
+                      <InputLabel>Department</InputLabel>
+                      <Select
+                        name="department"
+                        value={formData.department}
+                        onChange={handleChange}
+                        label="Department"
+                        MenuProps={{
+                          disablePortal: false,
+                          container: typeof window !== 'undefined' ? document.body : undefined,
+                          PaperProps: {
+                            style: {
+                              maxHeight: 300,
+                            },
+                            sx: {
+                              zIndex: 10000,
+                              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                            },
+                          },
+                          anchorOrigin: {
+                            vertical: 'bottom',
+                            horizontal: 'left',
+                          },
+                          transformOrigin: {
+                            vertical: 'top',
+                            horizontal: 'left',
+                          },
+                          disableScrollLock: true,
+                        }}
+                      >
+                        <MenuItem value="Corp">Corp</MenuItem>
+                        <MenuItem value="Security">Security</MenuItem>
+                        <MenuItem value="Compliance">Compliance</MenuItem>
+                        <MenuItem value="HR">HR</MenuItem>
+                        <MenuItem value="IT">IT</MenuItem>
+                        <MenuItem value="Other">Other</MenuItem>
+                      </Select>
+                      {errors.department && (
+                        <FormHelperText>{errors.department}</FormHelperText>
+                      )}
+                    </FormControl>
                   </Grid>
                   
-                  <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                     <TextField
                       fullWidth
                       label="Position"
@@ -1641,9 +1599,10 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       error={!!errors.position}
                       helperText={errors.position}
                     />
-                  </Grid>
+                  </Grid> */}
                   
-                  <Grid item xs={12} sm={12}>
+                  {/* Website field - HIDDEN */}
+                  {/* <Grid item xs={12} sm={12}>
                     <TextField
                       fullWidth
                       label="Website"
@@ -1653,7 +1612,7 @@ Why Yearly Videos and Quizzes Don&apos;t Stop Breaches            </Typography>
                       onChange={handleChange}
                       placeholder="https://example.com"
                     />
-                  </Grid>
+                  </Grid> */}
                   
                   <Grid item xs={12}>
                     <TextField

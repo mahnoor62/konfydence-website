@@ -402,7 +402,7 @@ export default function BlogPostPage({ post, error }) {
                 {isBusinessPost && (
                   <Button
                     component={Link}
-                    href="/comasi#demo-form"
+                    href="/scenario-lab#demo-form"
                     variant="contained"
                     sx={{
                       backgroundColor: '#0B7897',

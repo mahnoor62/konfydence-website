@@ -474,11 +474,11 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
                 <Box sx={{ position: 'relative', overflow: 'hidden' }}>
                   <Box
                     component="img"
-                    src="/images/physical.png"
+                    src="/images/prod1.jpeg"
                     alt="Physical Scam Survival Kit"
                     sx={{
                       width: '100%',
-                      height: { xs: '250px', md: '300px' },
+                      // height: { xs: '250px', md: '300px' },
                       objectFit: 'cover',
                     }}
                   />
@@ -1146,7 +1146,7 @@ Scammers win by rushing families to act fast. The SSK trains your family to act 
               <Grid item xs={12} sm={6} md={3}>
                 <Button
                   component={Link}
-                  href="/comasi"
+                  href="/scenario-lab"
                   variant="contained"
                   fullWidth
                   sx={{

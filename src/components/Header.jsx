@@ -24,7 +24,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const navItems = [
   { label: 'Home', href: '/' },
   { label: 'Products', href: '/products' },
-  { label: 'CoMaSi', href: '/CoMaSi' },
+  { label: 'Scenario Lab', href: '/scenario-lab' },
   { label: 'Education', href: '/education' },
   { label: 'Resource Hub', href: '/resources' },
   { label: 'Shop', href: '/sskit-family' },
@@ -185,6 +185,20 @@ export default function Header() {
                   
                   // Special case: /packages should activate Products nav item
                   if (item.label === 'Products' && normalizedPath.startsWith('/packages')) {
+                    isActive = true;
+                  }
+                  
+                  // Special case: Scenario Lab - check for all possible route variations
+                  if (item.label === 'Scenario Lab' && (
+                    normalizedPath === '/scenario-lab' ||
+                    normalizedPath === '/comasi' ||
+                    normalizedPath === '/comasy' ||
+                    safePath === '/CoMaSi' ||
+                    normalizedPath.startsWith('/scenario-lab') ||
+                    normalizedPath.startsWith('/comasi') ||
+                    normalizedPath.startsWith('/comasy') ||
+                    safePath.startsWith('/CoMaSi')
+                  )) {
                     isActive = true;
                   }
                   
@@ -431,6 +445,20 @@ export default function Header() {
               
               // Special case: /packages should activate Products nav item
               if (item.label === 'Products' && normalizedPath.startsWith('/packages')) {
+                isActive = true;
+              }
+              
+              // Special case: Scenario Lab - check for all possible route variations
+              if (item.label === 'Scenario Lab' && (
+                normalizedPath === '/scenario-lab' ||
+                normalizedPath === '/comasi' ||
+                normalizedPath === '/comasy' ||
+                safePath === '/CoMaSi' ||
+                normalizedPath.startsWith('/scenario-lab') ||
+                normalizedPath.startsWith('/comasi') ||
+                normalizedPath.startsWith('/comasy') ||
+                safePath.startsWith('/CoMaSi')
+              )) {
                 isActive = true;
               }
               

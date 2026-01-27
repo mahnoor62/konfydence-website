@@ -1265,7 +1265,7 @@ export default function ContactPage() {
                   >
                     Looking for a demo? Visit{' '}
                     <MuiLink
-                      href="/comasi"
+                      href="/scenario-lab"
                       sx={{
                         color: '#0B7897',
                         textDecoration: 'none',

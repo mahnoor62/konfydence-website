@@ -61,7 +61,7 @@ const solutionsForEducation = [
 ];
 
 const solutionsForWork = [
-  { label: 'CoMaSi Platform', href: '/comasi' },
+  { label: 'Scenario Lab Platform', href: '/scenario-lab' },
   { label: 'Request Demo', href: '/contact' },
 ];
 
@@ -143,12 +143,33 @@ export default function Footer() {
       sx={{
         backgroundColor: '#000',
         color: 'white',
-        pt: { xs: 6, md: 8 },
-        pb: { xs: 4, md: 6 },
+        pt: { xs: 6, md: 5 },
+        pb: { xs: 4, md: 5 },
         mt: 0,
       }}
     >
       <Container maxWidth='xl' sx={{ px: { xs: 3, md: 5 } }}>
+        {/* Top Row - Centered Text */}
+        <Box
+          sx={{
+            textAlign: 'center',
+            mb: 5,
+            // pt: { xs: 2, md: 3 },
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'white',
+              // fontSize: { xs: '1rem', md: '1.25rem' },
+              fontWeight: 600,
+              // letterSpacing: '0.5px',
+            }}
+          >
+            Scammers want you to act fast. We train you to act faster. By pausing first.
+          </Typography>
+        </Box>
+        
         {/* Main Footer Content - 4 Columns */}
         <Grid container spacing={3} sx={{ mb: 4, justifyContent: 'space-between' }}>
           {/* Column 1: Brand & Mission */}
@@ -201,7 +222,7 @@ export default function Footer() {
                 fontSize: '0.85rem',
               }}
             >
-              Empowering families, schools, and teams to pause under pressure and outsmart scams.
+           Train the moment before it decides for you.
             </Typography>
             
             {/* Trust Badges */}
