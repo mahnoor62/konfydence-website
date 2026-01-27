@@ -781,7 +781,7 @@ export default function CoMaSyPage() {
                         lineHeight: 1.7,
                       }}
                     >
-                      Short, scenario-based drills employees actually enjoy—no boring lectures.
+                     From physical cards to digital scenarios teams practice the exact moments scammers rely on. 
                     </Typography>
                   </CardContent>
                 </Card>
@@ -849,7 +849,7 @@ export default function CoMaSyPage() {
                         lineHeight: 1.7,
                       }}
                     >
-                      Track pause reflexes and reduced click rates—not just completion.
+                     We don't police people. we train the nervous system to stay calm under pressure.
                     </Typography>
                   </CardContent>
                 </Card>
@@ -917,7 +917,7 @@ export default function CoMaSyPage() {
                         lineHeight: 1.7,
                       }}
                     >
-                      Clear proof for compliance teams: Improved metrics, incident reduction.
+                   Dashboards focuses on real habit adoption less so on test scores. Behavior becomes your evidence.
                     </Typography>
                   </CardContent>
                 </Card>
