@@ -990,6 +990,20 @@ Get the full kit for just $49.
               }}
             >
               <Grid container spacing={4} alignItems="center">
+
+                  {/* Additional centered heading row */}
+              <Grid container spacing={2} sx={{ mt: 4 }}>
+                <Grid item xs={12}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#063C5E' }}>
+                      What the Konfydence Scam Survival Kit Is All About
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: '#063C5E', mt: 1 }}>
+                      A simple card game that helps people build scam resistance — practice the skills you need before it’s too late.
+                    </Typography>
+                  </Box>
+                </Grid>
+              </Grid>
                 {/* Video Column */}
                 <Grid item xs={12} md={6}>
                   <Box
@@ -1059,6 +1073,8 @@ Get the full kit for just $49.
                   </Typography>
                 </Grid>
               </Grid>
+              
+            
             </Box>
           </Container>
         </Box>
@@ -1673,7 +1689,7 @@ Get the full kit for just $49.
                           mb: 2,
                           lineHeight: 1.7,
                           // bgcolor:'red',
-                          height: { md: '150px' },
+                          height: { md: '190px' },
                         }}
                       >
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
@@ -1837,7 +1853,7 @@ Get the full kit for just $49.
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: { md: '150px' },
+                          height: { md: '190px' },
                           // bgcolor:'red',
                         }}
                       >
@@ -1984,19 +2000,21 @@ Get the full kit for just $49.
                           mb: 2,
                         }}
                       >
-                        Compliance That Actually Reduces Risk
+                        When Employees Panic, Policies Don’t Matter
                       </Typography>
                       <Typography
                         variant="body1"
                         sx={{
-                          fontSize: { xs: '1rem', md: '1.05rem' },
+                          fontSize: { xs: '1rem', md: '1rem' },
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: {  md: '150px' },
+                          height: {  md: '190px' },
                         }}
                       >
-                        Go beyond check-box training. Our simulations prove your team can handle real pressure—with reports ready for auditors. NIS2-ready, fun, and effective.
+                       Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.<br />
+                       Konfydence helps teams practice the moment breaches begin.<br />
+                    <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Why people click under pressure the Limbic Hijack?</a>   
                       </Typography>
                       
                       {/* Static Card for Business */}

@@ -517,7 +517,7 @@ export default function BlogPageContent() {
       <Box sx={{ py: { xs: 6, md: 8 }, backgroundColor: '#E9F4FF' }}>
         <Container maxWidth="lg">
           {/* Row 1: 3 Images */}
-          <Grid container spacing={4} sx={{ mb: 4 }} data-aos="fade-down" data-aos-duration="800">
+          {/* <Grid container spacing={4} sx={{ mb: 4 }} data-aos="fade-down" data-aos-duration="800">
             <Grid item xs={12} md={4}>
               <Box
                 sx={{
@@ -578,7 +578,7 @@ export default function BlogPageContent() {
                 />
               </Box>
             </Grid>
-          </Grid>
+          </Grid> */}
 
           {/* Row 2: 3 Forms */}
           <Grid container spacing={4} alignItems="stretch">
@@ -598,7 +598,7 @@ export default function BlogPageContent() {
                 }}
               >
                 <Typography variant="h5" sx={{ mb:5,  color: '#063C5E', fontWeight: 700 }}>
-                  Get New Insights Weekly
+                  Get New Insights 
                 </Typography>
                 <Box 
                   component="form" 

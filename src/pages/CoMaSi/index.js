@@ -1111,7 +1111,7 @@ export default function CoMaSyPage() {
             </Box>
 
             {/* Platform Dashboard Teaser and Behavioral Report */}
-            <Grid container spacing={4}>
+            {/* <Grid container spacing={4}>
               <Grid item xs={12} md={6}>
                 <Paper
                     data-aos="fade-right"
@@ -1236,7 +1236,7 @@ export default function CoMaSyPage() {
                   </Typography>
                 </Paper>
               </Grid>
-            </Grid>
+            </Grid> */}
           </Container>
         </Box>
 

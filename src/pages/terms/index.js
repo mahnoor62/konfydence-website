@@ -36,11 +36,15 @@ export default function TermsPage() {
             2. Company Information
           </Typography>
           <Typography variant="body1" paragraph>
-            Konfydence is operated by: Konfydence
+            Konfydence is a product and brand operated by:
             <br />
-            https://www.konfydence.com
+           <b> PlanetHike OÜ</b>
             <br />
-            Contact: hello@konfydence.com
+            Järvevana tee 9
+            <br />
+            11314 Tallinn, Estonia
+            <br />
+            PlanetHike OÜ trades under the name “Konfydence” for the purposes of these Services.
           </Typography>
 
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
@@ -104,10 +108,20 @@ export default function TermsPage() {
             9. Right of Withdrawal (Consumers)
           </Typography>
           <Typography variant="body1" paragraph>
-            If you are a consumer under applicable law, you may have a statutory right to withdraw from certain purchases within a specified period. Details regarding withdrawal rights, exclusions, and procedures will be provided separately where required by law.
+            If you are a consumer within the European Union, you have the statutory right to withdraw from a purchase within 14 days without giving any reason.
           </Typography>
           <Typography variant="body1" paragraph>
-            For digital content delivered immediately, withdrawal rights may be excluded where permitted by law and consent has been given.
+            The withdrawal period expires 14 days after the day you or a third party (other than the carrier) acquires physical possession of the goods.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            To exercise your right of withdrawal, you must inform us by email at hello@planethike.org with a clear statement of your decision to withdraw.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            You must return physical goods without undue delay and no later than 14 days after notifying us.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Digital content:
+            If you consent to immediate digital delivery, you acknowledge that your right of withdrawal is lost once delivery has begun.
           </Typography>
 
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
@@ -144,10 +158,13 @@ export default function TermsPage() {
             13. Limitation of Liability
           </Typography>
           <Typography variant="body1" paragraph>
-            To the extent permitted by law, Konfydence shall not be liable for indirect, incidental, consequential, or special damages, including loss of profit, data, or business opportunities, arising out of or in connection with the use of the Services.
+            PlanetHike OÜ shall only be liable for damages caused by intent or gross negligence.
           </Typography>
           <Typography variant="body1" paragraph>
-            Konfydence&apos;s total liability shall be limited to the amount paid by the user for the relevant product or service, unless mandatory law provides otherwise.
+            In cases of slight negligence, PlanetHike OÜ shall only be liable for breach of essential contractual obligations, and liability shall be limited to foreseeable damages.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            In all cases, total liability is limited to the amount paid for the affected product or service, except where mandatory law provides otherwise.
           </Typography>
 
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
@@ -175,7 +192,13 @@ export default function TermsPage() {
             17. Governing Law and Jurisdiction
           </Typography>
           <Typography variant="body1" paragraph>
-            These Terms are governed by the laws of Germany excluding conflict-of-law rules. Mandatory consumer protection laws remain unaffected.
+            These Terms are governed by the laws of the Republic of Estonia.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Mandatory consumer protection provisions of your country of residence remain unaffected.
+          </Typography>
+          <Typography variant="body1" paragraph>
+            The courts of Tallinn, Estonia shall have exclusive jurisdiction unless otherwise required by law.
           </Typography>
 
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
@@ -186,12 +209,19 @@ export default function TermsPage() {
           </Typography>
 
           <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
-            19. Contact
+            19. Privacy
+          </Typography>
+          <Typography variant="body1" paragraph>
+            The processing of personal data is governed by our Privacy Policy available at: <b>https://konfydence.com/privacy</b>
+          </Typography>
+
+          <Typography variant="h4" sx={{ mt: 4, mb: 2 }}>
+            20. Contact
           </Typography>
           <Typography variant="body1" paragraph>
             For questions regarding these Terms, please contact:
             <br />
-            hello@konfydence.com
+            <b>hello@konfydence.com</b>
           </Typography>
 
           <Typography variant="h5" sx={{ mt: 5, mb: 2, fontWeight: 'bold' }}>

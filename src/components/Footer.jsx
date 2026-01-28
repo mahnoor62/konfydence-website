@@ -80,6 +80,7 @@ const company = [
   { label: 'Join Waitlist', href: '/scam-survival-kit' },
   { label: 'Privacy Policy', href: '/privacy' },
   { label: 'Terms of Service', href: '/terms' },
+  { label: 'Imprint', href: '/imprint' },
 ];
 
 export default function Footer() {

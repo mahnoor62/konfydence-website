@@ -27,21 +27,31 @@ export default function PrivacyPage() {
             1. Who We Are
           </Typography>
           <Box sx={{ mb: 3 }}>
+            {/* <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+            <b>Company Name:</b> Konfydence 
+            </Typography> */}
             <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
-              <strong>Konfydence</strong>
+           
+            <b>Company Name:</b> PlanetHike OÜ <br />
+<b>Registered Office Address:</b> Järvevana tee 9, Tallinn, 11314, Estonia <br />
+Konfydence is a product of PlanetHike OÜ <br />
+
+<b>Registration Number:</b> 80656111 <br />
+
+<b>Legal Representative / Founder:</b> Tichi Mbanwie <br />
+
+<b>Email:</b> hello @ planethike .org <br />
+<b>Phone:</b> +49 (0)1634668380
             </Typography>
-            <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
-              [Legal entity name, if applicable]
-            </Typography>
-            <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+            {/* <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
               [Business address]
-            </Typography>
-            <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
+            </Typography> */}
+            {/* <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
               Email:{' '}
               <Link href="mailto:privacy@konfydence.com" sx={{ color: '#0B7897' }}>
                 privacy@konfydence.com
               </Link>
-            </Typography>
+            </Typography> */}
             <Typography variant="body1" paragraph sx={{ lineHeight: 1.8 }}>
               We are the data controller responsible for your personal data under applicable data protection laws, including the EU General Data Protection Regulation (GDPR).
             </Typography>

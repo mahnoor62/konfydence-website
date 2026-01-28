@@ -19,6 +19,9 @@ import {
   ListItem,
   ListItemText,
   Button,
+  TextField,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import LockIcon from '@mui/icons-material/Lock';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -32,7 +35,8 @@ import Footer from '@/components/Footer';
 
 const resourceBundles = [
   {
-    bundleName: 'Free Family Confidence Pack (Viral Entry)',
+    key: 'free-family',
+    bundleName: 'Free Family Confidence Pack',
     resources: [
       'Konfydence-Family-Tech-Contract.pdf',
       'Family_SSK_Rules.pdf',
@@ -41,10 +45,13 @@ const resourceBundles = [
       '"Intelligence isn\'t your defense" pause bars graphic',
       'Decision Ladder ("breathe pause think respond")',
     ],
+    // explicit files to download for this bundle (only these will be downloaded)
+    downloadFiles: ['Konfydence-Family-Tech-Contract.pdf', 'Family_SSK_Rules.pdf'],
     // availability: 'Free',
     availabilityType: 'free',
   },
   {
+    key: 'free-classroom',
     bundleName: 'Free Classroom Starter Pack (Teacher Hook)',
     resources: [
       'School_Lesson_Plan.pdf',
@@ -54,11 +61,19 @@ const resourceBundles = [
       'School_Curriculum Alignment Map.pdf',
       'H.A.C.K. Framework poster (vintage & 4-panel versions)',
     ],
+    // explicit files to download for this bundle
+    downloadFiles: [
+      'School_Lesson_Plan.pdf',
+      'School_Parent HACK Guide.pdf',
+      'School Classroom_Pause_Posters.pdf',
+      'School_Curriculum Alignment Map.pdf',
+    ],
     // availability: 'Free ',
     availabilityType: 'free-email',
   },
   {
-    bundleName: 'Gated Advanced Educator Toolkit',
+    key: 'advanced-educator',
+    bundleName: 'Advanced Educator Toolkit',
     resources: [
       'School_Lesson_Plan.pdf',
       'Teacher_Classroom_Drill.docx',
@@ -73,7 +88,8 @@ const resourceBundles = [
     availabilityType: 'gated-email',
   },
   {
-    bundleName: 'Gated Compliance & Audit Pack',
+    key: 'compliance-audit',
+    bundleName: 'Compliance & Audit Pack',
     resources: [
       'NIS2 ISO Alignment.pdf',
       'Behavioral Evidence Template.pdf',
@@ -86,7 +102,8 @@ const resourceBundles = [
     availabilityType: 'gated-company',
   },
   {
-    bundleName: 'Post-Demo/Pilot Pro Pack (Exclusive)',
+    key: 'post-demo',
+    bundleName: 'Post-Demo',
     resources: [
       'School Behavioral Practice Log.pdf',
       'School Behavioral Practice.pdf',
@@ -98,12 +115,15 @@ const resourceBundles = [
     availabilityType: 'exclusive',
   },
   {
+    key: 'ambassador',
     bundleName: 'Ambassador Resource Pack',
     resources: [
       'Konfydence Ambassador.pdf',
       'Konfydence Ambassador Agreement.pdf (post-approval)',
       'Shareable graphics pack (pause bars, H.A.C.K. posters, myth-buster)',
     ],
+    // files live under public/pdfs/Ambassador/
+    downloadFiles: ['Ambassador/KonfydenceAmbassador.pdf', 'Ambassador/KonfydenceAmbassadorAgreement.pdf'],
     availability: 'Free overview',
     availabilityType: 'ambassador',
   },
@@ -130,9 +150,170 @@ const getAvailabilityColor = (type) => {
 
 export default function FreeResources() {
   const router = useRouter();
+  const [pdfIndex, setPdfIndex] = useState(null);
+  const [emails, setEmails] = useState({});
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [messages, setMessages] = useState({}); // per-bundle inline messages
+  const [showEmailField, setShowEmailField] = useState({});
+  const [sending, setSending] = useState({});
 
   const handleBack = () => {
     router.back();
+  };
+ 
+  const sanitizeFileName = (name) => {
+    // Replace spaces and problematic chars with underscores for URL paths
+    return name.replace(/["']/g, '').replace(/\s+/g, '_');
+  };
+
+  // Download all available files for a bundle (used by the single-section download button)
+  const downloadBundleResources = async (bundle) => {
+    if (!bundle || !bundle.resources || bundle.resources.length === 0) return;
+    const filesToTry = Array.isArray(bundle.downloadFiles) && bundle.downloadFiles.length
+      ? bundle.downloadFiles
+      : bundle.resources;
+
+    for (const resource of filesToTry) {
+      // only attempt items that look like files (have an extension)
+      if (!/\.[a-zA-Z0-9]{1,5}$/.test(resource)) continue;
+      const url = await findExistingResourceUrl(resource);
+      if (!url) {
+        console.warn('No file found for', resource);
+        continue;
+      }
+      const urlFilename = url.split('/').pop();
+      // Produce a readable download name for the user:
+      // - prefer the displayed resource name if it includes an extension
+      // - otherwise append the real file extension from the URL
+      const displayHasExt = /\.[a-zA-Z0-9]{1,5}$/.test(resource.trim());
+      const getSafeName = (name) =>
+        // remove quotes and slashes, trim whitespace; keep spaces for readability
+        name.replace(/["'\/\\]/g, '').trim();
+      const downloadName = (() => {
+        if (displayHasExt) return getSafeName(resource);
+        const ext = urlFilename.includes('.') ? urlFilename.split('.').pop() : '';
+        return ext ? `${getSafeName(resource)}.${ext}` : getSafeName(resource);
+      })();
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = downloadName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      // small delay to reduce browser popup blocking risk
+      await new Promise((res) => setTimeout(res, 300));
+    }
+  };
+
+  const normalizeNameVariants = (name) => {
+    // produce variants to match filesystem naming: original, underscores, dashes, remove numbering prefix
+    const cleaned = name.replace(/["']/g, '').trim();
+    const withoutNumberPrefix = cleaned.replace(/^\d+\.\s*/, '');
+    const variants = [
+      cleaned,
+      withoutNumberPrefix,
+      cleaned.replace(/\s+/g, '_'),
+      withoutNumberPrefix.replace(/\s+/g, '_'),
+      cleaned.replace(/\s+/g, '-'),
+      withoutNumberPrefix.replace(/\s+/g, '-'),
+    ];
+    // ensure .pdf or .docx suffix presence (some list items may be descriptions)
+    const extMatch = cleaned.match(/\.[a-zA-Z0-9]{1,5}$/);
+    if (!extMatch) {
+      // prefer pdf and docx if no extension present
+      return variants.flatMap((v) => [v + '.pdf', v + '.docx']);
+    }
+    return variants;
+  };
+
+  const findExistingResourceUrl = async (resourceName) => {
+    const candidates = normalizeNameVariants(resourceName).map((c) => c.toLowerCase());
+    let index = pdfIndex;
+    if (!index) {
+      try {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const resp = await fetch(`${backend}/api/pdf-index`);
+        if (resp.ok) {
+          const contentType = resp.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const json = await resp.json();
+            index = json.files || [];
+            setPdfIndex(index);
+          } else {
+            // unexpected response
+            index = [];
+            setPdfIndex(index);
+          }
+        } else {
+          index = [];
+          setPdfIndex(index);
+        }
+      } catch (err) {
+        index = [];
+        setPdfIndex(index);
+      }
+    }
+
+    // match candidates against index entries (case-insensitive)
+    for (const cand of candidates) {
+      const found = index.find((f) => {
+        const lf = f.toLowerCase();
+        if (lf === cand) return true;
+        if (lf.endsWith('/' + cand)) return true;
+        return false;
+      });
+      if (found) {
+        return `/pdfs/${encodeURI(found)}`;
+      }
+    }
+    // Fallback: fuzzy match by stripping non-alphanumeric characters (handles prefixes like "1. " or spacing differences)
+    const normalizeForCompare = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    for (const cand of candidates) {
+      const candNorm = normalizeForCompare(cand);
+      const found = index.find((f) => normalizeForCompare(f).includes(candNorm) || candNorm.includes(normalizeForCompare(f)));
+      if (found) {
+        return `/pdfs/${encodeURI(found)}`;
+      }
+    }
+    return null;
+  };
+
+  const sendResourcesByEmail = async (bundleKey, email) => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setSnackbar({ open: true, message: 'Enter a valid email address', severity: 'error' });
+      return;
+    }
+    setSending((s) => ({ ...s, [bundleKey]: true }));
+    try {
+      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
+      const resp = await fetch(`${backend}/api/email-resources`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bundleKey, email }),
+      });
+      const contentType = resp.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const json = await resp.json();
+        if (resp.ok && json.success) {
+          // inline message near the bundle send button
+          setMessages((m) => ({ ...m, [bundleKey]: { message: 'Resources sent to email', severity: 'success' } }));
+          setEmails((s) => ({ ...s, [bundleKey]: '' }));
+          // hide the email field after success
+          setShowEmailField((s) => ({ ...s, [bundleKey]: false }));
+        } else {
+          setMessages((m) => ({ ...m, [bundleKey]: { message: json.message || 'Failed to send email', severity: 'error' } }));
+        }
+      } else {
+        const text = await resp.text();
+        setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API error: ${resp.status} ${resp.statusText}`, severity: 'error' } }));
+        console.error('Non-JSON response from email API:', text);
+      }
+    } catch (err) {
+      console.error('Send email error:', err);
+      setSnackbar({ open: true, message: 'Error sending email', severity: 'error' });
+    } finally {
+      setSending((s) => ({ ...s, [bundleKey]: false }));
+    }
   };
 
   return (
@@ -181,7 +362,7 @@ export default function FreeResources() {
                   <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '1rem' }}>
                     Included Resources + Visuals
                   </TableCell>
-                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '1rem', width: '200px' }}>
+                  <TableCell sx={{ color: 'white', fontWeight: 600, fontSize: '1rem', width: { xs: '200px', md: '360px' } }}>
                     Availability
                   </TableCell>
                 </TableRow>
@@ -204,38 +385,113 @@ export default function FreeResources() {
                       <List dense sx={{ py: 0 }}>
                         {bundle.resources.map((resource, idx) => (
                           <ListItem key={idx} sx={{ py: 0.5, pl: 0 }}>
-                            <ListItemText 
-                              primary={resource}
-                              primaryTypographyProps={{
-                                variant: 'body2',
-                                color: 'text.secondary',
-                              }}
-                            />
+                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                              <ListItemText
+                                primary={resource}
+                                primaryTypographyProps={{
+                                  variant: 'body2',
+                                  color: 'text.secondary',
+                                }}
+                              />
+                              {/* single-section download button handles downloads; no per-file button shown */}
+                            </Box>
                           </ListItem>
                         ))}
                       </List>
                     </TableCell>
                     <TableCell sx={{ verticalAlign: 'top', py: 3 }}>
                       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <Chip
-                          label={bundle.availability}
-                          color={getAvailabilityColor(bundle.availabilityType)}
-                          size="small"
-                          icon={
-                            bundle.availabilityType === 'free' ? (
-                              <LockIcon fontSize="small" />
-                            ) : bundle.availabilityType === 'free-email' ? (
-                              <LockIcon fontSize="small" />
-                            ) : bundle.availabilityType.includes('email') || bundle.availabilityType === 'gated-company' ? (
-                              <EmailIcon fontSize="small" />
-                            ) : bundle.availabilityType === 'exclusive' ? (
-                              <LockIcon fontSize="small" />
-                            ) : bundle.availabilityType === 'ambassador' ? (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          {!(bundle.key === 'free-family' || bundle.key === 'free-classroom' || bundle.key === 'advanced-educator' || bundle.key === 'compliance-audit' || bundle.key === 'ambassador') ? (
+                            <Chip
+                              label={bundle.availability}
+                              color={getAvailabilityColor(bundle.availabilityType)}
+                              size="small"
+                              icon={
+                                // Show email/lock/download icons for gated/other types
+                                bundle.availabilityType.includes('email') || bundle.availabilityType === 'gated-company' ? (
+                                  <EmailIcon fontSize="small" />
+                                ) : bundle.availabilityType === 'exclusive' ? (
+                                  <LockIcon fontSize="small" />
+                                ) : bundle.availabilityType === 'ambassador' ? (
+                                  <DownloadIcon fontSize="small" />
+                                ) : null
+                              }
+                              sx={{ fontWeight: 500, mb: bundle.bundleName === 'Gated Advanced Educator Toolkit' ? 1 : 0 }}
+                            />
+                          ) : null}
+                          
+                          {/* Extra explicit download button for clarity */}
+                          {(bundle.key === 'free-family' || bundle.key === 'free-classroom' || bundle.key === 'ambassador') && (
+                            <IconButton
+                              size="small"
+                              onClick={() => downloadBundleResources(bundle)}
+                              sx={{
+                                color: '#0B7897',
+                                padding: '6px',
+                                '&:hover': { backgroundColor: 'rgba(11, 120, 151, 0.08)' },
+                              }}
+                              title={`Download ${bundle.bundleName}`}
+                            >
                               <DownloadIcon fontSize="small" />
-                            ) : null
-                          }
-                          sx={{ fontWeight: 500, mb: bundle.bundleName === 'Gated Advanced Educator Toolkit' ? 1 : 0 }}
-                        />
+                            </IconButton>
+                          )}
+                          {/* Email input + send button (full width, new line) for sections 3 and 4 */}
+                          {(bundle.key === 'advanced-educator' || bundle.key === 'compliance-audit') && (
+                            <Box sx={{ width: '100%', mt: 1 }}>
+                              {messages[bundle.key] && messages[bundle.key].severity === 'success' ? (
+                                <Alert severity="success" sx={{ mt: 1 }}>
+                                  {messages[bundle.key].message}
+                                </Alert>
+                              ) : (
+                                <>
+                                  {!showEmailField[bundle.key] ? (
+                                    <Chip
+                                      label="Email share"
+                                      color="default"
+                                      clickable
+                                      onClick={() => setShowEmailField((s) => ({ ...s, [bundle.key]: true }))}
+                                      icon={<EmailIcon />}
+                                      sx={{ borderRadius: 2 }}
+                                    />
+                                  ) : (
+                                    <>
+                                      <TextField
+                                        fullWidth
+                                        size="small"
+                                        placeholder="Email share"
+                                        value={emails[bundle.key] || ''}
+                                        onChange={(e) => setEmails((s) => ({ ...s, [bundle.key]: e.target.value }))}
+                                        disabled={!!sending[bundle.key]}
+                                      />
+                                      <Button
+                                        fullWidth
+                                        variant="contained"
+                                        size="small"
+                                        onClick={() => {
+                                          // clear any previous inline message for this bundle before sending
+                                          setMessages((m) => ({ ...m, [bundle.key]: null }));
+                                          sendResourcesByEmail(bundle.key, emails[bundle.key]);
+                                        }}
+                                        sx={{ mt: 1, textTransform: 'none' }}
+                                        disabled={!!sending[bundle.key]}
+                                      >
+                                        {sending[bundle.key] ? 'Sending…' : 'Send'}
+                                      </Button>
+                                    </>
+                                  )}
+
+                                  {/* Inline message near the field for errors */}
+                                  {messages[bundle.key] && messages[bundle.key].severity !== 'success' && (
+                                    <Alert severity={messages[bundle.key].severity} sx={{ mt: 1 }}>
+                                      {messages[bundle.key].message}
+                                    </Alert>
+                                  )}
+                                </>
+                              )}
+                            </Box>
+                          )}
+                        </Box>
                         {bundle.bundleName === 'Gated Advanced Educator Toolkit' && (
                           <List dense sx={{ py: 0, width: '100%' }}>
                             {/* Empty items for first 4 resources */}
@@ -416,6 +672,21 @@ export default function FreeResources() {
         </Container>
       </Box>
 
+      <Box>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={5000}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        >
+          <Alert
+            onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
       <Footer />
     </>
   );

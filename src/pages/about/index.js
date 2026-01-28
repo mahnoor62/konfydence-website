@@ -480,15 +480,15 @@ export default function AboutPage() {
               </Box>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', mt:2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', mt:5 }}>
               <Box
                 component="img"
-                src="/images/decisionLadder3.jpg"
+                src="/images/ladder.jpeg"
                 alt="Decision Ladder - Breathe, Pause, Think, Respond"
                 sx={{
                   width: '100%',
                   height: 'auto',
-                  // borderRadius: 3,
+                  borderRadius: 3,
                   boxShadow: '0 15px 40px rgba(0,0,0,0.1)',
                   filter: 'none',
                 }}
