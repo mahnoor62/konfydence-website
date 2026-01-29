@@ -647,7 +647,7 @@ export default function OrganizationDashboardPage() {
                       type: 'game',
                       memberId: memberId,
                       memberName: orgResponse.data.orgUsers.find(ou => (ou.userId?._id || ou.userId)?.toString() === memberId.toString())?.userId?.name || 'Member',
-                      description: `Played ${progress.gameName || 'game'} - Level ${progress.level || 'N/A'} - Score: ${progress.score || 0}`,
+                      description: `Played ${progress.gameName || 'game'} - Environment ${progress.level || 'N/A'} - Score: ${progress.score || 0}`,
                       timestamp: progress.lastPlayed || progress.createdAt || new Date()
                     });
                   });
@@ -715,7 +715,7 @@ export default function OrganizationDashboardPage() {
                     type: 'game',
                     memberId: studentId,
                     memberName: studentName,
-                    description: `Played ${progress.gameName || 'game'} - Level ${progress.level || 'N/A'} - Score: ${progress.score || 0}`,
+                    description: `Played ${progress.gameName || 'game'} - Environment ${progress.level || 'N/A'} - Score: ${progress.score || 0}`,
                     timestamp: progress.lastPlayed || progress.createdAt || new Date()
                   });
                 });
@@ -2340,7 +2340,7 @@ export default function OrganizationDashboardPage() {
                 color: '#063C5E',
               }}
             >
-              {user.role === 'b2e_user' ? 'Institute' : 'Organization'} Dashboard
+              {user.role === 'b2e_user' ? 'Institution' : 'Organization'} Dashboard
             </Typography>
             {/* Create button hidden per requirement */}
           </Box>
@@ -2450,7 +2450,7 @@ export default function OrganizationDashboardPage() {
                 variant="scrollable"
                 scrollButtons={false}
               >
-                <Tab label={user.role === 'b2e_user' ? 'My Institutes' : 'My Organizations'} />
+                <Tab label={user.role === 'b2e_user' ? 'My Institution' : 'My Organizations'} />
                 <Tab label={user.role === 'b2e_user' ? 'Students' : 'Members'} />
                 {/* Student Activities tab commented out */}
                 {/* <Tab label={user.role === 'b2e_user' ? 'Student Activities' : 'Member Activities'} /> */}
@@ -2539,7 +2539,7 @@ export default function OrganizationDashboardPage() {
                           <Stack spacing={1}>
                             <Box>
                               <Typography variant="caption" color="text.secondary">
-                                {user.role === 'b2e_user' ? 'Institute Code' : 'Organization Code'}
+                                {user.role === 'b2e_user' ? 'Institution Code' : 'Organization Code'}
                               </Typography>
                               <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                 {org.uniqueCode || 'N/A'}
@@ -4618,7 +4618,7 @@ export default function OrganizationDashboardPage() {
                       >
                         <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', pr: 2 }}>
                           <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', flexGrow: 1 }}>
-                            Level {levelNum}
+                            Environment {levelNum}
                           </Typography>
                           <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                             <Box sx={{ textAlign: 'center' }}>
@@ -4650,7 +4650,7 @@ export default function OrganizationDashboardPage() {
                         {levelArray.length === 0 ? (
                           <Box sx={{ p: 3 }}>
                             <Alert severity="info">
-                              No cards played in Level {levelNum} yet.
+                              No cards played in Environment {levelNum} yet.
                             </Alert>
                           </Box>
                         ) : (
@@ -4892,7 +4892,7 @@ export default function OrganizationDashboardPage() {
                     {selectedProduct.level1?.length > 0 && (
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          Level 1 ({selectedProduct.level1.length} cards)
+                          Environment 1 ({selectedProduct.level1.length} cards)
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {selectedProduct.level1.map((card, idx) => (
@@ -4909,7 +4909,7 @@ export default function OrganizationDashboardPage() {
                     {selectedProduct.level2?.length > 0 && (
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          Level 2 ({selectedProduct.level2.length} cards)
+                          Environment 2 ({selectedProduct.level2.length} cards)
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {selectedProduct.level2.map((card, idx) => (
@@ -4926,7 +4926,7 @@ export default function OrganizationDashboardPage() {
                     {selectedProduct.level3?.length > 0 && (
                       <Box>
                         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
-                          Level 3 ({selectedProduct.level3.length} cards)
+                          Environment 3 ({selectedProduct.level3.length} cards)
                         </Typography>
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {selectedProduct.level3.map((card, idx) => (

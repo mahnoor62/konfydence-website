@@ -404,7 +404,7 @@ export default function MemberDetailPage() {
                         <TableHead>
                           <TableRow>
                             <TableCell><strong>Game</strong></TableCell>
-                            <TableCell><strong>Level</strong></TableCell>
+                            <TableCell><strong>Environment</strong></TableCell>
                             <TableCell><strong>Score</strong></TableCell>
                             <TableCell><strong>Last Played</strong></TableCell>
                           </TableRow>

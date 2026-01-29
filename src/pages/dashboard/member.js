@@ -586,7 +586,7 @@ export default function MemberDashboardPage() {
                     {orgOrSchool?.uniqueCode && (
                       <Box>
                         <Typography variant="caption" color="text.secondary">
-                          {isSchool ? 'Institute Code' : 'Organization Code'}
+                          {isSchool ? 'Institution Code' : 'Organization Code'}
                         </Typography>
                         <Typography variant="body2" sx={{ fontWeight: 600, mt: 0.5 }}>
                           {orgOrSchool.uniqueCode}
@@ -743,8 +743,8 @@ export default function MemberDashboardPage() {
                                 }}
                               >
                                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', pr: 2 }}>
-                                  <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', flexGrow: 1 }}>
-                                    Level {levelNum}
+                                <Typography variant="h6" sx={{ fontWeight: 700, color: '#063C5E', flexGrow: 1 }}>
+                                    Environment {levelNum}
                                   </Typography>
                                   <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                                     <Box sx={{ textAlign: 'center' }}>
@@ -776,7 +776,7 @@ export default function MemberDashboardPage() {
                                 {levelArray.length === 0 ? (
                                   <Box sx={{ p: 3 }}>
                                     <Alert severity="info">
-                                      No cards played in Level {levelNum} yet.
+                                      No cards played in Environment {levelNum} yet.
                                     </Alert>
                                   </Box>
                                 ) : (

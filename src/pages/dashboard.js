@@ -812,7 +812,7 @@ export default function DashboardPage() {
                                     }}
                                   />
                                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', fontSize: '0.7rem' }}>
-                                    {mem.gameProgress.totalLevelsPlayed} level(s) • {mem.gameProgress.correctAnswers}/{mem.gameProgress.totalQuestions} correct
+                                    {mem.gameProgress.totalLevelsPlayed} environment(s) • {mem.gameProgress.correctAnswers}/{mem.gameProgress.totalQuestions} correct
                                   </Typography>
                                 </Box>
                               )}
@@ -993,7 +993,7 @@ export default function DashboardPage() {
                                 ({gameProgress.cards?.reduce((sum, c) => sum + c.correctAnswers, 0) || 0} correct answers out of {gameProgress.cards?.reduce((sum, c) => sum + c.totalQuestions, 0) || 0} questions)
                               </Typography>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                Total Levels Played: {gameProgress.totalLevelsPlayed}
+                                Total Environments Played: {gameProgress.totalLevelsPlayed}
                               </Typography>
                             </Box>
 
@@ -1015,7 +1015,7 @@ export default function DashboardPage() {
                                           <TableCell sx={{ fontWeight: 600 }}>Card Title</TableCell>
                                           <TableCell sx={{ fontWeight: 600 }}>Card Score</TableCell>
                                           <TableCell sx={{ fontWeight: 600 }}>Correct Answers</TableCell>
-                                          <TableCell sx={{ fontWeight: 600 }}>Levels</TableCell>
+                                          <TableCell sx={{ fontWeight: 600 }}>Environments</TableCell>
                                         </TableRow>
                                       </TableHead>
                                       <TableBody>
@@ -1053,11 +1053,11 @@ export default function DashboardPage() {
                                             </TableCell>
                                             <TableCell>
                                               <Stack spacing={0.5}>
-                                                {card.levels && card.levels.length > 0 ? (
+                                                  {card.levels && card.levels.length > 0 ? (
                                                   card.levels.map((level, levelIdx) => (
                                                     <Box key={levelIdx} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                       <Chip
-                                                        label={`L${level.levelNumber}: ${level.score}/${level.maxScore} (${level.correctAnswers}/${level.totalQuestions})`}
+                                                        label={`E${level.levelNumber}: ${level.score}/${level.maxScore} (${level.correctAnswers}/${level.totalQuestions})`}
                                                         size="small"
                                                         sx={{
                                                           backgroundColor: (level.percentageScore || (level.maxScore > 0 ? Math.round((level.score / level.maxScore) * 100) : 0)) >= 50 ? '#E8F5E9' : '#FFF3E0',
@@ -1075,7 +1075,7 @@ export default function DashboardPage() {
                                                   ))
                                                 ) : (
                                                   <Typography variant="caption" color="text.secondary">
-                                                    No levels played
+                                                    No environments played
                                                   </Typography>
                                                 )}
                                               </Stack>
@@ -1133,7 +1133,7 @@ export default function DashboardPage() {
                                           label={
                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                               <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                                Level {levelNum}
+                                                Environment {levelNum}
                                               </Typography>
                                               <Chip
                                                 label={`${levelPercentage}%`}
@@ -1202,8 +1202,8 @@ export default function DashboardPage() {
 
                                         {/* Cards Table */}
                                         {!levelArray || levelArray.length === 0 ? (
-                                          <Alert severity="info">
-                                            No cards played in Level {levelNum} yet.
+                                    <Alert severity="info">
+                                            No cards played in Environment {levelNum} yet.
                                           </Alert>
                                         ) : (
                                           <TableContainer component={Paper} sx={{ boxShadow: 'none', border: '1px solid #E0E7F0', borderRadius: 2 }}>

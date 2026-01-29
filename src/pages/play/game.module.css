@@ -1892,9 +1892,34 @@
   animation: rationaleSlideIn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.9s both;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  /* By default keep rationale hidden to avoid inner scroll on front card */
+  overflow-y: hidden;
   text-align: left;
   width: 100%;
+}
+
+/* When the card is flipped (back visible) allow scrolling and show a golden scrollbar */
+.questionCard.flipped .rationaleSection {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #FCB533 transparent; /* Firefox thumb and track */
+}
+
+/* WebKit-based browsers scrollbar styling (Chrome, Safari, Edge) */
+.questionCard.flipped .rationaleSection::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.questionCard.flipped .rationaleSection::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 8px;
+}
+.questionCard.flipped .rationaleSection::-webkit-scrollbar-thumb {
+  background: #FCB533; /* golden thumb */
+  border-radius: 8px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
 }
 
 @keyframes rationaleSlideIn {
