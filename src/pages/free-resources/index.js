@@ -239,7 +239,7 @@ export default function FreeResources() {
   };
 
   const findExistingResourceUrl = async (resourceName) => {
-    const candidates = normalizeNameVariants(resourceName).map((c) => c.toLowerCase());
+    const candidates = normalizeNameVariants(resourceName).map((c) => c);
     let index = pdfIndex;
   if (!index) {
     try {
