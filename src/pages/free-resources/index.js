@@ -362,7 +362,11 @@ export default function FreeResources() {
           setSending((s) => ({ ...s, [bundleKey]: false }));
           return;
         }
-        const emailUrl = `${apiEnv}/email-resources`;
+        const base = (apiEnv || '').replace(/\/$/, '');
+        // const emailUrl = `${apiEnv}/email-resources`;
+        const emailUrl = base.endsWith('/api')
+  ? `${base}/email-resources`
+  : `${base}/api/email-resources`;
         console.log(`sendResourcesByEmail: forcing backend POST for ${bundleKey} -> ${emailUrl}`);
         resp = await fetch(emailUrl, {
           method: 'POST',
