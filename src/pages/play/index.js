@@ -924,7 +924,8 @@ export default function GamePage() {
   const [trialInfo, setTrialInfo] = useState(null); // Store trial seats info
   const [seatsAvailable, setSeatsAvailable] = useState(false); // Track if seats are available
   const [errorModal, setErrorModal] = useState({ open: false, message: '', title: 'Error' }); // Error modal state
-  const [questionTimer, setQuestionTimer] = useState(120); // 2 minutes = 120 seconds
+  const TOTAL_QUESTION_SECONDS = 300; // 5 minutes
+  const [questionTimer, setQuestionTimer] = useState(TOTAL_QUESTION_SECONDS); // remaining seconds
   const [timerInterval, setTimerInterval] = useState(null); // Store interval ID
   const resultCardRef = useRef(null); // Ref for screenshot capture
   
@@ -1027,8 +1028,8 @@ export default function GamePage() {
         setTimerInterval(null);
       }
       
-      // Reset timer to 120 seconds
-      setQuestionTimer(120);
+      // Reset timer to 300 seconds (5 minutes)
+      setQuestionTimer(300);
       
       // Start countdown timer
       const interval = setInterval(() => {
@@ -2842,7 +2843,7 @@ export default function GamePage() {
       setSelectedAnswer(null);
       setShowFeedback(false);
       setIsCardLocked(false);
-      setQuestionTimer(120); // Reset timer for next question
+      setQuestionTimer(300); // Reset timer for next question (5 minutes)
     } else {
       // Game complete - check if Level 3 to show bonus cards
       if (selectedLevel === 3 && !showBonusCards) {
@@ -4054,7 +4055,13 @@ export default function GamePage() {
                     color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                   }}>
                     <span>Pause:</span>
-                    <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                    {(() => {
+                      const elapsed = TOTAL_QUESTION_SECONDS - questionTimer;
+                      const displaySeconds = Math.max(0, elapsed);
+                      const m = Math.floor(displaySeconds / 60).toString().padStart(2, '0');
+                      const s = (displaySeconds % 60).toString().padStart(2, '0');
+                      return <span>{m}:{s}</span>;
+                    })()}
                   </div>
                   <div className={styles.scoreDisplay}>
                     <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
@@ -4079,8 +4086,14 @@ export default function GamePage() {
                                 fontWeight: 'bold',
                                 color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                               }}>
-                                <span>Pause:</span>
-                                <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                                <span>Count Down:</span>
+                                {(() => {
+                                  const elapsed = TOTAL_QUESTION_SECONDS - questionTimer;
+                                  const displaySeconds = Math.max(0, elapsed);
+                                  const m = Math.floor(displaySeconds / 60).toString().padStart(2, '0');
+                                  const s = (displaySeconds % 60).toString().padStart(2, '0');
+                                  return <span>{m}:{s}</span>;
+                                })()}
                               </div>
                               <div className={styles.scoreDisplay}>
                                 <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>
@@ -4164,8 +4177,13 @@ export default function GamePage() {
                                 fontWeight: 'bold',
                                 color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                               }}>
-                                <span>Pause:</span>
-                                <span>{Math.floor(questionTimer / 60)}:{(questionTimer % 60).toString().padStart(2, '0')}</span>
+                                {(() => {
+                                  const elapsed = TOTAL_QUESTION_SECONDS - questionTimer;
+                                  const displaySeconds = Math.max(0, elapsed);
+                                  const m = Math.floor(displaySeconds / 60).toString().padStart(2, '0');
+                                  const s = (displaySeconds % 60).toString().padStart(2, '0');
+                                  return <span>{m}:{s}</span>;
+                                })()}
                               </div>
                               <div className={styles.scoreDisplay}>
                                 <span>Score: <span>{score}</span> / {maxScore || scenarios.length * 4}</span>

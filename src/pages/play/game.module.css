@@ -1955,6 +1955,8 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  /* push branding/footer to card bottom when content is short */
+  margin-top: auto;
   margin-bottom: 0.5rem;
   padding-top: 0.15rem;
   flex-shrink: 0;

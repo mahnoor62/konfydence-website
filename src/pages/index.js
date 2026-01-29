@@ -1689,7 +1689,7 @@ Konfydence helps teams practice the moment breaches begin.
                           mb: 2,
                           lineHeight: 1.7,
                           // bgcolor:'red',
-                          height: { md: '150px' },
+                          height: { md: '190px' },
                         }}
                       >
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
@@ -1853,7 +1853,7 @@ Konfydence helps teams practice the moment breaches begin.
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: { md: '150px' },
+                          height: { md: '190px' },
                           // bgcolor:'red',
                         }}
                       >
@@ -2000,7 +2000,7 @@ Konfydence helps teams practice the moment breaches begin.
                           mb: 2,
                         }}
                       >
-                      Compliance That Actually Reduces Risk
+                     When Employees Panic, Policies Don’t Matter
                       </Typography>
                       <Typography
                         variant="body1"
@@ -2009,18 +2009,18 @@ Konfydence helps teams practice the moment breaches begin.
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: {  md: '150px' },
+                          height: {  md: '190px' },
                         }}
                       >
-                        Go beyond check-box training. Our
+                        {/* Go beyond check-box training. Our
 simulations prove your team can handle
 real pressure—with reports ready for
-auditors. NIS2-ready, fun, and effective.
-                        <br />
+auditors. NIS2-ready, fun, and effective. */}
+                        {/* <br /> */}
                         {/* <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Understand the Limbic Hijack?</a> */}
-                       {/* Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.<br />
+                       Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.<br />
                        Konfydence helps teams practice the moment breaches begin.<br />
-                    // <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Why people click under pressure the Limbic Hijack?</a>    */}
+                     <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Why people click under pressure the Limbic Hijack?</a>   
                       </Typography>
                       
                       {/* Static Card for Business */}
