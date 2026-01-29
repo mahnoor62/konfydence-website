@@ -1005,11 +1005,13 @@ Konfydence helps teams practice the moment breaches begin.
                 </Grid>
               </Grid>
                 {/* Video Column */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={12} sx={{ display: 'flex', justifyContent: 'center' }}>
                   <Box
                     sx={{
                       position: 'relative',
                       width: '100%',
+                      // maxWidth: 400, // keep size consistent and limit width on large screens
+                      mx: 'auto',
                       paddingTop: '56.25%', // 16:9 aspect ratio
                       backgroundColor: '#000B3F',
                       borderRadius: 3,
@@ -1046,7 +1048,7 @@ Konfydence helps teams practice the moment breaches begin.
                 </Grid>
 
                 {/* Text Column */}
-                <Grid item xs={12} md={6}>
+                {/* <Grid item xs={12} md={6}>
                   <Typography
                     variant="h3"
                     sx={{
@@ -1071,7 +1073,7 @@ Konfydence helps teams practice the moment breaches begin.
                   >
                     Discover how a finance expert transformed her expertise into a powerful family protection system, helping thousands stay safe from scams.
                   </Typography>
-                </Grid>
+                </Grid> */}
               </Grid>
               
             
