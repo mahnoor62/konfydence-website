@@ -349,28 +349,47 @@ export default function FreeResources() {
     }
     setSending((s) => ({ ...s, [bundleKey]: true }));
     try {
-      const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const apiEnv = process.env.NEXT_PUBLIC_API_URL;
       const relativeUrl = `/api/email-resources`;
 
-      // Try relative frontend API first (works when Next.js API route or proxy exists),
-      // otherwise try backend host if configured.
-      const tryPost = async (url) => {
-        try {
-          const r = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ bundleKey, email }),
-          });
-          return r;
-        } catch (e) {
-          return { ok: false, error: e };
-        }
-      };
+      // For Advanced Educator and Compliance & Audit, always post to backend API base from env.
+      const forceBackendBundles = ['advanced-educator', 'compliance-audit'];
+      let resp = null;
 
-      let resp = await tryPost(relativeUrl);
-      if ((!resp || !resp.ok) && backend) {
-        const backendUrl = `${backend}/api/email-resources`;
-        resp = await tryPost(backendUrl);
+      if (forceBackendBundles.includes(bundleKey)) {
+        if (!apiEnv) {
+          setMessages((m) => ({ ...m, [bundleKey]: { message: 'Email API not configured. Set NEXT_PUBLIC_API_URL.', severity: 'error' } }));
+          setSending((s) => ({ ...s, [bundleKey]: false }));
+          return;
+        }
+        const emailUrl = `${apiEnv}/email-resources`;
+        console.log(`sendResourcesByEmail: forcing backend POST for ${bundleKey} -> ${emailUrl}`);
+        resp = await fetch(emailUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bundleKey, email }),
+        });
+      } else {
+        // keep existing behavior for other bundles: try relative first, then backend if configured
+        const backend = apiEnv;
+        const tryPost = async (url) => {
+          try {
+            const r = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ bundleKey, email }),
+            });
+            return r;
+          } catch (e) {
+            return { ok: false, error: e };
+          }
+        };
+        resp = await tryPost(relativeUrl);
+        if ((!resp || !resp.ok) && backend) {
+          const backendUrl = `${backend}/email-resources`;
+          console.log(`sendResourcesByEmail: relative failed, trying backend ${backendUrl}`);
+          resp = await tryPost(backendUrl);
+        }
       }
 
       if (resp && resp.headers) {
@@ -387,7 +406,7 @@ export default function FreeResources() {
         } else {
           const text = await resp.text().catch(() => '');
           if (resp.status === 404) {
-            setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API not found. Tried /api/email-resources and ${backend ? `${backend}/api/email-resources` : '(no backend configured)'} (404).`, severity: 'error' } }));
+            setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API not found at the attempted URL (404).`, severity: 'error' } }));
           } else {
             setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API error: ${resp.status} ${resp.statusText}`, severity: 'error' } }));
           }
