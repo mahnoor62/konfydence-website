@@ -150,6 +150,17 @@ const getAvailabilityColor = (type) => {
 
 export default function FreeResources() {
   const router = useRouter();
+  // Helper to build public PDF URLs using configured API/host.
+  const getPublicPdfUrl = (relativePath) => {
+    // prefer NEXT_PUBLIC_API_URL (backend) or NEXT_PUBLIC_FRONTEND_URL (frontend) as host
+    const base = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    if (!base) {
+      // Next.js serves `public/` at root, so use /pdfs/<file>
+      return `/pdfs/${encodeURI(relativePath)}`;
+    }
+    // Host should serve files at /pdfs/<file>
+    return `${base}/pdfs/${encodeURI(relativePath)}`;
+  };
   const [pdfIndex, setPdfIndex] = useState(null);
   const [pdfIndexError, setPdfIndexError] = useState(null);
   const [emails, setEmails] = useState({});
@@ -296,10 +307,8 @@ export default function FreeResources() {
         return false;
       });
     if (found) {
-        // Resolve PDF URL using NEXT_PUBLIC_FRONTEND_URL when available,
-        // otherwise use relative /pdfs/ path so public assets are served by the frontend.
-        const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
-        return (frontend ? `${frontend}` : '') + `/pdfs/${encodeURI(found)}`;
+        // Resolve using explicit public PDFs path on configured host
+        return getPublicPdfUrl(found);
       }
     }
     // Fallback: fuzzy match by stripping non-alphanumeric characters (handles prefixes like "1. " or spacing differences)
@@ -308,14 +317,12 @@ export default function FreeResources() {
       const candNorm = normalizeForCompare(cand);
       const found = index.find((f) => normalizeForCompare(f).includes(candNorm) || candNorm.includes(normalizeForCompare(f)));
       if (found) {
-      const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
-      return (frontend ? `${frontend}` : '') + `/pdfs/${encodeURI(found)}`;
+      return getPublicPdfUrl(found);
       }
     }
     // If index lookup failed (no api or empty), attempt to probe the public /pdfs/ URLs directly.
-    const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
     for (const cand of candidates) {
-      const probeUrl = frontend ? `${frontend}/pdfs/${encodeURI(cand)}` : `/pdfs/${encodeURI(cand)}`;
+      const probeUrl = getPublicPdfUrl(cand);
       try {
         // Use HEAD where available; fallback to GET
         let resp = null;
@@ -613,7 +620,7 @@ export default function FreeResources() {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     const link = document.createElement('a');
-                                    link.href = '/pdfs/Konfydence_For_Schools.pdf';
+                                    link.href = getPublicPdfUrl('Konfydence_For_Schools.pdf');
                                     link.download = 'Konfydence_For_Schools.pdf';
                                     document.body.appendChild(link);
                                     link.click();
@@ -634,7 +641,7 @@ export default function FreeResources() {
                                   size="small"
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    window.open('/pdfs/Konfydence_For_Schools.pdf', '_blank');
+                                    window.open(getPublicPdfUrl('Konfydence_For_Schools.pdf'), '_blank');
                                   }}
                                   sx={{
                                     color: '#FF9800',
@@ -665,7 +672,7 @@ export default function FreeResources() {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     const link = document.createElement('a');
-                                    link.href = '/pdfs/Konfydence_For_Universities.pdf';
+                                    link.href = getPublicPdfUrl('Konfydence_For_Universities.pdf');
                                     link.download = 'Konfydence_For_Universities.pdf';
                                     document.body.appendChild(link);
                                     link.click();
@@ -686,7 +693,7 @@ export default function FreeResources() {
                                   size="small"
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    window.open('/pdfs/Konfydence_For_Universities.pdf', '_blank');
+                                    window.open(getPublicPdfUrl('Konfydence_For_Universities.pdf'), '_blank');
                                   }}
                                   sx={{
                                     color: '#FF9800',
