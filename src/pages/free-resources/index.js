@@ -151,6 +151,7 @@ const getAvailabilityColor = (type) => {
 export default function FreeResources() {
   const router = useRouter();
   const [pdfIndex, setPdfIndex] = useState(null);
+  const [pdfIndexError, setPdfIndexError] = useState(null);
   const [emails, setEmails] = useState({});
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [messages, setMessages] = useState({}); // per-bundle inline messages
@@ -229,30 +230,62 @@ export default function FreeResources() {
   const findExistingResourceUrl = async (resourceName) => {
     const candidates = normalizeNameVariants(resourceName).map((c) => c.toLowerCase());
     let index = pdfIndex;
-    if (!index) {
-      try {
-      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const resp = await fetch(`${backend}/api/pdf-index`);
-        if (resp.ok) {
-          const contentType = resp.headers.get('content-type') || '';
-          if (contentType.includes('application/json')) {
-            const json = await resp.json();
-            index = json.files || [];
-            setPdfIndex(index);
-          } else {
-            // unexpected response
-            index = [];
-            setPdfIndex(index);
-          }
+  if (!index) {
+    try {
+      // Try fetching the PDF index from the frontend first (relative path).
+      // If that fails, and a backend URL is configured, try the backend host.
+      const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
+
+      const tryFetchIndex = async (url) => {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) return { ok: false, status: r.status, statusText: r.statusText, contentType: r.headers.get('content-type') || '' , resp: r};
+          return { ok: true, resp: r, contentType: r.headers.get('content-type') || '' };
+        } catch (e) {
+          return { ok: false, error: e };
+        }
+      };
+
+      // Prefer relative frontend endpoint first (works when Next.js API route exists)
+      const relativeUrl = `/api/pdf-index`;
+      let result = await tryFetchIndex(relativeUrl);
+
+      // If relative failed, try configured backend (support both NEXT_PUBLIC_BACKEND_URL and NEXT_PUBLIC_API_URL)
+      if (!result.ok && backend) {
+        const backendUrl = `${backend}/api/pdf-index`;
+        result = await tryFetchIndex(backendUrl);
+      }
+
+      if (result.ok && result.resp) {
+        if (result.contentType.includes('application/json')) {
+          const json = await result.resp.json();
+          index = json.files || [];
+          setPdfIndex(index);
+          setPdfIndexError(null);
         } else {
           index = [];
           setPdfIndex(index);
+          setPdfIndexError('Unexpected response from PDF index API (non-JSON).');
         }
-      } catch (err) {
+      } else {
         index = [];
         setPdfIndex(index);
+        // Build helpful error guidance
+        if (result.status === 404 || result.resp?.status === 404) {
+          setPdfIndexError(`PDF index API not found. Tried ${relativeUrl}${backend ? ` and ${backend}/api/pdf-index` : ''} (404). Ensure the backend is running and NEXT_PUBLIC_BACKEND_URL is set if the API is hosted separately.`);
+        } else if (result.error) {
+          setPdfIndexError(`Error fetching PDF index: ${result.error.message || String(result.error)}`);
+        } else {
+          setPdfIndexError(`PDF index API unavailable. Tried ${relativeUrl}${backend ? ` and ${backend}/api/pdf-index` : ''}.`);
+        }
       }
+    } catch (err) {
+      index = [];
+      setPdfIndex(index);
+      setPdfIndexError(`Error fetching PDF index: ${err.message}`);
     }
+  }
 
     // match candidates against index entries (case-insensitive)
     for (const cand of candidates) {
@@ -262,8 +295,11 @@ export default function FreeResources() {
         if (lf.endsWith('/' + cand)) return true;
         return false;
       });
-      if (found) {
-        return `/pdfs/${encodeURI(found)}`;
+    if (found) {
+        // Resolve PDF URL using NEXT_PUBLIC_FRONTEND_URL when available,
+        // otherwise use relative /pdfs/ path so public assets are served by the frontend.
+        const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
+        return (frontend ? `${frontend}` : '') + `/pdfs/${encodeURI(found)}`;
       }
     }
     // Fallback: fuzzy match by stripping non-alphanumeric characters (handles prefixes like "1. " or spacing differences)
@@ -272,7 +308,28 @@ export default function FreeResources() {
       const candNorm = normalizeForCompare(cand);
       const found = index.find((f) => normalizeForCompare(f).includes(candNorm) || candNorm.includes(normalizeForCompare(f)));
       if (found) {
-        return `/pdfs/${encodeURI(found)}`;
+      const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
+      return (frontend ? `${frontend}` : '') + `/pdfs/${encodeURI(found)}`;
+      }
+    }
+    // If index lookup failed (no api or empty), attempt to probe the public /pdfs/ URLs directly.
+    const frontend = (process.env.NEXT_PUBLIC_FRONTEND_URL || '').replace(/\/$/, '');
+    for (const cand of candidates) {
+      const probeUrl = frontend ? `${frontend}/pdfs/${encodeURI(cand)}` : `/pdfs/${encodeURI(cand)}`;
+      try {
+        // Use HEAD where available; fallback to GET
+        let resp = null;
+        try {
+          resp = await fetch(probeUrl, { method: 'HEAD' });
+        } catch (e) {
+          // some servers block HEAD; fall through to GET
+        }
+        if (resp && resp.ok) return probeUrl;
+        // Some servers may not respond to HEAD; try GET
+        const resp2 = await fetch(probeUrl);
+        if (resp2 && resp2.ok) return probeUrl;
+      } catch (e) {
+        // ignore and continue probing other candidates
       }
     }
     return null;
@@ -285,28 +342,52 @@ export default function FreeResources() {
     }
     setSending((s) => ({ ...s, [bundleKey]: true }));
     try {
-      const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5000';
-      const resp = await fetch(`${backend}/api/email-resources`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bundleKey, email }),
-      });
-      const contentType = resp.headers.get('content-type') || '';
-      if (contentType.includes('application/json')) {
-        const json = await resp.json();
-        if (resp.ok && json.success) {
-          // inline message near the bundle send button
-          setMessages((m) => ({ ...m, [bundleKey]: { message: 'Resources sent to email', severity: 'success' } }));
-          setEmails((s) => ({ ...s, [bundleKey]: '' }));
-          // hide the email field after success
-          setShowEmailField((s) => ({ ...s, [bundleKey]: false }));
+      const backend = (process.env.NEXT_PUBLIC_BACKEND_URL || process.env.NEXT_PUBLIC_API_URL || '').replace(/\/$/, '');
+      const relativeUrl = `/api/email-resources`;
+
+      // Try relative frontend API first (works when Next.js API route or proxy exists),
+      // otherwise try backend host if configured.
+      const tryPost = async (url) => {
+        try {
+          const r = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bundleKey, email }),
+          });
+          return r;
+        } catch (e) {
+          return { ok: false, error: e };
+        }
+      };
+
+      let resp = await tryPost(relativeUrl);
+      if ((!resp || !resp.ok) && backend) {
+        const backendUrl = `${backend}/api/email-resources`;
+        resp = await tryPost(backendUrl);
+      }
+
+      if (resp && resp.headers) {
+        const contentType = resp.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const json = await resp.json();
+          if (resp.ok && json.success) {
+            setMessages((m) => ({ ...m, [bundleKey]: { message: 'Resources sent to email', severity: 'success' } }));
+            setEmails((s) => ({ ...s, [bundleKey]: '' }));
+            setShowEmailField((s) => ({ ...s, [bundleKey]: false }));
+          } else {
+            setMessages((m) => ({ ...m, [bundleKey]: { message: json.message || 'Failed to send email', severity: 'error' } }));
+          }
         } else {
-          setMessages((m) => ({ ...m, [bundleKey]: { message: json.message || 'Failed to send email', severity: 'error' } }));
+          const text = await resp.text().catch(() => '');
+          if (resp.status === 404) {
+            setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API not found. Tried /api/email-resources and ${backend ? `${backend}/api/email-resources` : '(no backend configured)'} (404).`, severity: 'error' } }));
+          } else {
+            setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API error: ${resp.status} ${resp.statusText}`, severity: 'error' } }));
+          }
+          console.error('Non-JSON response from email API:', text);
         }
       } else {
-        const text = await resp.text();
-        setMessages((m) => ({ ...m, [bundleKey]: { message: `Email API error: ${resp.status} ${resp.statusText}`, severity: 'error' } }));
-        console.error('Non-JSON response from email API:', text);
+        setMessages((m) => ({ ...m, [bundleKey]: { message: 'Failed to contact email API. Check backend configuration.', severity: 'error' } }));
       }
     } catch (err) {
       console.error('Send email error:', err);
@@ -324,6 +405,13 @@ export default function FreeResources() {
       </Head>
       <Header />
       
+      {pdfIndexError && (
+        <Container maxWidth="lg" sx={{ mt: 2 }}>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {pdfIndexError} — downloads may not be available until the backend is configured.
+          </Alert>
+        </Container>
+      )}
       <Box sx={{ pt: { xs: 8, md: 10 }, pb: { xs: 6, md: 8 }, backgroundColor: '#ffffff' }}>
         <Container maxWidth="lg">
           <Box sx={{ mb: 6, textAlign: 'center' }}>

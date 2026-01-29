@@ -144,7 +144,7 @@ export default function DashboardPage() {
   const getProfilePhotoUrl = (profilePhoto) => {
     if (!profilePhoto) return null;
     if (profilePhoto.startsWith('http')) return profilePhoto;
-    const apiBase = API_BASE_URL || 'http://localhost:5000';
+    const apiBase = API_BASE_URL;
     const normalizedApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
     return `${normalizedApiBase}${profilePhoto}`;
   };

@@ -254,7 +254,7 @@ export default function ProductDetailPage({ product, error }) {
 
   // ---------- Image Resolve ----------
   const fallbackImage = '/images/placeholders/product-default.svg';
-  const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const apiBase = process.env.NEXT_PUBLIC_API_URL;
   const normalizedApiBase = apiBase.endsWith('/') ? apiBase.slice(0, -1) : apiBase;
   const cleanImageUrl = product.imageUrl?.trim() ?? '';
 

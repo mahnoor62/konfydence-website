@@ -540,7 +540,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        Compliance that Actually Works. Habits that Last.
+                        From family tables to corporate
                       </Typography>
                       <Typography
                         variant="body1"
@@ -552,7 +552,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        Konfydence trains real behavior—not just knowledge. Short, fun simulations build the one habit that stops scams: a quick pause when pressure hits.
+                        ​Konfydence begins as a physical, social card system that trains calm decision-making under pressure. Organizations scale the same habit into security culture and compliance.
                       </Typography>
                       <Box
                         sx={{
@@ -573,7 +573,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                             fontWeight: 500,
                           }}
                         >
-                          Understand the Limbic Hijack
+                      ​Why people click under pressure the Limbic Hijack
                         </Link>
                       </Box>
                       <Box
@@ -787,7 +787,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    Compliance that Actually Works. Habits that Last.
+                    From family tables to corporate
                   </Typography>
                   <Typography
                     variant="body1"
@@ -799,7 +799,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    Konfydence trains real behavior—not just knowledge. Short, fun simulations build the one habit that stops scams: a quick pause when pressure hits.
+                   ​Konfydence begins as a physical, social card system that trains calm decision-making under pressure. Organizations scale the same habit into security culture and compliance.
                   </Typography>
                   <Box
                     sx={{
@@ -820,7 +820,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                         fontFamily: 'Poppins, sans-serif',
                       }}
                     >
-                      Understand the Limbic Hijack →
+                ​Why people click under pressure the Limbic Hijack
                     </Link>
                   </Box>
                   <Box
@@ -957,9 +957,9 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', mb: 1.5, fontSize: { xs: '0.9rem', md: '1rem' }, lineHeight: 1.4 }}>
-                Scammers steal an average of $2,000+ per victim.
-One simple habit — a five-second pause — stops most attacks before they start.
-Get the full kit for just $49.
+                When Employees Panic, Policies Don’t Matter.
+Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.
+Konfydence helps teams practice the moment breaches begin.
                 </Typography>
                 {/* <Stack spacing={1}>
                   {['Fun and engaging', 'Accessible for all ages', 'Proven learning method'].map((item) => (
@@ -1689,7 +1689,7 @@ Get the full kit for just $49.
                           mb: 2,
                           lineHeight: 1.7,
                           // bgcolor:'red',
-                          height: { md: '190px' },
+                          height: { md: '150px' },
                         }}
                       >
                         Our card game makes scam-spotting fun at the dinner table or in the car. Kids and grandparents learn together—building confidence that lasts a lifetime.
@@ -1853,7 +1853,7 @@ Get the full kit for just $49.
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: { md: '190px' },
+                          height: { md: '150px' },
                           // bgcolor:'red',
                         }}
                       >
@@ -2000,7 +2000,7 @@ Get the full kit for just $49.
                           mb: 2,
                         }}
                       >
-                        When Employees Panic, Policies Don’t Matter
+                      Compliance That Actually Reduces Risk
                       </Typography>
                       <Typography
                         variant="body1"
@@ -2009,12 +2009,18 @@ Get the full kit for just $49.
                           color: 'text.secondary',
                           mb: 2,
                           lineHeight: 1.7,
-                          height: {  md: '190px' },
+                          height: {  md: '150px' },
                         }}
                       >
-                       Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.<br />
+                        Go beyond check-box training. Our
+simulations prove your team can handle
+real pressure—with reports ready for
+auditors. NIS2-ready, fun, and effective.
+                        <br />
+                        {/* <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Understand the Limbic Hijack?</a> */}
+                       {/* Traditional security training assumes calm behavior. Real attacks exploit urgency, confusion, and pressure.<br />
                        Konfydence helps teams practice the moment breaches begin.<br />
-                    <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Why people click under pressure the Limbic Hijack?</a>   
+                    // <a href="/pdfs/the-limbic-hijack.pdf" target="_blank" rel="noopener noreferrer" style={{ color: '#00A4E8', textDecoration: 'underline' }}>Why people click under pressure the Limbic Hijack?</a>    */}
                       </Typography>
                       
                       {/* Static Card for Business */}

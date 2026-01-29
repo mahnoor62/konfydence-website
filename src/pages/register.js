@@ -161,7 +161,7 @@ export default function RegisterPage() {
   const handleCodeChange = async (code) => {
     if (code.length >= 8) {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL;
         // Verify code and get organization/school name
         const orgResponse = await fetch(`${API_URL}/api/organizations/code/${code}`);
         const schoolResponse = await fetch(`${API_URL}/api/schools/code/${code}`);
@@ -260,7 +260,7 @@ export default function RegisterPage() {
     // Handle member registration separately
     if (registrationType === 'member_org' || registrationType === 'member_institute') {
       try {
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || '';
         
         const response = await fetch(`${API_URL}/api/auth/member/register`, {
           method: 'POST',
