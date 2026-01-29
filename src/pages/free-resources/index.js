@@ -46,7 +46,7 @@ const resourceBundles = [
       'Decision Ladder ("breathe pause think respond")',
     ],
     // explicit files to download for this bundle (only these will be downloaded)
-    downloadFiles: ['Konfydence-Family-Tech-Contract.pdf', 'Family_SSK_Rules.pdf'],
+    downloadFiles: ['families/Konfydence-Family-Tech-Contract.pdf', 'families/Family_SSK_Rules.pdf'],
     // availability: 'Free',
     availabilityType: 'free',
   },
@@ -65,7 +65,7 @@ const resourceBundles = [
     downloadFiles: [
       'School_Lesson_Plan.pdf',
       'School_Parent HACK Guide.pdf',
-      'School Classroom_Pause_Posters.pdf',
+      'SchoolClassroom_Pause_Posters.pdf',
       'School_Curriculum Alignment Map.pdf',
     ],
     // availability: 'Free ',
