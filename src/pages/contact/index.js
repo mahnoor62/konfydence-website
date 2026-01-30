@@ -962,7 +962,7 @@ export default function ContactPage() {
                         onChange={handleChange}
                         onBlur={handleBlur}
                         error={!!errors.message}
-                        helperText={errors.message || "Tell us what kind of HACKs you're dealing with."}
+                        helperText={errors.message}
                       />
                     </Grid>
 
