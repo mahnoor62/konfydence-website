@@ -101,25 +101,31 @@ export default function SKKPage() {
       }
     } catch (err) {
       console.error('Error submitting email:', err);
-      const response = err.response?.data;
-      const errorMessage = response?.message || '';
-      const isSuccess = response?.success === true;
-      
-      // If API returns success: true (even for already subscribed), treat as success
-      if (isSuccess || (errorMessage.toLowerCase().includes('already'))) {
+      const response = err.response;
+      const responseData = response?.data;
+      const errorMessage = responseData?.message || err.message || '';
+
+      // If backend explicitly indicates the email is already registered (duplicate),
+      // show an error to the user and do NOT open the success modal.
+      if (response?.status === 400 && responseData?.duplicate) {
+        setSnackbar({
+          open: true,
+          message: responseData.message || 'This email has already been registered.',
+          severity: 'error',
+        });
+      } else if (responseData?.success === true) {
+        // Fallback: if backend still returns success true, treat as success
         setEmail('');
         setModalOpen(true);
-        
-        // Mark that user has visited waitlist page, so banner won't show again on homepage
         if (typeof window !== 'undefined') {
           localStorage.setItem('skk_banner_clicked', 'true');
         }
       } else {
-        // Show actual error message for real errors
-        setSnackbar({ 
-          open: true, 
-          message: errorMessage || 'Something went wrong. Please try again.', 
-          severity: 'error' 
+        // Generic error handling
+        setSnackbar({
+          open: true,
+          message: errorMessage || 'Something went wrong. Please try again.',
+          severity: 'error',
         });
       }
     } finally {
