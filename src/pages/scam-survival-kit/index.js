@@ -2202,6 +2202,8 @@ export default function SKKPage() {
           sx: {
             borderRadius: 3,
             p: 3,
+            // Ensure the modal uses Poppins explicitly (portal content may not inherit CSS variables)
+            fontFamily: "'Poppins', sans-serif !important",
           },
         }}
       >
@@ -2212,6 +2214,7 @@ export default function SKKPage() {
             fontWeight: 700,
             color: '#063C5E',
             pb: 2,
+          fontFamily: "'Poppins', sans-serif !important",
           }}
         >
           You&apos;re on the list!
@@ -2221,10 +2224,11 @@ export default function SKKPage() {
             <Typography
               variant="body1"
               sx={{
-                fontSize: { xs: '1rem', md: '1.125rem' },
+                fontSize: { xs: '1rem', md: '1rem' },
                 color: 'text.primary',
                 mb: 2,
                 lineHeight: 1.6,
+              fontFamily: "'Poppins', sans-serif",
               }}
             >
               While you wait for early access, here&apos;s your instant 5-Second Defense Cheat Sheet.
@@ -2235,6 +2239,7 @@ export default function SKKPage() {
                 fontSize: { xs: '0.95rem', md: '1rem' },
                 color: 'text.secondary',
                 lineHeight: 1.6,
+              fontFamily: "'Poppins', sans-serif",
               }}
             >
               It covers the most common scams right now — including the rising AI Voice / Grandchild in Trouble scam that hits families hard.
