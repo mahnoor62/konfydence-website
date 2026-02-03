@@ -240,7 +240,7 @@ export default function SKKPage() {
                       lineHeight: 1.6,
                     }}
                   >
-                    Cybersecurity doesn&apos;t fail because of technology.It fails because we&apos;re human.
+                    Cybersecurity doesn&apos;t fail because of technology it fails because we&apos;re human.
                   </Typography>
                   <Typography
                     variant="body1"
@@ -609,7 +609,7 @@ export default function SKKPage() {
                     color: '#063C5E', textAlign: 'center'
                   }}
                 >
-                  Knowing about scams isn&apos;t enough.What matters is how you react in the moment.
+                  Knowing about scams isn&apos;t enough what matters is how you react in the moment.
                 </Typography>
               {/* </Card> */}
             </Grid>
