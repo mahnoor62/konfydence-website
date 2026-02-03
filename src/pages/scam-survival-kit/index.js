@@ -688,10 +688,14 @@ export default function SKKPage() {
                 </Box>
                 <Box sx={{ ml: 4, mb: 2 }}>
                   <Stack direction="row" spacing={1.5} flexWrap="wrap" useFlexGap>
-                    <Chip label="Hurry (red)" sx={{ backgroundColor: '#FF725E', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
-                    <Chip label="Authority (blue)" sx={{ backgroundColor: '#0B7897', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
-                    <Chip label="Comfort (green)" sx={{ backgroundColor: '#4CAF50', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
-                    <Chip label="Kill-Switch (yellow)" sx={{ backgroundColor: '#FFC54D', color: '#063C5E', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 700, minWidth: 'fit-content', border: '1px solid rgba(6, 60, 94, 0.3)' }} />
+                    <Chip label="Hurry" sx={{ backgroundColor: '#FF725E', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Authority" sx={{ backgroundColor: '#0B7897', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Comfort" 
+                    sx={{
+                     backgroundColor: '#4CAF50', color: 'white', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 600, minWidth: 'fit-content' }} />
+                    <Chip label="Kill-Switch" 
+                    sx={{ backgroundColor: '#FFC54D', color: '#063C5E', fontSize: { xs: '0.75rem', md: '0.875rem' }, fontWeight: 700, minWidth: 'fit-content', border: '1px solid rgba(6, 60, 94, 0.3)' }} 
+                    />
                   </Stack>
                 </Box>
                 {[
@@ -718,7 +722,56 @@ export default function SKKPage() {
             </Grid>
             
             <Grid item xs={12} md={6}>
-              <Box
+        
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      height: '100%',
+                      minHeight: 0,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        width: '100%',
+                        flex: 1,
+                        minHeight: 280,
+                        backgroundColor: '#000B3F',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                      }}
+                      onClick={(e) => {
+                        const video = e.currentTarget.querySelector('video');
+                        if (video) {
+                          if (video.paused) {
+                            video.play();
+                          } else {
+                            video.pause();
+                          }
+                        }
+                      }}
+                    >
+                      <video
+                        controls
+                        style={{
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <source src="/video/video3.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </Box>
+                  </Box>
+            
+              {/* <Box
                 sx={{
                   width: '100%',
                   height: '100%',
@@ -738,7 +791,7 @@ export default function SKKPage() {
                     objectFit: 'cover',
                   }}
                 />
-              </Box>
+              </Box> */}
             </Grid>
           </Grid>
           
@@ -1447,19 +1500,15 @@ export default function SKKPage() {
                 <Typography
                   variant="h4"
                   sx={{
-                    fontSize: { xs: '1.75rem', md: '2.25rem' },
+                    fontSize: { xs: '1.75rem', md: '2rem' },
                     fontWeight: 600,
                     mb: 3,
-                    fontStyle: 'italic',
+                    // fontStyle: 'italic',
                     lineHeight: 1.4,
                     color: 'white',
                   }}
                 >
-                  &quot;Scammers don&apos;t win because we&apos;re dumb.
-                  <br />
-                  They win because they&apos;re fast.
-                  <br />
-                  Konfydence trains you to be faster, with one simple pause.&quot;
+                  &quot;Scammers don&apos;t win because we&apos;re careless or dumb. They win because they rush us to act fast. With Konfydence you train to act faster, by pausing first.&quot;
                 </Typography>
                 <Typography
                   variant="body1"

@@ -205,7 +205,7 @@ export default function AboutPage() {
                 mx: 'auto',
               }}
             >
-              &quot;Scammers don&apos;t win because we&apos;re dumb. They win because they&apos;re fast. Konfydence gives you the one habit that makes you faster.&quot;
+              &quot;Scammers don&apos;t win because we&apos;re careless or dumb. They win because they rush us to act fast. With Konfydence you train to act faster, by pausing first.&quot;
             </Typography>
             <Typography
               variant="h6"
@@ -220,7 +220,7 @@ export default function AboutPage() {
           </Box>
 
           {/* Quality & Trust Section */}
-          <Box sx={{ mb: { xs: 6, md: 8 } }} >
+          {/* <Box sx={{ mb: { xs: 6, md: 8 } }} >
             <Typography
               variant="h3"
               sx={{
@@ -246,7 +246,7 @@ export default function AboutPage() {
             >
               Our products are engineered for resilience. Every Konfydence card is designed and manufactured in Germany to meet the highest standards of quality and durability.
             </Typography>
-          </Box>
+          </Box> */}
 
           {/* Social Responsibility Section */}
           <Box
@@ -256,9 +256,55 @@ export default function AboutPage() {
               p: { xs: 4, md: 6 },
               mb: { xs: 6, md: 8 },
             }}
-           
+          
           >
-            <Typography
+      <Typography variant="h6" sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' }, fontWeight: 600, mb: 2, color: 'black', textAlign: 'center' }}>How scammers rush you and how to outsmart them.</Typography>
+
+<Grid item xs={12} md={12} sx={{ display: 'flex', justifyContent: 'center' }}>
+  
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      width: '100%',
+                      // maxWidth: 400, // keep size consistent and limit width on large screens
+                      mx: 'auto',
+                      paddingTop: '56.25%', // 16:9 aspect ratio
+                      backgroundColor: '#000B3F',
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      cursor: 'pointer',
+                    }}
+                    onClick={(e) => {
+                      const video = e.currentTarget.querySelector('video');
+                      if (video) {
+                        if (video.paused) {
+                          video.play();
+                        } else {
+                          video.pause();
+                        }
+                      }
+                    }}
+                  >
+                    <video
+                      controls
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <source src="/video/video2.mp4" type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  </Box>
+                </Grid>
+
+
+            {/* <Typography
               variant="h3"
               sx={{
                 fontSize: { xs: '2rem', md: '2.5rem' },
@@ -284,7 +330,22 @@ export default function AboutPage() {
             >
               Your purchase protects more than just your family. Through our program, we bring scam-spotting tools to vulnerable school communities — starting with Buy One, Give One during Kickstarter, and $1 donated per sale thereafter.
             </Typography>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <audio
+                controls
+                src="/video/video2.mp3"
+                style={{
+                  width: '100%',
+                  maxWidth: 480,
+                  display: 'block',
+                  margin: '0 auto',
+                  borderRadius: 8,
+                }}
+              >
+                Your browser does not support the audio element.
+              </audio> */}
+            {/* </Box> */}
+            {/* <Box sx={{ textAlign: 'center' }}>
               <Button
                 component={Link}
                 href="/education#pilot-form"
@@ -308,7 +369,7 @@ export default function AboutPage() {
               >
                 → Nominate a school
               </Button>
-            </Box>
+            </Box> */}
           </Box>
 
           {/* Decision Ladder Graphic - 2 Columns */}
