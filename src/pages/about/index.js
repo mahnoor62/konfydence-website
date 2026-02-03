@@ -260,8 +260,8 @@ export default function AboutPage() {
           >
       <Typography variant="h6" sx={{ fontSize: { xs: '1.1rem', md: '1.5rem' }, fontWeight: 600, mb: 2, color: 'black', textAlign: 'center' }}>How scammers rush you and how to outsmart them.</Typography>
 
-<Grid item xs={12} md={12} sx={{ display: 'flex', justifyContent: 'center' }}>
-  
+          <Grid container sx={{ justifyContent: 'center' }}>
+            <Grid item xs={12} md={12} sx={{ display: 'flex', justifyContent: 'center' }}>
                   <Box
                     sx={{
                       position: 'relative',
@@ -301,8 +301,8 @@ export default function AboutPage() {
                       Your browser does not support the video tag.
                     </video>
                   </Box>
-                </Grid>
-
+            </Grid>
+          </Grid>
 
             {/* <Typography
               variant="h3"

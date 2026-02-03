@@ -296,92 +296,6 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             // pb: { xs: 20, md: 0 },
           }}
         >
-          {/* Floating Animated Icons */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 1,
-              pointerEvents: 'none',
-              '@keyframes floatIcon1': {
-                '0%, 100%': { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
-                '33%': { transform: 'translateY(-20px) translateX(10px) rotate(5deg)' },
-                '66%': { transform: 'translateY(10px) translateX(-10px) rotate(-5deg)' },
-              },
-              '@keyframes floatIcon2': {
-                '0%, 100%': { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
-                '33%': { transform: 'translateY(-15px) translateX(-15px) rotate(-5deg)' },
-                '66%': { transform: 'translateY(15px) translateX(15px) rotate(5deg)' },
-              },
-              '@keyframes floatIcon3': {
-                '0%, 100%': { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
-                '33%': { transform: 'translateY(-18px) translateX(12px) rotate(3deg)' },
-                '66%': { transform: 'translateY(12px) translateX(-12px) rotate(-3deg)' },
-              },
-              '@keyframes floatIcon4': {
-                '0%, 100%': { transform: 'translateY(0px) translateX(0px) rotate(0deg)' },
-                '33%': { transform: 'translateY(-22px) translateX(-10px) rotate(-4deg)' },
-                '66%': { transform: 'translateY(10px) translateX(18px) rotate(4deg)' },
-              },
-            }}
-          >
-            {/* Lock Icon */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: { xs: '10%', md: '15%' },
-                left: { xs: '5%', md: '10%' },
-                animation: 'floatIcon1 6s ease-in-out infinite',
-                animationDelay: '0s',
-                display: 'block',
-              }}
-            >
-              <LockOutlined sx={{ fontSize: { xs: 24, md: 40 }, color: 'rgba(255, 255, 255, 0.15)' }} />
-            </Box>
-            {/* Email Icon */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: { xs: '20%', md: '25%' },
-                right: { xs: '5%', md: '15%' },
-                animation: 'floatIcon2 8s ease-in-out infinite',
-                animationDelay: '1s',
-                display: 'block',
-              }}
-            >
-              <EmailOutlined sx={{ fontSize: { xs: 24, md: 40 }, color: 'rgba(255, 255, 255, 0.15)' }} />
-            </Box>
-            {/* Chat Bubble Icon */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: { xs: '25%', md: '20%' },
-                left: { xs: '5%', md: '12%' },
-                animation: 'floatIcon3 7s ease-in-out infinite',
-                animationDelay: '2s',
-                display: 'block',
-              }}
-            >
-              <ChatBubbleOutline sx={{ fontSize: { xs: 24, md: 40 }, color: 'rgba(255, 255, 255, 0.15)' }} />
-            </Box>
-            {/* Shield Icon */}
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: { xs: '30%', md: '25%' },
-                right: { xs: '5%', md: '10%' },
-                animation: 'floatIcon4 9s ease-in-out infinite',
-                animationDelay: '1.5s',
-                display: 'block',
-              }}
-            >
-              <ShieldOutlined sx={{ fontSize: { xs: 24, md: 40 }, color: 'rgba(255, 255, 255, 0.15)' }} />
-            </Box>
-          </Box>
-
           {/* Mobile Slider - Only visible on small screens */}
           <Box
             sx={{
@@ -394,6 +308,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               modules={[Pagination, Navigation, Autoplay]}
               spaceBetween={0}
               slidesPerView={1}
+              speed={3000}
               pagination={{ 
                 clickable: true,
                 bulletActiveClass: 'swiper-pagination-bullet-active',
@@ -401,7 +316,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               }}
               navigation={true}
               autoplay={{
-                delay: 4000,
+                delay: 2500,
                 disableOnInteraction: false,
                 pauseOnMouseEnter: true,
               }}
@@ -509,10 +424,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                 <Box
                   sx={{
                     position: 'relative',
-                    background: 'linear-gradient(rgba(6, 60, 94, 0.85), rgba(11, 120, 151, 0.85)), url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat',
+                    overflow: 'hidden',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
@@ -520,6 +432,33 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     py: 4,
                   }}
                 >
+                  {/* Blurred background image - mobile (strong blur so image is very subtle) */}
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundImage: 'url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      filter: 'blur(28px)',
+                      transform: 'scale(1.2)',
+                      zIndex: 0,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(rgba(6, 60, 94, 0.88), rgba(11, 120, 151, 0.88))',
+                      zIndex: 1,
+                    }}
+                  />
                   <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2 }}>
                     <Box
                       sx={{
@@ -622,8 +561,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             </Swiper>
           </Box>
 
-          {/* Desktop Grid - Only visible on medium and larger screens */}
-          <Grid container sx={{ height: '100%', display: { xs: 'none', md: 'flex' } }}>
+          {/* Desktop Grid - Only visible on medium and larger screens (layer behind cards) */}
+          <Grid container sx={{ height: '100%', display: { xs: 'none', md: 'flex' }, position: 'relative', zIndex: 1 }}>
             {/* Left Side - B2C */}
             <Grid
               item
@@ -746,18 +685,42 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               md={6}
               sx={{
                 position: 'relative',
-                background: 'linear-gradient(rgba(6, 60, 94, 0.85), rgba(11, 120, 151, 0.85)), url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
+                overflow: 'hidden',
                 color: 'white',
                 display: 'flex',
                 alignItems: 'center',
                 height: '100%',
-          
                 py: { xs: 4, md: 0 },
               }}
             >
+              {/* Blurred background image - strong blur so image is very subtle */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  backgroundImage: 'url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  filter: 'blur(18px)',
+                  transform: 'scale(1.15)',
+                  zIndex: 0,
+                }}
+              />
+              {/* Dark overlay so image stays very light in the back */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(rgba(6, 60, 94, 0.88), rgba(11, 120, 151, 0.88))',
+                  zIndex: 1,
+                }}
+              />
               <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Box
                   data-aos="fade-left"
@@ -870,20 +833,17 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
             </Grid>
           </Grid>
           
-          {/* Info Cards Section - Overlapping Hero Section */}
+          {/* Info Cards Section - cards on top, hero layer behind */}
           <Container
             data-aos="zoom-in"
             data-aos-duration="800"
             data-aos-delay="200"
             maxWidth="lg"
             sx={{
-              mt:-10,
+              mt: -10,
               display: { xs: 'none', md: 'block' },
-              // position: 'absolute',
-              // bottom: { xs: -300, md: -100 },
-              // left: '50%',
-              transform: 'translateX(-50%)',
               width: '100%',
+              position: 'relative',
               zIndex: 10,
             }}
           >
@@ -901,21 +861,10 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   position: 'relative',
-                  animation: 'floatCard 4s ease-in-out infinite',
-                  transformOrigin: 'center',
                   filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                  transition: 'all 0.3s ease-in-out',
+                  transition: 'box-shadow 0.3s ease-in-out',
                   cursor: 'pointer',
-                  '@keyframes floatCard': {
-                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                    '50%': {
-                      transform: 'translateY(-15px) rotate(-1deg)',
-                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                    },
-                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                  },
                   '&:hover': {
-                    transform: 'scale(1.05)',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   },
                 }}
@@ -937,21 +886,10 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   borderRadius: 3,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
                   position: 'relative',
-                  animation: 'floatCard 4s ease-in-out infinite',
-                  transformOrigin: 'center',
                   filter: 'drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                  transition: 'all 0.3s ease-in-out',
+                  transition: 'box-shadow 0.3s ease-in-out',
                   cursor: 'pointer',
-                  '@keyframes floatCard': {
-                    '0%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                    '50%': {
-                      transform: 'translateY(-15px) rotate(-1deg)',
-                      filter: 'brightness(1.07) drop-shadow(0 25px 45px rgba(6,60,94,0.35))',
-                    },
-                    '100%': { transform: 'translateY(0px) rotate(0deg)', filter: 'brightness(1) drop-shadow(0 25px 45px rgba(6,60,94,0.35))' },
-                  },
                   '&:hover': {
-                    transform: 'scale(1.05)',
                     boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                   },
                 }}

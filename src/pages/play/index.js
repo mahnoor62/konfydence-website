@@ -3582,32 +3582,33 @@ export default function GamePage() {
             <div className={styles.contentContainer}>
               
               {/* Main Title */}
-              <h1 className={styles.mainTitle} data-aos="zoom-in" data-aos-delay="50">HOW TO PLAY</h1>
+              {/* <h1 className={styles.mainTitle} data-aos="zoom-in" data-aos-delay="50">HOW TO PLAY</h1> */}
               
               {/* Core Problems Section */}
-              <div className={styles.coreProblemsSection} data-aos="fade-up" data-aos-delay="100">
+
+              {/* <div className={styles.coreProblemsSection} data-aos="fade-up" data-aos-delay="100">
                 <h3 className={styles.coreProblemsTitle}>Core Problems</h3>
                 <div className={styles.coreProblemsGrid}>
                   <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="150">
-                    {/* <div className={styles.problemIcon}>❌</div> */}
+              
                     <p className={styles.problemText}>
                       <strong>&quot;Players 2–6&quot;</strong> vs digital seat = contradiction
                     </p>
                   </div>
                   <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="200">
-                    {/* <div className={styles.problemIcon}>📋</div> */}
+                 
                     <p className={styles.problemText}>
                       Instructions describe <strong>physical card game</strong>, not Scenario Lab
                     </p>
                   </div>
                   <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="250">
-                    {/* <div className={styles.problemIcon}>🔍</div> */}
+                 
                     <p className={styles.problemText}>
                       Dense card design → <strong>unreadable</strong> on screens / Quality issue
                     </p>
                   </div>
                   <div className={styles.problemCard} data-aos="fade-right" data-aos-delay="300">
-                    {/* <div className={styles.problemIcon}>🎮</div> */}
+                  
                     <p className={styles.problemText}>
                       Feels like a <strong>game manual</strong> instead of behavioral training
                     </p>
@@ -3616,7 +3617,7 @@ export default function GamePage() {
                 <p className={styles.solutionText} data-aos="zoom-in" data-aos-delay="350">
                   <strong>For digital:</strong> The experience is <span className={styles.highlight}>solo decision training</span>, not multiplayer scoring.
                 </p>
-              </div>
+              </div> */}
 
               <h2 className={styles.screenTitle} data-aos="zoom-in" data-aos-delay="400">How Training Works</h2>
               
