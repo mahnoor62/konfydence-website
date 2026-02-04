@@ -664,7 +664,7 @@ export default function ContactPage() {
                 >
                   {submittedTopic === 'demo'
                     ? 'Thank you for requesting a demo.'
-                    : 'Thank you.'}
+                    : 'Thanks. Your request is in good hands.'}
                 </Typography>
                 {/* <Typography
                   variant="body1"

@@ -62,6 +62,8 @@ export default function SKKPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [cardIndex, setCardIndex] = useState(0);
   const [modalOpen, setModalOpen] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [sendingPdf, setSendingPdf] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -92,6 +94,7 @@ export default function SKKPage() {
         source: 'early-access-form',
       });
       
+      setSubmittedEmail(email.trim());
       setEmail('');
       setModalOpen(true);
       
@@ -115,6 +118,7 @@ export default function SKKPage() {
         });
       } else if (responseData?.success === true) {
         // Fallback: if backend still returns success true, treat as success
+        setSubmittedEmail(email.trim());
         setEmail('');
         setModalOpen(true);
         if (typeof window !== 'undefined') {
@@ -141,10 +145,36 @@ export default function SKKPage() {
     setModalOpen(false);
   };
 
-  const handleGetCheatSheet = () => {
-    // Open PDF in new tab or download
-    window.open('/pdfs/5-second-defense-cheat-sheet.pdf', '_blank');
-    handleCloseModal();
+  const handleSendPdfToEmail = async () => {
+    if (!submittedEmail) {
+      setSnackbar({ open: true, message: 'No email address to send to.', severity: 'error' });
+      return;
+    }
+    setSendingPdf(true);
+    try {
+      const res = await axios.post(`${API_URL}/subscribers/send-teaser-pdf`, {
+        email: submittedEmail,
+      });
+      if (res.data?.success) {
+        setSnackbar({
+          open: true,
+          message: 'Cheat Sheet sent to your email. Please check your inbox.',
+          severity: 'success',
+        });
+        handleCloseModal();
+      } else {
+        setSnackbar({
+          open: true,
+          message: res.data?.message || 'Failed to send PDF. Please try again.',
+          severity: 'error',
+        });
+      }
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to send PDF. Please try again.';
+      setSnackbar({ open: true, message: msg, severity: 'error' });
+    } finally {
+      setSendingPdf(false);
+    }
   };
   
   const [expanded, setExpanded] = useState({});
@@ -2298,7 +2328,8 @@ export default function SKKPage() {
         <DialogActions sx={{ justifyContent: 'center', pb: 3, px: 3 }}>
           <Button
             variant="contained"
-            // onClick={handleGetCheatSheet}
+            onClick={handleSendPdfToEmail}
+            disabled={sendingPdf}
             sx={{
               backgroundColor: '#0B7897',
               color: 'white',
@@ -2314,7 +2345,7 @@ export default function SKKPage() {
             }}
             fullWidth
           >
-            Get Your Cheat Sheet Now
+            {sendingPdf ? 'Sending...' : 'Get Your Cheat Sheet Now'}
           </Button>
         </DialogActions>
       </Dialog>
