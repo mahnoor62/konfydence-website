@@ -55,6 +55,7 @@ export default function ContactPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedTopic, setSubmittedTopic] = useState(null); // 'demo' vs normal contact
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   
   // Countries, states, cities data
@@ -483,6 +484,7 @@ export default function ContactPage() {
         params: { _t: Date.now() },
       });
 
+      setSubmittedTopic(demoTopics.includes(formData.topic) ? 'demo' : 'contact');
       setSubmitted(true);
     } catch (error) {
       console.error('❌ Error submitting contact form:', {
@@ -660,7 +662,9 @@ export default function ContactPage() {
                     fontSize: { xs: '1.5rem', md: '1.75rem' },
                   }}
                 >
-                  Thank you for requesting a demo.
+                  {submittedTopic === 'demo'
+                    ? 'Thank you for requesting a demo.'
+                    : 'Thank you.'}
                 </Typography>
                 {/* <Typography
                   variant="body1"

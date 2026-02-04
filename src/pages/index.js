@@ -308,7 +308,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               modules={[Pagination, Navigation, Autoplay]}
               spaceBetween={0}
               slidesPerView={1}
-              speed={3000}
+              // speed={7000}
               pagination={{ 
                 clickable: true,
                 bulletActiveClass: 'swiper-pagination-bullet-active',
@@ -316,7 +316,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
               }}
               navigation={true}
               autoplay={{
-                delay: 2500,
+                delay: 20000,
                 disableOnInteraction: false,
                 pauseOnMouseEnter: true,
               }}
@@ -432,7 +432,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                     py: 4,
                   }}
                 >
-                  {/* Blurred background image - mobile (strong blur so image is very subtle) */}
+                  {/* Blurred background image - mobile (reduced blur so image is slightly more visible) */}
                   <Box
                     sx={{
                       position: 'absolute',
@@ -443,8 +443,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       backgroundImage: 'url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
-                      filter: 'blur(28px)',
-                      transform: 'scale(1.2)',
+                      filter: 'blur(3px)',
+                      transform: 'scale(1.15)',
                       zIndex: 0,
                     }}
                   />
@@ -479,7 +479,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                           textAlign: 'center',
                         }}
                       >
-                        From family tables to corporate
+                        From family tables to corporate firewalls
                       </Typography>
                       <Typography
                         variant="body1"
@@ -704,8 +704,8 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                   backgroundImage: 'url("https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&q=80")',
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
-                  filter: 'blur(18px)',
-                  transform: 'scale(1.15)',
+                  filter: 'blur(3px)',
+                  transform: 'scale(1.2)',
                   zIndex: 0,
                 }}
               />
@@ -750,7 +750,7 @@ export default function Home({ products, blogPosts, partnerLogos, error }) {
                       textAlign: { xs: 'center', md: 'left' },
                     }}
                   >
-                    From family tables to corporate
+                    From family tables to corporate firewalls
                   </Typography>
                   <Typography
                     variant="body1"

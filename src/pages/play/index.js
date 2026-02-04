@@ -4087,7 +4087,7 @@ export default function GamePage() {
                                 fontWeight: 'bold',
                                 color: questionTimer <= 30 ? '#ff4444' : questionTimer <= 60 ? '#FCB533' : '#FFFFFF'
                               }}>
-                                <span>Count Down:</span>
+                                <span>Count Up:</span>
                                 {(() => {
                                   const elapsed = TOTAL_QUESTION_SECONDS - questionTimer;
                                   const displaySeconds = Math.max(0, elapsed);
@@ -4121,7 +4121,7 @@ export default function GamePage() {
                         {isInformationalCard(currentScenario) ? (
                           <div className={styles.answersContainer} style={{ display: 'flex', justifyContent: 'center', marginTop: '20px' }}>
                             <button 
-                              className={`${styles.btn} ${styles.btnPrimary}`}
+                              className={`${styles.btn} ${styles.btnPrimary} ${styles.viewAnswerBtn}`}
                               onClick={handleInformationalCardAnswer}
                               disabled={isCardLocked}
                               style={{ 
@@ -4131,7 +4131,7 @@ export default function GamePage() {
                                 fontWeight: 'bold'
                               }}
                             >
-                              Answer
+                              View Answer
                             </button>
                           </div>
                         ) : (
@@ -4140,11 +4140,14 @@ export default function GamePage() {
                               currentScenario.answers.map((answer, index) => {
                                 const letter = String.fromCharCode(65 + index); // A, B, C, D
                                 const isSelected = isCardLocked && selectedAnswer === index;
+                                const isSelectedOption = selectedAnswer === index;
                                 const isCorrectAnswer = answer.isCorrect;
                                 return (
                                   <button
                                     key={answer.id || index}
                                     className={`${styles.answerOption} ${
+                                      isSelectedOption ? styles.selectedOption : ''
+                                    } ${
                                       isSelected && isCorrectAnswer ? styles.correctHighlight : ''
                                     } ${isSelected && !isCorrectAnswer ? styles.incorrectHighlight : ''}
                                     ${isCardLocked ? styles.disabled : ''}`}
@@ -4310,293 +4313,157 @@ export default function GamePage() {
                 </p>
                 
                 <div className={styles.resultCard} data-aos="zoom-in" data-aos-delay="300" ref={resultCardRef}>
-                  {/* Logo with Text Inside Card - Top Left */}
-                  <div className={styles.cardLogoContainer}>
-                    <img 
-                      src="/images/navbar-logo.png" 
-                      alt="Konfydence Logo" 
-                      className={styles.cardLogo}
-                    />
-                    {/* <span className={styles.cardLogoText}>Konfydence</span> */}
-                  </div>
-                  
-                  {/* Badge with Score Inside */}
-                  <div className={styles.badgeWithScoreContainer} data-aos="zoom-in" data-aos-delay="350">
-                    <div className={styles.riskBadgeCard}>
-                      <div className={styles.riskBadgeInner}>
-                        <div 
-                          className={`${styles.riskBadge} ${styles.riskBadgeFront}`}
-                          style={{ backgroundColor: '#FFD700' }}
-                        >
-                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
-                          {/* <span className={styles.riskLabel}>Risk Level</span> */}
-                         
-                          <div className={styles.badgeScore}>Konfydence Score: {score}/{maxScore}</div>
-                           <div className={styles.badgePercentage}>{percentageScore}%</div>
-                        </div>
-                        <div 
-                          className={`${styles.riskBadge} ${styles.riskBadgeBack}`}
-                          style={{ backgroundColor: '#FFD700' }}
-                        >
-                          <span className={styles.riskValue}>{riskLevel?.level || 'Vulnerable'}</span>
-                          {/* <span className={styles.riskLabel}>Risk Level</span> */}
-                        
-                          <div className={styles.badgeScore}>Konfydence Score: {score}/{maxScore}</div>
-                            <div className={styles.badgePercentage}>{percentageScore}%</div>
-                        </div>
+                  {/* Left box - Score & stats */}
+                  <div className={styles.resultBox}>
+                    <div className={styles.resultBoxHeader}>
+                      <img src="/images/card-icon.png" alt="Konfydence" className={styles.resultBoxLogo} />
+                    </div>
+                    <div className={styles.resultBoxScoreLabel}>Konfydence Score</div>
+                    <div className={styles.resultBoxScoreValue}>{score}/{maxScore}</div>
+                    <div className={styles.resultBoxScoreRow}>
+                      <div 
+                        className={styles.resultBoxCircleProgress} 
+                        style={{ '--pct': `${percentageScore}%` }}
+                      >
+                        <div className={styles.resultBoxCircleProgressInner}>{percentageScore}%</div>
                       </div>
                     </div>
-                  </div>
-                  <p className={styles.scoreMessage} data-aos="zoom-in" data-aos-delay="500">
-                    {percentageScore >= 80 ? 'Excellent work! Keep it up!' : 
-                     percentageScore >= 60 ? 'Good work! Keep it up!' : 
-                     'Good effort! Consider reviewing to improve your understanding.'}
-                  </p>
-                  {/* <p className={styles.scoreDetails} data-aos="zoom-in" data-aos-delay="550">
-                    You answered {correctAnswers} out of {totalQuestions} questions correctly
-                  </p> */}
-                  <div className={styles.progressBar} data-aos="zoom-in" data-aos-delay="600">
-                    <div 
-                      className={styles.progressFill}
-                      style={{ width: `${percentageScore}%` }}
-                    >
-                      <span className={styles.progressLabel}>{correctAnswers}/{totalQuestions} Correct</span>
+                    <div className={styles.resultBoxStatPills}>
+                      <div className={styles.resultBoxStatPill}>Environment {selectedLevel || 1}</div>
+                      <div className={styles.resultBoxStatPill}>Total Questions {totalQuestions}</div>
+                      <div className={styles.resultBoxStatPill}>Correct Answers {correctAnswers}</div>
                     </div>
-                  </div>
-                  
-                  <div className={styles.performanceSummary} data-aos="zoom-in" data-aos-delay="700">
-                    <div className={styles.performanceTitle} data-aos="zoom-in" data-aos-delay="750">
-                      {/* <span className={styles.performanceIcon}>📈</span> */}
-                      {/* Performance Summary */}
-                    </div>
-                    <div className={styles.summaryBoxes}>
-                      <div className={styles.summaryBoxCard} data-aos="zoom-in" data-aos-delay="800">
-                        <div className={styles.summaryBoxInner}>
-                          <div className={`${styles.summaryBox} ${styles.box1} ${styles.summaryBoxFront}`}>
-                            <div className={styles.boxNumber}>{selectedLevel || 1}</div>
-                            <div className={styles.boxLabel}>Environment Completed</div>
-                          </div>
-                          <div className={`${styles.summaryBox} ${styles.box1} ${styles.summaryBoxBack}`}>
-                            <div className={styles.boxLabel}>Environment Completed</div>
-                            <div className={styles.boxNumber}>{selectedLevel || 1}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.summaryBoxCard} data-aos="zoom-in" data-aos-delay="900">
-                        <div className={styles.summaryBoxInner}>
-                          <div className={`${styles.summaryBox} ${styles.box2} ${styles.summaryBoxFront}`}>
-                            <div className={styles.boxNumber}>{correctAnswers}</div>
-                            <div className={styles.boxLabel}>Questions Correct</div>
-                          </div>
-                          <div className={`${styles.summaryBox} ${styles.box2} ${styles.summaryBoxBack}`}>
-                            <div className={styles.boxLabel}>Questions Correct</div>
-                            <div className={styles.boxNumber}>{correctAnswers}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.summaryBoxCard} data-aos="zoom-in" data-aos-delay="1000">
-                        <div className={styles.summaryBoxInner}>
-                          <div className={`${styles.summaryBox} ${styles.box3} ${styles.summaryBoxFront}`}>
-                            <div className={styles.boxNumber}>{totalQuestions}</div>
-                            <div className={styles.boxLabel}>Total Questions</div>
-                          </div>
-                          <div className={`${styles.summaryBox} ${styles.box3} ${styles.summaryBoxBack}`}>
-                            <div className={styles.boxLabel}>Total Questions</div>
-                            <div className={styles.boxNumber}>{totalQuestions}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    {/* Show all completed levels if all 3 are completed */}
                     {completedLevels.length === 3 && (
-                      <div className={styles.allLevelsSummary} data-aos="zoom-in" data-aos-delay="1100">
-                        <div className={styles.allLevelsTitle}>
-                          <span className={styles.performanceIcon}>🏆</span>
-                          All Environments Completed!
+                      <div className={styles.resultBoxStatPills} style={{ marginTop: '0.5rem' }}>
+                        <div className={styles.resultBoxStatPill} style={{ background: 'rgba(11, 120, 151, 0.5)' }}>
+                          All Environments Completed
                         </div>
-                        <div className={styles.levelsGridSummary}>
-                          {completedLevels.sort((a, b) => a.level - b.level).map((levelData, index) => (
-                            <div key={levelData.level} className={styles.levelSummaryCard} data-aos="zoom-in" data-aos-delay={1200 + (index * 100)}>
-                              <div className={styles.levelSummaryHeader}>
-                                <span className={styles.levelSummaryNumber}>Environment {levelData.level}</span>
-                              </div>
-                              <div className={styles.levelSummaryScore}>
-                                <span className={styles.levelSummaryScoreValue}>{levelData.score}</span>
-                                <span className={styles.levelSummaryScoreMax}>/ {levelData.maxScore}</span>
-                              </div>
-                              <div className={styles.levelSummaryDetails}>
-                                <div>{levelData.correctAnswers} / {levelData.totalQuestions} Correct</div>
-                                <div className={styles.levelSummaryPercentage}>
-                                  {Math.round((levelData.correctAnswers / levelData.totalQuestions) * 100)}%
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                        {completedLevels.sort((a, b) => a.level - b.level).map((levelData) => (
+                          <div key={levelData.level} className={styles.resultBoxStatPill}>
+                            Env {levelData.level}: {levelData.correctAnswers}/{levelData.totalQuestions} ({Math.round((levelData.correctAnswers / levelData.totalQuestions) * 100)}%)
+                          </div>
+                        ))}
                       </div>
                     )}
+                    <div className={styles.resultBoxFooter}>
+                      <a href="https://konfydence.com/" target="_blank" rel="noopener noreferrer" className={styles.resultBoxFooterLink}>konfydence.com</a>
+                    </div>
                   </div>
-                  
-                  <div className={styles.actionButtons} data-aos="zoom-in" data-aos-delay="1200" data-exclude-screenshot="true">
-                    {/* Next Level button - show only if level < 3 and seats available, and NOT B2C demo user */}
-                    {(() => {
-                      const codeType = sessionStorage.getItem('codeType');
-                      const isTrialUser = codeType === 'trial';
-                      const seatsUsed = trialInfo?.usedSeats >= 2;
-                      
-                      // Check if B2C demo user
-                      let isB2CDemo = false;
-                      if (isTrialUser) {
-                        const trialDataStr = sessionStorage.getItem('trialData');
-                        if (trialDataStr) {
+
+                  {/* Right box - Summary & actions */}
+                  <div className={styles.resultBox}>
+                    <div className={styles.resultBoxHeader}>
+                      <img src="/images/card-icon.png" alt="Konfydence" className={styles.resultBoxLogo} />
+                    </div>
+                    <div className={styles.resultBoxScoreValue}>{score}/{maxScore}</div>
+                    <div className={styles.resultBoxRiskValue}>{riskLevel?.level || 'Vulnerable'}</div>
+                    <p className={styles.resultBoxMessage}>
+                      {percentageScore >= 80 ? 'Excellent work! Keep it up!' : 
+                       percentageScore >= 60 ? 'Good work! Keep it up!' : 
+                       'Good effort! Consider reviewing to improve your understanding.'}
+                    </p>
+                    <div className={styles.resultBoxActions} data-exclude-screenshot="true">
+                      <button type="button" className={`${styles.resultBoxBtn} ${styles.resultBoxBtnPrimary}`} onClick={playAgain}>
+                        Replay Current Environment
+                      </button>
+                      {(() => {
+                        const codeType = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('codeType') : null;
+                        const isTrialUser = codeType === 'trial';
+                        const seatsUsed = trialInfo?.usedSeats >= 2;
+                        let isB2CDemo = false;
+                        if (isTrialUser && typeof sessionStorage !== 'undefined') {
                           try {
-                            const trialData = JSON.parse(trialDataStr);
-                            if (trialData.targetAudience === 'B2C') {
-                              isB2CDemo = true;
+                            const trialDataStr = sessionStorage.getItem('trialData');
+                            if (trialDataStr) {
+                              const trialData = JSON.parse(trialDataStr);
+                              if (trialData.targetAudience === 'B2C') isB2CDemo = true;
                             }
-                          } catch (e) {
-                            console.error('Error parsing trialData:', e);
-                          }
+                          } catch (e) {}
                         }
-                      }
-                      
-                      const shouldHideNextLevel = (isTrialUser && seatsUsed) || isB2CDemo;
-                      
-                      // Show Next Level button only if:
-                      // 1. Not a trial user, OR
-                      // 2. Trial user but usedSeats < 2 AND not B2C demo
-                      // AND selectedLevel < 3
-                      if (selectedLevel && selectedLevel < 3 && !shouldHideNextLevel) {
-                        return (
-                          <button 
-                            className={`${styles.btn} ${styles.btnPrimary}`}
-                            onClick={nextLevel}
-                          >
-                            {/* <span className={styles.btnIcon}>➡️</span> */}
-                            Other Environment
-                          </button>
-                        );
-                      }
-                      return null;
-                    })()}
-                    
-                    {/* Play Again button - Always show */}
-                    <button 
-                      className={`${styles.btn} ${styles.btnPlayAgain}`}
-                      onClick={playAgain}
-                    >
-                      {/* <span className={styles.btnIcon}>▶</span> */}
-                      Play Again
-                    </button>
-                    
-                    {/* Your Dashboard button - Always show */}
-                    <button 
-                      className={`${styles.btn} ${styles.btnPrimary}`}
-                      onClick={() => router.push('/dashboard')}
-                    >
-                      Your Dashboard
-                    </button>
-                  </div>
-                  
-                  {/* Second Row of Buttons */}
-                  <div className={styles.actionButtonsSecondRow} data-aos="zoom-in" data-aos-delay="1250" data-exclude-screenshot="true">
-                    {/* Join Membership button - Show for trial users with seats used or all levels completed */}
-                    {(() => {
-                      const codeType = sessionStorage.getItem('codeType');
-                      const isTrialUser = codeType === 'trial';
-                      const allLevelsCompleted = completedLevels.length === 3 || (selectedLevel === 3);
-                      const seatsUsed = trialInfo?.usedSeats >= 2;
-                      
-                      // Show "Join Membership" if trial user and seats used or all levels completed
-                      if (isTrialUser && (seatsUsed || allLevelsCompleted)) {
-                        return (
-                          <button 
-                            className={`${styles.btn} ${styles.btnPrimary}`}
-                            onClick={() => router.push('/packages')}
-                            style={{ whiteSpace: 'normal', textAlign: 'center', lineHeight: '1.4' }}
-                          >
-                            <span>Join the Konfydence Membership for the Full Experience</span>
-                          </button>
-                        );
-                      }
-                      
-                      return null;
-                    })()}
-                    
-                    {/* Share Results button */}
-                    <button 
-                      className={`${styles.btn} ${styles.btnSecondary}`}
-                      onClick={handleShareResults}
-                    >
-                      Share Results
-                    </button>
-                    
-                    {/* Invite a Friend button */}
-                    <button 
-                      className={`${styles.btn} ${styles.btnSecondary}`}
-                      onClick={() => setShowInviteModal(true)}
-                    >
-                      {/* <span className={styles.btnIcon}>👥</span> */}
-                      Invite a Friend & Earn
-                    </button>
-                  </div>
-                  
-                  {/* Demo User Promotional Card - Show at bottom after action buttons */}
-                  {(() => {
-                    const codeType = sessionStorage.getItem('codeType');
-                    const isDemoUser = codeType === 'trial';
-                    if (!isDemoUser) return null;
-                    
-                    return (
-                      <div className={styles.demoPromoCard} data-aos="zoom-in" data-aos-delay="1250">
-                        <div className={styles.demoPromoContent}>
-                          <div className={styles.demoPromoLeft}>
-                            <div className={styles.germanFlagIcon}>
-                              <div className={styles.flagBlack}></div>
-                              <div className={styles.flagRed}>
-                                <span className={styles.madeInGermany}>Made in Germany</span>
-                              </div>
-                              <div className={styles.flagYellow}></div>
-                            </div>
-                            <span className={styles.demoOnlyText}>only for demos</span>
-                          </div>
-                          <div className={styles.demoPromoCenter} style={{ marginTop: '20px' }}>
-                            <h3 className={styles.demoPromoTitle}>
-                              Want to master all 90 scenarios? Get the full Physical Kit & unlimited digital access.
-                            </h3>
-                            <button 
-                              className={styles.demoPromoButton}
-                              onClick={() => router.push('/packages')}
-                            >
-                              Unlock Full Power →
+                        const shouldHideNextLevel = (isTrialUser && seatsUsed) || isB2CDemo;
+                        if (selectedLevel && selectedLevel < 3 && !shouldHideNextLevel) {
+                          return (
+                            <button type="button" className={`${styles.resultBoxBtn} ${styles.resultBoxBtnPrimary}`} onClick={nextLevel}>
+                              Other Environments
                             </button>
+                          );
+                        }
+                        return null;
+                      })()}
+                      <button type="button" className={`${styles.resultBoxBtn} ${styles.resultBoxBtnPrimary}`} onClick={() => router.push('/dashboard')}>
+                        Your Dashboard
+                      </button>
+                      <button type="button" className={`${styles.resultBoxBtn} ${styles.resultBoxBtnShare}`} onClick={handleShareResults}>
+                        Share Results
+                      </button>
+                      {(() => {
+                        const codeType = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('codeType') : null;
+                        const isTrialUser = codeType === 'trial';
+                        const allLevelsCompleted = completedLevels.length === 3 || (selectedLevel === 3);
+                        const seatsUsed = trialInfo?.usedSeats >= 2;
+                        if (isTrialUser && (seatsUsed || allLevelsCompleted)) {
+                          return (
+                            <button 
+                              type="button" 
+                              className={`${styles.resultBoxBtn} ${styles.resultBoxBtnPrimary}`} 
+                              onClick={() => router.push('/packages')}
+                              style={{ whiteSpace: 'normal', lineHeight: '1.4' }}
+                            >
+                              Join the Konfydence Membership for the Full Experience
+                            </button>
+                          );
+                        }
+                        return null;
+                      })()}
+                      <button type="button" className={`${styles.resultBoxBtn} ${styles.resultBoxBtnPrimary}`} onClick={() => setShowInviteModal(true)}>
+                        Invite a Friend & Earn
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Demo User Promotional Card - below result boxes */}
+                {(() => {
+                  const codeType = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('codeType') : null;
+                  const isDemoUser = codeType === 'trial';
+                  if (!isDemoUser) return null;
+                  return (
+                    <div className={styles.demoPromoCard} data-aos="zoom-in" data-aos-delay="1250" style={{ width: '100%', maxWidth: '900px', marginTop: '1rem' }}>
+                      <div className={styles.demoPromoContent}>
+                        <div className={styles.demoPromoLeft}>
+                          <div className={styles.germanFlagIcon}>
+                            <div className={styles.flagBlack}></div>
+                            <div className={styles.flagRed}>
+                              <span className={styles.madeInGermany}>Made in Germany</span>
+                            </div>
+                            <div className={styles.flagYellow}></div>
                           </div>
-                          <div className={styles.demoPromoRight}>
-                            <div className={styles.kidsLogo}>
-                              <div className={styles.kidsShield}>🛡️</div>
-                              <div className={styles.kidsText}>
-                                <span className={styles.kidsBrand}>Konfydence</span>
-                                <span className={styles.kidsFor}>for Kids</span>
-                              </div>
+                          <span className={styles.demoOnlyText}>only for demos</span>
+                        </div>
+                        <div className={styles.demoPromoCenter} style={{ marginTop: '20px' }}>
+                          <h3 className={styles.demoPromoTitle}>
+                            Want to master all 90 scenarios? Get the full Physical Kit & unlimited digital access.
+                          </h3>
+                          <button 
+                            className={styles.demoPromoButton}
+                            onClick={() => router.push('/packages')}
+                          >
+                            Unlock Full Power →
+                          </button>
+                        </div>
+                        <div className={styles.demoPromoRight}>
+                          <div className={styles.kidsLogo}>
+                            <div className={styles.kidsShield}>🛡️</div>
+                            <div className={styles.kidsText}>
+                              <span className={styles.kidsBrand}>Konfydence</span>
+                              <span className={styles.kidsFor}>for Kids</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                    );
-                  })()}
-                  
-                  {/* Website Link - Bottom with spacing */}
-                  <div className={styles.websiteLinkWrapper}>
-                    <a 
-                      href="https://konfydence.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className={styles.websiteLink}
-                    >
-                      www.konfydence.com
-                    </a>
-                  </div>
-                </div>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
