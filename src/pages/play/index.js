@@ -1066,6 +1066,47 @@ export default function GamePage() {
     }
   }, [router.isReady, router.query.resume]);
 
+  // Replay mode: when user comes from dashboard "Replay Game", restore from session and allow play without using another seat
+  useEffect(() => {
+    if (typeof window === 'undefined' || !router.isReady || router.query.replay !== '1') return;
+    const codeVerifiedStorage = sessionStorage.getItem('codeVerified') === 'true';
+    const code = sessionStorage.getItem('code');
+    const codeType = sessionStorage.getItem('codeType');
+    const trialDataStr = sessionStorage.getItem('trialData');
+    const transactionDataStr = sessionStorage.getItem('transactionData');
+    const productId = sessionStorage.getItem('productId');
+    const packageId = sessionStorage.getItem('packageId');
+    if (!codeVerifiedStorage || !code || !(trialDataStr || transactionDataStr)) return;
+    try {
+      const data = trialDataStr ? JSON.parse(trialDataStr) : (transactionDataStr ? JSON.parse(transactionDataStr) : null);
+      if (!data) return;
+      const endDate = new Date(data.endDate || data.expiresAt);
+      endDate.setHours(23, 59, 59, 999);
+      if (new Date() > endDate) return; // expired, don't restore
+      const maxSeats = data.maxSeats || (data.codeType === 'trial' ? 2 : 5);
+      const usedSeats = data.usedSeats || 0;
+      setTrialInfo({
+        _id: data._id || data.id,
+        maxSeats,
+        usedSeats,
+        remainingSeats: maxSeats - usedSeats,
+        codeApplications: data.codeApplications || 0,
+        gamePlays: data.gamePlays || 0,
+        endDate,
+        isExpired: false,
+        packageName: data.packageName || data.packageId?.name || 'Package',
+        productId: productId || data.productId?._id || data.productId || null
+      });
+      setSeatsAvailable(true);
+      setCodeVerified(true);
+      setShowCodeDialog(false);
+      setGameState('levelSelect');
+      console.log('🔄 Replay mode: restored from session, no new seat used');
+    } catch (e) {
+      console.error('Replay restore error:', e);
+    }
+  }, [router.isReady, router.query.replay]);
+
   // IMPORTANT: This runs FIRST on page load/refresh
   useEffect(() => {
     console.log('🚀 Component mounting - ALWAYS show dialog first, then check verification');
@@ -1076,6 +1117,8 @@ export default function GamePage() {
     // Check if user has a referrer and try to use their code, or check for demo code
     const checkReferrerCode = async () => {
       if (!user || !mounted) return;
+      // Replay mode: already handled by replay effect - don't override
+      if (router.isReady && router.query.replay === '1') return;
       
       // First check for demo code in query params
       if (router.isReady && router.query.demoCode) {

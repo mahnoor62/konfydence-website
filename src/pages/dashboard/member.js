@@ -681,12 +681,30 @@ export default function MemberDashboardPage() {
                         sx={{
                           backgroundColor: '#0B7897',
                           color: '#fff',
+                          mr: 1,
                           '&:hover': {
                             backgroundColor: '#085f76',
                           },
                         }}
                       >
                         Resume Game
+                      </Button>
+                    )}
+                    {/* Replay Game - only when all 3 environments played */}
+                    {gameProgress && [1, 2, 3].every(n => (gameProgress[`level${n}`]?.length || 0) > 0) && (
+                      <Button
+                        variant="outlined"
+                        onClick={() => router.push('/play?replay=1')}
+                        sx={{
+                          borderColor: '#0B7897',
+                          color: '#0B7897',
+                          '&:hover': {
+                            borderColor: '#085f76',
+                            backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                          },
+                        }}
+                      >
+                        Replay Game
                       </Button>
                     )}
                   </Box>

@@ -599,6 +599,26 @@ export default function DashboardPage() {
                         </Button>
                       )}
 
+                      {/* Replay Game - Play again without using another seat (same seat, no extra count) */}
+                      {gameProgress && gameProgress.totalLevelsPlayed >= 3 && (hasPaidTransactions || gameProgress.isDemo === false) && (
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={() => router.push('/play?replay=1')}
+                          sx={{
+                            borderColor: '#0B7897',
+                            color: '#0B7897',
+                            mb: 1,
+                            '&:hover': {
+                              borderColor: '#085f76',
+                              backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                            },
+                          }}
+                        >
+                          Replay Game
+                        </Button>
+                      )}
+
                       <Button
                         variant="outlined"
                         fullWidth
@@ -958,12 +978,30 @@ export default function DashboardPage() {
                                   sx={{
                                     backgroundColor: '#0B7897',
                                     color: '#fff',
+                                    mr: 1,
                                     '&:hover': {
                                       backgroundColor: '#085f76',
                                     },
                                   }}
                                 >
                                   Resume Game
+                                </Button>
+                              )}
+                              {/* Replay Game - Play again without using another seat */}
+                              {gameProgress && gameProgress.totalLevelsPlayed >= 3 && (hasPaidTransactions || gameProgress.isDemo === false) && (
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => router.push('/play?replay=1')}
+                                  sx={{
+                                    borderColor: '#0B7897',
+                                    color: '#0B7897',
+                                    '&:hover': {
+                                      borderColor: '#085f76',
+                                      backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                                    },
+                                  }}
+                                >
+                                  Replay Game
                                 </Button>
                               )}
                             </Box>

@@ -2319,6 +2319,9 @@ export default function OrganizationDashboardPage() {
                                 resumeLevel !== null && 
                                 gameProgress.isDemo !== true;
 
+  // Replay Game: only when all 3 environments have been played
+  const hasAllThreeEnvironmentsPlayed = gameProgress && [1, 2, 3].every(n => (gameProgress[`level${n}`]?.length || 0) > 0);
+
   return (
     <>
       <Header />
@@ -2526,13 +2529,32 @@ export default function OrganizationDashboardPage() {
                               sx={{
                                 backgroundColor: '#0B7897',
                                 color: '#fff',
-                                mb: 2,
+                                mb: 1,
                                 '&:hover': {
                                   backgroundColor: '#085f76',
                                 },
                               }}
                             >
                               Resume Game
+                            </Button>
+                          )}
+                          {/* Replay Game - only when all 3 environments played */}
+                          {hasAllThreeEnvironmentsPlayed && (
+                            <Button
+                              variant="outlined"
+                              fullWidth
+                              onClick={() => router.push('/play?replay=1')}
+                              sx={{
+                                borderColor: '#0B7897',
+                                color: '#0B7897',
+                                mb: 2,
+                                '&:hover': {
+                                  borderColor: '#085f76',
+                                  backgroundColor: 'rgba(11, 120, 151, 0.08)',
+                                },
+                              }}
+                            >
+                              Replay Game
                             </Button>
                           )}
 
